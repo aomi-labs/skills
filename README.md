@@ -6,6 +6,7 @@ Agent skills for interacting with the [Aomi](https://aomi.dev) on-chain AI trans
 
 | Skill | Description |
 |-------|-------------|
+| [aomi-app-builder](aomi-app-builder/SKILL.md) | Build Aomi apps and plugins from APIs, specs, SDK docs, runtime interfaces, and product requirements |
 | [aomi-transact](aomi-transact/SKILL.md) | Build and execute EVM transactions through a conversational AI agent via the `aomi` CLI |
 
 ## Installation
