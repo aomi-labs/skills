@@ -70,6 +70,8 @@ If the SDK repo is not available, read:
    - call out which tools are read-only, which prepare actions, and which write or submit
    - mention any expected target URL, runtime, or host dependency
    - if the toolset is uncertain, surface the uncertainty before coding
+   - identify the primary user workflow the app should make easy first
+   - keep the first pass to the smallest sufficient toolset for that workflow unless the user asked for broader API coverage
 3. Reduce the spec into semantically meaningful tools.
 4. Scaffold or update the Aomi app using the standard file split:
    - `lib.rs` for manifest and preamble
@@ -85,13 +87,18 @@ If the SDK repo is not available, read:
   - execution assistant
   - builder / SDK / runtime assistant
 - Before implementing, state the proposed toolset in concrete user-facing terms. This is part of the design, not optional polish.
+- Prefer the smallest sufficient toolset that makes the primary user workflow work end to end.
+- If there are multiple plausible integration targets, briefly state which one you are choosing and why before coding.
 - Prefer tools that interact with an actual product surface over tools that merely restate documentation.
 - A hosted API is not required. A self-hosted service, local example stack, standard RPC server, or other runnable interface still counts as a real integration target.
 - If the source material is SDK- or architecture-heavy, first ask whether it produces a service that clients call. If yes, build the client for that service.
 - Only fall back to a builder-oriented or docs-oriented tool surface when no stable executable target is available.
-- Do not mirror every endpoint 1:1 unless that is actually the cleanest model-facing API.
+- Do not mirror every endpoint 1:1 unless that is actually the cleanest model-facing API or the user explicitly asked for broad coverage.
 - Prefer 3 to 8 tools with clear user intent boundaries such as `search_*`, `get_*`, `build_*`, `submit_*`, `list_*`, or `resolve_*`.
+- Prefer intent-shaped tool names over raw protocol or transport names when practical.
 - Aggregate noisy upstream endpoints behind a smaller tool surface when the model does not need the raw distinction.
+- Prefer typed arguments over raw JSON string blobs when the primary workflow can be modeled cleanly that way.
+- Separate core tools from escape hatches. A generic fallback tool such as `*_rpc` or `*_raw` is fine, but it should not replace a clean core workflow.
 - Keep args typed and documented with `JsonSchema`. Field doc comments are model-facing and matter.
 - Return stable JSON with predictable keys. Normalize upstream naming, paging, and inconsistent shapes inside `client.rs` or helper functions.
 - Convert upstream errors into short actionable messages. Do not leak raw HTML, secrets, or giant payload dumps.
@@ -149,7 +156,13 @@ When working inside `aomi-sdk`:
 - If `build-aomi` reports zero built plugins for a brand new app, check whether the new `apps/<name>/Cargo.toml` is still untracked. The current xtask prefers `git ls-files` discovery for app manifests.
 - For a direct compile signal on an untracked app, use `cargo build --manifest-path apps/<name>/Cargo.toml`.
 - If the app has meaningful branching or normalization logic, add unit tests with `aomi_sdk::testing::{TestCtxBuilder, run_tool, run_async_tool}`.
-- If a real target is available, validate at least one real round-trip against it such as a health check, schema query, list endpoint, or other low-risk call.
+- If a real target is available, validate the app with a short ladder:
+  - compile/build
+  - connectivity check
+  - one representative read flow
+  - one representative write or submit flow when applicable
+  - post-write verification such as status, receipt, or refreshed state
+- Prefer proving one end-to-end user scenario over checking many disconnected endpoints.
 
 When the task also touches docs or demos in `aomi-widget`, update the relevant examples or guides to match the new app behavior.
 

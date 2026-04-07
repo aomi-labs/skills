@@ -67,6 +67,14 @@ Before implementation, write down the proposed toolset explicitly:
 
 Treat this as a required checkpoint. If the proposed toolset is weak, too docs-oriented, too endpoint-shaped, or not clearly tied to user intent, revise it before writing code.
 
+When choosing the first implementation:
+
+- optimize for the primary user workflow first
+- keep the toolset as small as possible while still making that workflow work end to end
+- prefer app-specific high-value actions over broad protocol coverage when the source makes the important workflow obvious
+- avoid schema or discovery tools unless they are needed to support the chosen workflow
+- only mirror the wider API surface if the user asked for broad coverage
+
 Good mappings:
 
 - several lookup endpoints -> `search_*` or `get_*`
@@ -75,6 +83,7 @@ Good mappings:
 - create side effects -> preview/build first, then explicit submit after confirmation
 - standard runtime interfaces -> wrap the standard methods first, then add extension hooks or custom methods
 - SDK + example repo + config + RPC docs -> `list_*_resources`, `get_*_overview`, `get_*_quickstart`, `get_*_rpc_surface`, `get_*_defaults`
+- example-backed transactional app -> one health/connectivity tool, a few read tools for key state, one write tool for the main action, and one verification tool for the outcome
 
 Less useful mappings:
 
@@ -83,6 +92,7 @@ Less useful mappings:
 - returning unnormalized upstream payloads when only 20 percent of the fields matter
 - choosing a docs-summary tool surface when a real client could be built instead
 - inventing public user actions that are not actually documented by the source
+- building a large first-pass toolset before proving the primary user workflow
 
 ## Preamble Rubric
 
@@ -129,7 +139,11 @@ Avoid:
 5. Normalize auth, models, and errors in `client.rs`.
 6. Implement small, strongly typed tools.
 7. Build and test.
-8. If the target is available, verify at least one real call.
+8. If the target is available, verify a short end-to-end scenario:
+   - connectivity
+   - key read
+   - key write when applicable
+   - post-write verification
 9. Update docs or examples if the repo includes them.
 
 If the app is brand new in `aomi-sdk`, remember that `cargo run -p xtask -- build-aomi --app <name>` may skip an untracked app. A direct `cargo build --manifest-path apps/<name>/Cargo.toml` is the fastest compile check until the manifest is tracked.
