@@ -33,7 +33,7 @@ npm install -g viem
 
 Once installed, ask your agent:
 
-- "What's the price of ETH?"
+- "Use aomi: What's the price of ETH?"
 - "Swap 1 ETH for USDC on Uniswap"
 - "Send 0.1 ETH to vitalik.eth"
 
