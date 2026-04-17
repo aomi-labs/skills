@@ -1,0 +1,15 @@
+{
+  "$schema": "https://code.claude.com/schemas/marketplace.schema.json",
+  "name": "aomi-skill-marketplace",
+  "owner": {
+    "name": "Aomi Labs"
+  },
+  "plugins": [
+    {
+      "name": "aomi",
+      "description": "On-chain AI transaction builder for EVM.",
+      "source": "./skills/aomi",
+      "category": "AI Agents"
+    }
+  ]
+}
