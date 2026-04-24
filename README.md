@@ -15,6 +15,13 @@ Aomi Skills are drop-in Agent Skills that let any Agent Skills–compatible AI t
 | [aomi-build](aomi-build/SKILL.md) | Build Aomi apps and plugins from APIs, specs, SDK docs, runtime interfaces, and product requirements |
 | [aomi-transact](aomi-transact/SKILL.md) | Build and execute EVM transactions through a conversational AI agent via the `aomi` CLI |
 
+## Use Cases
+
+- **Automate transactions from your AI coding assistant** — ask Claude Code, Cursor, or Gemini CLI to swap, send, stake, or sign EIP-712 payloads via the `aomi` CLI.
+- **Scaffold new Aomi plugins from an API spec** — point `aomi-build` at an OpenAPI spec, REST endpoint, or SDK docs and it generates a working Aomi SDK crate (`lib.rs`, `client.rs`, `tool.rs`).
+- **Explore on-chain state without a dashboard** — query balances, prices, routes, and quotes right from your AI assistant.
+- **Orchestrate multi-step DeFi flows with batch simulation** — simulate approve → swap or bridge → settle sequences before signing, catching reverts before they cost gas.
+
 ## Installation
 
 ```bash
@@ -44,6 +51,26 @@ Once installed, ask your agent:
 - "Send 0.1 ETH to vitalik.eth"
 
 The agent handles the full flow: chat with the backend, review pending transactions, sign and broadcast on-chain.
+
+## FAQ
+
+**Which AI coding tools support Aomi Skills?**
+Any Agent Skills–compatible tool: Claude Code, Cursor, Gemini CLI, VS Code Copilot, and others. Install once with `npx skills add aomi-labs/skills` and the skills become available in whichever tool you're using.
+
+**Do I need an Aomi account or API key?**
+For the default app and most public data queries, no. For non-default apps and private flows, you'll need an `AOMI_API_KEY` — pass it with `--api-key` or set it as an environment variable. Provider-specific credentials (e.g., exchange keys, bundler keys) can be injected per-session via `aomi secret add`.
+
+**How is this different from an MCP server?**
+Agent Skills are lightweight instructions and tool references that live inside your AI tool's context. MCP servers are long-running external processes exposing a protocol. The `aomi-transact` skill drives the `aomi` CLI — each command starts, runs, and exits — so there's no server to manage. You can use Aomi Skills alongside MCP servers; they don't conflict.
+
+**Can I use these skills without signing transactions?**
+Yes. `aomi-transact` has a read-only mode — `aomi chat "what's the price of ETH?"`, `aomi tx list`, `aomi tx simulate`, balance and portfolio queries all work without any signing key. A signing key is only needed when you want to broadcast a transaction on-chain.
+
+**Which chains does `aomi-transact` support?**
+Ethereum, Polygon, Arbitrum, Base, Optimism, and Sepolia (testnet). Set the active chain with `--chain <id>` or the `AOMI_CHAIN_ID` env var. Each signing invocation needs an RPC URL that matches the target chain.
+
+**How do I update to the latest version of the skills?**
+Re-run `npx skills add aomi-labs/skills`. Re-running pulls the latest skill definitions and overwrites the local copies.
 
 ## Resources
 
