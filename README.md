@@ -2,11 +2,11 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE) ![Works with Claude Code · Cursor · Gemini · Copilot](https://img.shields.io/badge/Works%20with-Claude%20Code%20%C2%B7%20Cursor%20%C2%B7%20Gemini%20%C2%B7%20Copilot-6E56CF)
 
-> Agent Skills for Aomi — open-source AI infrastructure for automating crypto. Works with Claude Code, Cursor, Gemini CLI, VS Code Copilot, and other Agent Skills–compatible tools.
+> The best blockchain harness for agentic AI - on-chain execution with runtime, skills, and component library.
 
 ## What are Aomi Skills?
 
-Aomi Skills are drop-in Agent Skills that let any Agent Skills–compatible AI tool — Claude Code, Cursor, Gemini CLI, VS Code Copilot, and others — interact with Aomi, open-source AI infrastructure for automating crypto. The `aomi-build` skill scaffolds new Aomi apps and plugins from API specs and SDK docs. The `aomi-transact` skill drives the Aomi CLI through natural language — querying prices and balances, simulating transactions, and signing and broadcasting on-chain swaps and transfers.
+Aomi Skills are drop-in Agent Skills that let any Agent Skills–compatible AI tool — Claude Code, Cursor, Gemini CLI, VS Code Copilot, and others — interact with Aomi. The `aomi-build` skill scaffolds new Aomi apps and plugins from API specs and SDK docs. The `aomi-transact` skill drives the Aomi CLI through natural language — querying prices and balances, simulating transactions, and signing and broadcasting on-chain swaps and transfers.
 
 ## Skills
 
