@@ -5,7 +5,8 @@ description: >
   check balances or prices, build wallet requests, confirm quotes or routes,
   sign transactions or EIP-712 payloads, switch apps or chains, or execute
   swaps, transfers, and DeFi actions on-chain. Covers Aomi chat, transaction
-  review, AA-first signing with mode fallback, session controls, and
+  review, adaptive signing (EOA single-call, AA-first for multi-call with
+  fallback), session controls, and
   per-session secret ingestion.
 compatibility: "Requires @aomi-labs/client (`npm install -g @aomi-labs/client`). CLI executable is `aomi`. Requires viem for signing (`npm install viem`). Use AOMI_APP / --app, AOMI_MODEL / --model, AOMI_CHAIN_ID / --chain, CHAIN_RPC_URL / --rpc-url, `aomi secret add` for session secret ingestion, and AOMI_STATE_DIR for local session storage."
 
@@ -13,7 +14,7 @@ license: MIT
 allowed-tools: Bash
 metadata:
   author: aomi-labs
-  version: "0.6"
+  version: "0.7"
 ---
 
 # Aomi Transact
@@ -42,6 +43,7 @@ backend. Local session data lives under `AOMI_STATE_DIR` or `~/.aomi`.
 - When starting work from a new Codex or assistant chat thread, default the first Aomi command to `--new-session` unless the user explicitly wants to continue an existing session.
 - If `PRIVATE_KEY` is set in the environment, do not also pass `--private-key` unless you intentionally want to override the environment value.
 - `--public-key` must match the address derived from the signing key. If they differ, `aomi tx sign` will update the session to the signer address.
+- For wallet-connected chat state, provide both address and chain (`--public-key` + `--chain`, or saved session equivalents). Address without chain may be treated as not connected.
 - Private keys must start with `0x`. Add the prefix if missing.
 - `CHAIN_RPC_URL` is only one default RPC URL. When switching chains, prefer passing `--rpc-url` on `aomi tx sign`.
 - Switching the chat/session chain with `--chain` does not switch `CHAIN_RPC_URL`. The RPC used for `aomi tx sign` must match the pending transaction's chain.
@@ -68,7 +70,9 @@ aomi tx sign <id>...                Sign and submit
 aomi session list|new|resume|delete|status|log|events|close
 aomi model list|set|current
 aomi app list|current
-aomi chain list
+aomi chain list|set|current
+aomi wallet set|current
+aomi config set-backend|current
 aomi secret list|clear|add
 ```
 
@@ -128,7 +132,7 @@ Notes:
 - Quote the chat message.
 - On the first command in a new Codex or assistant thread, prefer `--new-session` so old local/backend state does not bleed into the new task.
 - Use `--verbose` when debugging tool calls or streaming behavior.
-- Pass `--public-key` on the first wallet-aware chat if the backend needs the user's address.
+- Pass both `--public-key` and `--chain` on the first wallet-aware chat when the backend needs connected-wallet context.
 - For chain-specific requests, prefer `--chain <id>` on the command itself. Use `AOMI_CHAIN_ID=<id>` only when multiple consecutive commands should stay on the same chain.
 - Use `aomi secret list` to inspect configured secret handles for the active session.
 - `aomi session close` wipes the active local session pointer and starts a fresh thread next time.
@@ -194,15 +198,18 @@ Run `aomi tx list` to see pending transactions, `aomi tx sign <id>` to sign.
 Use these rules exactly:
 
 - Default command: `aomi tx sign <tx-id> [<tx-id> ...]`
-- Default behavior (**auto-detect**): if an AA provider is configured (env vars or flags), use AA automatically. If no AA provider is configured, use EOA. There is no silent fallback — AA either works or fails.
-- **Mode fallback**: when AA is used, the CLI tries the preferred mode (default 7702). If it fails, it tries the alternative mode (4337). If both fail, it returns an error suggesting `--eoa`.
+- Default behavior (**auto-detect**): single-call signs use EOA directly. Multi-call batches use AA by default (Alchemy BYOK if configured, otherwise backend proxy).
+- **Fallback chain in auto mode (batches)**: preferred AA mode (default 7702 for batches) -> alternative AA mode (4337/7702) -> EOA.
+- `--aa`: force AA-only mode. The CLI still tries both AA modes, then exits with error if both fail.
 - `--eoa`: force direct EOA execution, skip AA entirely.
-- `--aa-provider` or `--aa-mode`: AA-specific controls that also force AA mode. Cannot be used with `--eoa`.
+- `--aa-provider` or `--aa-mode`: AA-specific controls that imply AA mode and cannot be used with `--eoa`.
 
 Examples:
 
 ```bash
-# Default: auto-detect. AA if configured, EOA if not.
+# Default: auto-detect.
+# - single call: EOA
+# - multi-call: AA with fallback chain
 aomi tx sign tx-1 --private-key 0xYourPrivateKey --rpc-url https://eth.llamarpc.com
 
 # Force EOA only
@@ -287,10 +294,10 @@ Use AA when:
 
 How to choose:
 
-- `aomi tx sign` with no AA flags: try AA first, then fall back to EOA automatically if AA is unavailable.
+- `aomi tx sign` with no AA flags: single-call requests use EOA directly; multi-call requests use AA first with fallback to EOA if AA modes fail.
 - `aomi tx sign --aa`: require AA only. Use this when the user does not want an EOA fallback.
 - `aomi tx sign --eoa`: bypass AA entirely and sign directly with the wallet key.
-- `aomi tx sign --aa-provider alchemy|pimlico`: force a specific AA provider.
+- `aomi tx sign --aa-provider alchemy|pimlico`: request a specific AA provider. If that provider key is unavailable, CLI may still resolve via Alchemy (BYOK or proxy) unless `--aa` policy expectations require otherwise.
 - `aomi tx sign --aa-mode 4337|7702`: force the execution mode when the user wants a specific AA path.
 
 More signing notes:
@@ -333,7 +340,7 @@ aomi chat "<message>" --app khalani --chain 137
 - Quote the message.
 - On the first command in a new Codex or assistant thread, prefer `--new-session`.
 - Use `--verbose` to stream tool calls and agent output.
-- Use `--public-key` on the first wallet-aware message.
+- Use both `--public-key` and `--chain` on the first wallet-aware message when connected-wallet context matters.
 - Use `--app`, `--model`, and `--chain` to change the active context for the next request.
 - Prefer `--chain <id>` for one-off chain-specific requests. Use `AOMI_CHAIN_ID=<id>` when several consecutive commands should share the same chain context.
 
@@ -453,6 +460,22 @@ examples.
 
 ```bash
 aomi chain list
+aomi chain current
+aomi chain set <id>
+```
+
+### Wallet Commands
+
+```bash
+aomi wallet current
+aomi wallet set <private-key>
+```
+
+### Backend Config Commands
+
+```bash
+aomi config current
+aomi config set-backend <url>
 ```
 
 ## Reference: Account Abstraction
@@ -463,21 +486,26 @@ The CLI uses **auto-detect** by default:
 
 | AA configured? | Flag | Result |
 |---|---|---|
-| Yes | (none) | **AA automatically** (preferred mode → alternative mode fallback) |
-| Yes | `--aa-provider`/`--aa-mode` | AA with explicit settings |
+| Yes | (none) | Single-call: EOA. Multi-call: **AA automatically** (preferred mode -> alternative mode -> EOA fallback) |
+| Yes | `--aa-provider`/`--aa-mode` | AA with explicit settings (still mode fallback) |
 | Yes | `--eoa` | EOA, skip AA |
-| No | (none) | EOA |
-| No | `--aa-provider` | Error: "AA requires provider credentials" |
+| No | (none) | Single-call: EOA. Multi-call: Alchemy proxy AA |
+| No | `--aa-provider` | AA forced by flag. Uses Alchemy path (BYOK if available, otherwise proxy) |
 
-There is **no silent EOA fallback**. If AA is selected (explicitly or by auto-detect) and both AA modes fail, the CLI returns a hard error suggesting `--eoa`.
+EOA fallback behavior:
+
+- In auto mode, multi-call AA failures can fall through to EOA after both AA modes fail.
+- In explicit `--aa` mode, both-mode AA failure returns a hard error (no EOA fallback).
 
 ### Mode Fallback
 
 When using AA, the CLI tries modes in order:
 
-1. Try preferred mode (default: 7702 for Ethereum, 4337 for L2s).
+1. Try preferred mode (chain-config default; for multi-call batches the CLI prefers 7702 when supported).
 2. If preferred mode fails, try the alternative mode (7702 ↔ 4337).
-3. If both modes fail, return error with suggestion: use `--eoa` to sign without AA.
+3. If both modes fail:
+   - auto mode: fallback to EOA
+   - `--aa` mode: return error suggesting `--eoa`
 
 ### AA Configuration
 
@@ -496,9 +524,10 @@ Priority chain for AA resolution: **flag > env var > defaults**.
 
 Provider selection rules:
 
-- If the user explicitly selects a provider via flag, use it.
-- In auto-detect mode, the CLI uses the first configured AA provider (whichever env var is set).
-- If no AA provider is configured, auto-detect uses EOA directly.
+- `--aa-provider pimlico` uses Pimlico only when `PIMLICO_API_KEY` is present; otherwise execution resolves through Alchemy.
+- `--aa-provider alchemy` resolves through Alchemy BYOK if key is present, otherwise Alchemy proxy.
+- In auto-detect mode for multi-call requests, the CLI prefers Alchemy BYOK when `ALCHEMY_API_KEY` is present, otherwise Alchemy proxy.
+- Single-call auto mode uses EOA directly, independent of AA provider env vars.
 
 ### AA Modes
 
@@ -630,7 +659,7 @@ AA configuration is supplied per-invocation via flags or environment variables (
 - `CHAIN_RPC_URL` is only one default RPC URL. For chain switching, prefer passing `--rpc-url` on `aomi tx sign`.
 - If the user switches from Ethereum to Polygon, Arbitrum, Base, Optimism, or Sepolia, do not keep using an Ethereum `CHAIN_RPC_URL` for signing.
 - `--aa-provider` and `--aa-mode` cannot be used with `--eoa`.
-- In auto-detect mode, missing AA credentials cause the CLI to use EOA directly (no error).
+- In auto-detect mode: single-call signs use EOA directly; multi-call signs can still use backend Alchemy proxy AA when credentials are missing.
 
 ## Reference: Examples
 
@@ -655,7 +684,7 @@ aomi chat "proceed"
 # 3. Review the queued request
 aomi tx list
 
-# 4. Sign — auto-detects AA if configured, otherwise uses EOA
+# 4. Sign — single-call auto mode uses EOA by default
 aomi tx sign tx-1 \
   --private-key 0xYourPrivateKey \
   --rpc-url https://eth.llamarpc.com
@@ -699,7 +728,9 @@ aomi tx sign tx-1 \
 ### Explicit AA Flow
 
 ```bash
+export PIMLICO_API_KEY=your-pimlico-key
 aomi tx sign tx-1 \
+  --aa \
   --aa-provider pimlico \
   --aa-mode 4337 \
   --private-key 0xYourPrivateKey
@@ -708,12 +739,12 @@ aomi tx sign tx-1 \
 ### AA Setup With Environment Variables
 
 ```bash
-# Export once per shell — auto-detected by `aomi tx sign`
+# Export once per shell
 export ALCHEMY_API_KEY=your-alchemy-key
 export ALCHEMY_GAS_POLICY_ID=your-gas-policy-id
 
-# All subsequent signs auto-use AA — no flags needed
-aomi tx sign tx-1 --private-key 0xYourPrivateKey
+# Auto mode uses AA for multi-call signs (single-call stays EOA unless `--aa`)
+aomi tx sign tx-1 tx-2 --private-key 0xYourPrivateKey
 ```
 
 ### Alchemy Sponsorship Flow
@@ -778,7 +809,7 @@ aomi session close
 ## Troubleshooting
 
 - If `aomi chat` returns `(no response)`, wait briefly and run `aomi session status`.
-- If AA signing fails, the CLI tries the alternative AA mode automatically. If both modes fail, it returns an error suggesting `--eoa`. Read the console output before retrying manually.
+- If AA signing fails, the CLI tries the alternative AA mode automatically. In auto mode it may then fall back to EOA; in `--aa` mode it exits with an error suggesting `--eoa`.
 - If AA is required and fails, check `ALCHEMY_API_KEY` or `PIMLICO_API_KEY`, the selected chain, and any requested `--aa-mode`.
 - If a transaction fails on-chain, check the RPC URL, balance, and chain.
 - `401`, `429`, and generic parameter errors during `aomi tx sign` are often RPC problems rather than transaction-construction problems. Try a reliable RPC for the correct chain.

@@ -6,7 +6,7 @@
 
 ## What are Aomi Skills?
 
-Aomi Skills are drop-in Agent Skills that let any Agent Skills–compatible AI tool — Claude Code, Cursor, Gemini CLI, VS Code Copilot, and others — interact with Aomi, open-source AI infrastructure for automating crypto. The `aomi-build` skill scaffolds new Aomi apps and plugins from API specs and SDK docs. The `aomi-transact` skill drives the Aomi CLI through natural language — querying prices and balances, simulating transactions, and signing and broadcasting on-chain swaps and transfers.
+Aomi Skills are drop-in Agent Skills that let any Agent Skills–compatible AI tool — Claude Code, Cursor, Gemini CLI, VS Code Copilot, and others — interact with Aomi, open-source AI infrastructure for automating crypto. The `aomi-build` skill scaffolds new Aomi apps and plugins from API specs and SDK docs. The `aomi-transact` skill drives the Aomi CLI through natural language — querying prices and balances, simulating transactions, and handling adaptive signing flows (EOA for simple single-call requests, AA-first for multi-call batches).
 
 ## Skills
 
