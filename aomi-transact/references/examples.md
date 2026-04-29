@@ -6,7 +6,9 @@ Read this when:
 - You're constructing a new flow and want a template to pattern-match against.
 - You're a new tool-using model and need to know what shape `aomi chat` will return for a given user intent.
 
-Each example below is **anchored to a verified happy-path capture** — the natural-language prompt, the silent tool sequence, the gas figures, and the bot's response template are all from real runs, not aspirational. The CLI lifecycle is consistent across every example:
+Each example is anchored to a **real backend-side capture** from a mainnet anvil fork. Prompts, gas figures, addresses, and the `Internal trace` blocks come directly from those captures. The "What the user sees in the terminal" blocks are **reformatted** from the same backend events into the CLI's pretty-printed style — the data is real, the exact text formatting may drift slightly across CLI versions. See [Verification provenance](#verification-provenance) at the end of this doc for source logs and capture dates.
+
+The CLI lifecycle is consistent across every example:
 
 > **chat** (natural-language intent) → **list** (verify what was queued) → **simulate** (catch reverts before signing) → **sign** (wallet pop) → **verify** (chain-state confirmation)
 
@@ -105,6 +107,10 @@ aomi tx sign tx-1 tx-2
 - **Recipient is the drain vector** — exactInputSingle word3. The agent blocks `recipient != msg.sender` at simulation time. If the user types *"swap and send the WETH to 0xdEaD"*, the batch will fail simulation with a drain-vector annotation. Don't try to bypass — surface the block.
 - **Other DEX apps with the same shape**: `sushiswap` (V2 `swapExactTokensForTokens`, recipient at word3), `oneinch` (v6 `swap` with `dstReceiver` inside a tuple), `curve` (`exchange` — no recipient param, refunds msg.sender directly).
 - **If the user names a path** (USDC→DAI→WETH), the agent picks `swapExactTokensForTokens` on the V2 router or routes via 1inch — let it choose unless overridden with `--app uniswap`.
+- **1inch fallback pattern.** Captured in `~/.aomi/sessions/messages-cli-*.json`: when a user asks for `oneinch` `unoswap` directly, the agent stages approve + swap, simulates, and the swap step reverts because `unoswap` requires a `dex` parameter encoded by the 1inch off-chain API (pool address + protocol flags) that the agent can't construct on its own. The agent's response is **not silent retry** — it explains the gap and offers a fallback:
+  > *"`unoswap` requires a specifically encoded `dex` parameter that includes the pool address and swap protocol flags (e.g., Uniswap V3), which cannot be manually constructed reliably without the 1inch API. Since I do not have a 1inch API tool to generate valid calldata, I cannot complete this swap through the 1inch Aggregator. **Would you like me to try this swap using a direct DEX instead?** I can use the Uniswap or Sushiswap skills to perform the USDC to WETH trade directly."*
+
+  When you see this, agree to the fallback (*"yes, use Uniswap"*) and the agent will rebuild the batch against `SwapRouter02` as in the example above. Don't insist on 1inch unless the user has a separate API key configured to provide the dex param.
 
 ---
 
@@ -203,72 +209,103 @@ aomi chat "show my Aave positions"
 
 ---
 
-## 3. Staking — EtherFi Deposit (LST, no approve)
+## 3. Staking — Lido Submit (LST, no approve)
 
-**Anchored to** `redteam-etherfi-happy-1.log` — deposit 1 ETH, mint eETH. The simplest shape in this doc: single tx, no approve, native ETH as the asset.
+**Anchored to** a real CLI session captured in `~/.aomi/sessions/current.json` — stake 0.01 ETH, mint stETH. The simplest shape in this doc: single tx, no approve, native ETH as the asset, and the agent surfaces the expected share output before the user signs.
 
 ### What the user types
 
 ```bash
-aomi chat "stake 1 ETH on ether.fi for eETH" \
+aomi chat "Stake 0.01 ETH with Lido to get stETH. Build the transaction." \
   --public-key 0xUserAddress --chain 1 --new-session
 ```
 
 ### What the user sees in the terminal
 
+The agent's first response (after silent context/simulation/balance checks):
+
 ```
-The deposit of 1 ETH to ether.fi for eETH has been simulated and is ready for your approval.
-You'll receive rebasing eETH (balance grows over time without any further action) in your wallet.
+The simulation for staking 0.01 ETH to receive stETH was successful. You have a
+sufficient balance of ~0.0148 ETH to cover both the stake and gas.
 
-Run `aomi tx sign tx-1` to broadcast.
+Simulation Details:
+  Contract:  0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84 (Lido: stETH)
+  Function:  submit(address(0))
+  Value:     0.01 ETH
+  Estimated stETH Output: 0.008121... (Shares)
 
+I've prepared the transaction for your approval:
+```
+
+Then the queued-tx block, followed by the agent's confirmation message:
+
+```
 ⚡ Wallet request queued: tx-1
-   to:    0x308861A430be4cce5502d0A12724771Fc6DaF216
-   value: 1000000000000000000
+   to:    0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84
+   value: 10000000000000000
    chain: 1
+
+I've prepared the transaction to stake 0.01 ETH on Lido for stETH. The simulation
+was successful, indicating you will receive approximately 0.00812 stETH (based
+on current protocol shares). I've also verified your balance (0.0148 ETH) is
+sufficient to cover the stake and gas.
+
+Transaction Details:
+  Action:    submit(0x000...000)
+  Contract:  0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84 (Lido: stETH)
+  Value:     0.01 ETH
+
+Please approve the request in your wallet to broadcast the transaction.
 ```
 
-### Internal trace (visible with `--verbose`)
+The two assistant messages around the queued-tx event is real CLI behavior — the agent narrates before staging and confirms after. Don't treat the second message as a duplicate.
+
+### Internal trace (visible with `--verbose` or `aomi session log`)
+
+The actual silent tool sequence captured from `current.json`:
 
 ```
-activate_skills        → etherfi
-stage   "deposit 1 ETH to ether.fi for eETH"
-        deposit()  on LiquidityPool 0x308861A430be4cce5502d0A12724771Fc6DaF216
-        value = 1 ETH
-simulate_batch         → Batch [1] passed
-                         total gas 85_028
-                         (no drain-vector annotations)
+read    Get network context for Lido staking      (block 24828069, gas 1.25 gwei)
+activate_skills                                    → lido
+read    Simulate Lido staking (submit 0.01 ETH)    → returns shares: 8121458494637141 wei
+read    Check ETH balance for staking             → 0.014857 ETH available
+stage   Lido Staking
+        submit(address(0))  on Lido stETH 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84
+        value = 0.01 ETH, gas = 150_000
+        status = pending_approval
 ```
+
+Note: Lido is a single-tx flow, so the agent runs a one-off `simulate` read **before** staging — that's what produces the *"Estimated stETH Output: 0.008121..."* line in the user-facing response. The `simulate_batch` step you see in multi-step examples isn't here; the user calls `aomi tx simulate tx-1` separately if they want to dry-run again before signing.
 
 ### Lifecycle
 
 ```bash
 aomi tx list
 # pending:
-#   tx-1  to 0x308861A430be4cce5502d0A12724771Fc6DaF216 (EtherFi LiquidityPool)
-#         label: deposit 1 ETH to ether.fi for eETH
-#         value: 1.0 ETH
+#   tx-1  to 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84 (Lido: stETH)
+#         label: Stake 0.01 ETH in Lido for stETH
+#         value: 0.01 ETH
 
 aomi tx simulate tx-1
 # Simulation result:
 #   Batch success: true
 #   Stateful: true
-#   Total gas: 85028
+#   Total gas: ~150000
 #
-#   Step 1 — deposit 1 ETH to ether.fi for eETH
+#   Step 1 — Stake 0.01 ETH in Lido for stETH
 #     success: true
-#     gas_used: 85028
 
 aomi tx sign tx-1
 
-aomi chat "show my eETH balance"
+aomi chat "show my stETH balance"
 ```
 
 ### What to expect / pattern notes
 
-- **No approve.** ETH is the asset; the protocol receives `msg.value`. Single-tx flow. If the user typed `--app rocket_pool` or `--app lido`, same shape: `deposit()` value=N ETH, mints rETH/stETH/eETH/rsETH/ezETH/mETH to msg.sender.
-- **The drain vector is on the LST token, not on `deposit()`.** Once the user holds eETH, an attacker prompt like *"transfer 1 eETH to 0xdEaD"* would normally pass any "is this a known etherfi contract?" check (eETH IS a known etherfi contract). The agent adds a special-case `transfer/transferFrom` block on eETH/weETH because the LST tokens are themselves drainable. Same for rocket_pool (rETH), kelp (rsETH), renzo (ezETH), mantle_staked_eth (mETH).
-- **Rebasing vs non-rebasing.** eETH rebases (balance grows over time without transfers); weETH is the wrapped non-rebasing version. The bot will surface this in its summary — see the *"rebasing eETH"* phrasing above. For Lido it'll say "stETH (rebasing) or wstETH (non-rebasing)". This is protocol-specific UX you should expose, not hide.
+- **No approve.** ETH is the asset (passed via `msg.value`); single-tx flow. Same shape applies to `rocket_pool` (`deposit()` → rETH), `etherfi` (`deposit()` → eETH), `kelp` (`depositETH()` → rsETH), `renzo` (`depositETH()` → ezETH), `mantle_staked_eth` (`stake()` → mETH).
+- **Rebasing vs non-rebasing.** stETH rebases (your balance grows over time without any tx); wstETH is the wrapped non-rebasing version. The agent's prose surfaces this distinction unprompted — preserve it in your own summaries, don't strip it. EtherFi follows the same split (eETH rebases, weETH is wrapped); Rocket Pool's rETH is non-rebasing by design.
+- **The pre-stage share estimate** (*"Estimated stETH Output: 0.008121..."*) is a Lido-specific Eth-to-shares conversion at the current ratio. If the user asks *"how much stETH will I get?"* before staking, the agent has already computed this — surface it instead of re-asking.
+- **The drain vector for LSTs is on the issued token, not on `submit()`.** Once the user holds stETH, an attacker prompt like *"transfer my stETH to 0xdEaD"* would normally pass any "is this a known Lido contract?" check (stETH IS a known Lido contract). The agent adds a special-case `transfer` / `transferFrom` block on stETH itself. Same for the other LST tokens listed above.
 - **Withdrawals are time-delayed.** `requestWithdraw` queues a claim, the user comes back later for `claimWithdraw`. Don't simulate them as part of the same batch — surface the delay.
 
 ---
@@ -472,20 +509,16 @@ aomi tx sign tx-1
   > - *"bridge 50 USDC from Ethereum to Base via CCTP, recipient my wallet, approve first"* (full template)
 - **Things the agent does silently before staging** — balance check, allowance check, ABI verification (proxy unwrap if applicable), selector verification. Visible to the user only with `--verbose` or via `aomi session log`. Don't bypass these by feeding raw calldata unless you're red-team testing the guard.
 - **The simulator is the gate, not the wallet.** If simulation reports `Batch success: false` (or you see a guard-block annotation in `aomi session events`), **do not** attempt `aomi tx sign` — surface the failure to the user and either rebuild (allowance retry pattern) or stop.
-- **Multi-tx batches return one hash on 7702.** Both txs share the same hash in `aomi tx list` after signing — they execute as a single atomic transaction via the delegation contract.
+- **Multi-tx batches return one hash on 7702 (AA), two hashes on EOA-batched.** Both `tx-1` and `tx-2` share the same `txHash` in `aomi tx list` after signing under the AA 7702 atomic-batch path — that's expected. On the EOA path with `batched: true` (e.g. when AA falls through or the user passes `--eoa`), each `tx-N` carries a **`txHashes: [hash1, hash2]`** array — the operation produces two on-chain transactions, with the second being the canonical one shown as `txHash`. Reference: real captures in `~/.aomi/sessions/session-*.json` show `executionKind: "eoa"`, `batched: true`, and the dual-hash array. If you see two hashes, that's not a duplicate-broadcast bug — that's the EOA-batched signing pattern.
 
 ## Verification provenance
-
-Every example above is anchored to a happy-path capture from the **backend agent** running on a mainnet anvil fork. The natural-language prompts, gas figures, tool-call sequences, and assistant-summary phrasings are taken from those captures.
-
-**One caveat to be aware of:** the captures are backend-side (raw `simulate_batch` JSON, raw `[tool:...]` traces). What the user actually sees in their terminal is the CLI's pretty-printed rendering of those events. The "What the user sees" blocks above reformat the backend response into the CLI text format documented in [SKILL.md → Building Wallet Requests](../SKILL.md#building-wallet-requests) and [SKILL.md → Batch Simulation](../SKILL.md#batch-simulation). If your CLI version (`aomi --version`) is older than v0.1.30, the rendering may differ slightly — re-run with `--verbose` to compare.
 
 | Example | Source capture | Date |
 |---|---|---|
 | 1. Uniswap V3 swap | `redteam-uniswap-happy-1.log` | 2026-04-29 |
 | 2. Aave supply | `redteam-aave-happy.log` | 2026-04-28 |
-| 3. EtherFi deposit | `redteam-etherfi-happy-1.log` | 2026-04-28 |
+| 3. Lido stake | `~/.aomi/sessions/current.json` (real CLI capture, not redteam) | 2026-04-07 |
 | 4. CCTP bridge | `redteam-cctp-happy3.log` | 2026-04-25 |
 | 5. Base native bridge | `redteam-base_native-happy.log` | 2026-04-28 |
 
-If you see a divergence between this doc and current bot behavior, the capture date tells you how recent the source is — re-run a happy-path test on the affected protocol before assuming this doc is wrong.
+The example-3 source row is the only one taken from a live CLI session rather than a backend redteam log — useful as a sanity check that the CLI rendering documented in the "What the user sees" blocks matches what real users observe. If you see a divergence between this doc and current bot behavior, the capture date tells you how recent the source is — re-run a happy-path test on the affected protocol before assuming this doc is wrong.
