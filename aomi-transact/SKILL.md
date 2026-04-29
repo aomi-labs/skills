@@ -273,16 +273,16 @@ A few signing rules that always apply:
 
 ### Session And Storage Notes
 
-- Active session, app, model, chain, pending txs, and signed txs are stored locally under `AOMI_STATE_DIR` or `~/.aomi`.
-- Session files live under `~/.aomi/sessions/` by default and get local IDs like `session-1`.
-- Useful commands:
+A session is split across two stores: the **backend** holds the conversation transcript and tool calls; the **local disk** (`$AOMI_STATE_DIR` or `~/.aomi/`) holds the lookup keys, pending/signed tx state, and secret handle names. `aomi tx list` reads local; `aomi session log` reads backend.
 
 ```bash
-aomi session list
-aomi session resume <id>
-aomi session delete <id>
-aomi session close
+aomi session list             # local sessions with topic + pending count
+aomi session resume <id>      # set active pointer to an existing session
+aomi session delete <id>      # remove a local session (check no pending txs first)
+aomi session close            # clear the active pointer; next chat starts fresh
 ```
+
+For the full layout (`~/.aomi/sessions/session-N.json`, `active-session.txt`, etc.), the local-vs-backend split, lifecycle rules for `--new-session` vs `resume`, and cleanup hygiene, read [references/session.md](references/session.md).
 
 ## Reference: Commands
 
@@ -430,12 +430,7 @@ The aomi CLI also resolves credentials on its own from the user's environment. T
 | `AOMI_STATE_DIR`  | `~/.aomi` | Root directory for local session state |
 | `AOMI_CONFIG_DIR` | `~/.aomi` | Root directory for persistent config   |
 
-Storage layout by default:
-
-- `~/.aomi/sessions/` stores per-session JSON files.
-- `~/.aomi/active-session.txt` stores the active local session pointer.
-
-AA configuration is supplied per-invocation via flags or environment variables (no persistent `aa.json` file).
+For the full file layout (`sessions/session-N.json`, `active-session.txt`, the local-vs-backend split, cleanup hygiene), read [references/session.md](references/session.md). AA config is supplied per-invocation; there is no persistent `aa.json` file the skill writes.
 
 ### Important Config Rules
 
