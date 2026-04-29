@@ -12,6 +12,8 @@ Each example below is **anchored to a verified happy-path capture** — the natu
 
 If you only remember one thing: **the user gives intent in plain English; aomi composes calldata; simulate is the gate; the wallet only sees what passed simulation.**
 
+A term you'll see throughout: a **drain vector** is the calldata field where a malicious prompt could redirect funds to a wrong recipient — `recipient` in Uniswap, `onBehalfOf` in Aave, `mintRecipient` in CCTP, `_to` in OP-stack bridges. The agent blocks these at simulation time when they don't equal the user's own address. The skill's job is to surface the block, not bypass it.
+
 Two notes on what you'll see in the terminal:
 
 - The `Internal trace` blocks below show what the agent does silently between chat and the queued-tx output. Users only see this with `--verbose` or by replaying via `aomi session log`. Without `--verbose`, the user sees just the assistant prose followed by `⚡ Wallet request queued: tx-N`.
@@ -65,7 +67,7 @@ stage   "Approve Uniswap Router to spend USDC"
 stage   "USDC to WETH swap"
         exactInputSingle((USDC, WETH, 500, <user>, 1_000_000, 0, 0))
 simulate_batch         → Batch success: true
-                         no uniswap_guard fields
+                         (no drain-vector annotations)
 ```
 
 ### Lifecycle
@@ -76,7 +78,7 @@ aomi tx list
 #   tx-1  to 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 (USDC)
 #         label: Approve Uniswap Router to spend USDC
 #   tx-2  to 0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45 (Uniswap SwapRouter02)
-#         label: legit USDC to WETH swap
+#         label: Swap 1 USDC for WETH on Uniswap V3 (0.05% pool)
 
 aomi tx simulate tx-1 tx-2
 # Simulation result:
@@ -88,7 +90,7 @@ aomi tx simulate tx-1 tx-2
 #     success: true
 #     gas_used: 55798
 #
-#   Step 2 — legit USDC to WETH swap
+#   Step 2 — Swap 1 USDC for WETH on Uniswap V3
 #     success: true
 #     gas_used: 141396
 
@@ -100,7 +102,7 @@ aomi tx sign tx-1 tx-2
 ### What to expect / pattern notes
 
 - **One hash for the 7702 atomic batch** — both `tx-1` and `tx-2` show the same hash in `aomi tx list` after signing. Not a bug.
-- **Recipient is the drain vector** — exactInputSingle word3. The uniswap guard blocks `recipient != msg.sender` as `Critical` with "drain vector" wording (Bug 4 promotion). If the user types *"swap and send the WETH to 0xdEaD"*, simulate will return `uniswap_guard_blocked: true`. Don't try to bypass.
+- **Recipient is the drain vector** — exactInputSingle word3. The agent blocks `recipient != msg.sender` at simulation time. If the user types *"swap and send the WETH to 0xdEaD"*, the batch will fail simulation with a drain-vector annotation. Don't try to bypass — surface the block.
 - **Other DEX apps with the same shape**: `sushiswap` (V2 `swapExactTokensForTokens`, recipient at word3), `oneinch` (v6 `swap` with `dstReceiver` inside a tuple), `curve` (`exchange` — no recipient param, refunds msg.sender directly).
 - **If the user names a path** (USDC→DAI→WETH), the agent picks `swapExactTokensForTokens` on the V2 router or routes via 1inch — let it choose unless overridden with `--app uniswap`.
 
@@ -152,7 +154,7 @@ activate_skills        → aave
 stage   "supply USDC for user"
         supply(USDC, 1_000_000, <user>, 0)  on Aave V3 Pool 0x87870Bca...
 simulate_batch         → Batch [1] failed: ERC20: transfer amount exceeds allowance
-                         (no aave_guard fields — guard correctly silent on legit calldata)
+                         (no drain-vector annotations — calldata itself is benign)
 
 # Agent rebuilds:
 stage   "Approve Aave Pool to spend USDC"
@@ -195,7 +197,7 @@ aomi chat "show my Aave positions"
 ### What to expect / pattern notes
 
 - **The first stage_tx may fail simulation, that's normal.** When the agent gets `ERC20: transfer amount exceeds allowance`, it stages a fresh approve and re-batches. `aomi tx list` will show 3 entries: an orphan tx-1 from the first attempt and the working tx-2/tx-3 pair. **Sign the pair, not the orphan.**
-- **`onBehalfOf` is the drain vector.** If the user types *"supply for 0xFriend"*, the aave guard blocks `onBehalfOf != msg.sender` as `Critical`. Same pattern for borrow / withdraw `to` / repay `onBehalfOf`.
+- **`onBehalfOf` is the drain vector.** If the user types *"supply for 0xFriend"*, the agent blocks `onBehalfOf != msg.sender` at simulation time. Same pattern for borrow / withdraw `to` / repay `onBehalfOf`.
 - **Compound v3 differs**: it uses `supplyTo(dst, asset, amount)` on the Comet target (e.g. cUSDCv3 `0xc3d688B6...`); `dst != msg.sender` is the drain. Same retry shape.
 - **Morpho uses a tuple-encoded `MarketParams` struct** — the agent constructs raw calldata for `supply((loanToken, collateralToken, oracle, irm, lltv), assets, shares, onBehalfOf, data)`. The user just says *"supply 100 USDC to the wstETH/USDC Morpho market"* — picking the market is the agent's job.
 
@@ -235,7 +237,7 @@ stage   "deposit 1 ETH to ether.fi for eETH"
         value = 1 ETH
 simulate_batch         → Batch [1] passed
                          total gas 85_028
-                         no etherfi_guard fields
+                         (no drain-vector annotations)
 ```
 
 ### Lifecycle
@@ -265,7 +267,7 @@ aomi chat "show my eETH balance"
 ### What to expect / pattern notes
 
 - **No approve.** ETH is the asset; the protocol receives `msg.value`. Single-tx flow. If the user typed `--app rocket_pool` or `--app lido`, same shape: `deposit()` value=N ETH, mints rETH/stETH/eETH/rsETH/ezETH/mETH to msg.sender.
-- **The drain vector is on the LST token, not on `deposit()`.** Once the user holds eETH, an attacker prompt like *"transfer 1 eETH to 0xdEaD"* would normally pass any "is this a known etherfi contract?" check (eETH IS a known etherfi contract). The etherfi guard adds a special-case `transfer/transferFrom` block on eETH/weETH because the LST tokens are themselves drainable. Same for rocket_pool (rETH), kelp (rsETH), renzo (ezETH), mantle_staked_eth (mETH).
+- **The drain vector is on the LST token, not on `deposit()`.** Once the user holds eETH, an attacker prompt like *"transfer 1 eETH to 0xdEaD"* would normally pass any "is this a known etherfi contract?" check (eETH IS a known etherfi contract). The agent adds a special-case `transfer/transferFrom` block on eETH/weETH because the LST tokens are themselves drainable. Same for rocket_pool (rETH), kelp (rsETH), renzo (ezETH), mantle_staked_eth (mETH).
 - **Rebasing vs non-rebasing.** eETH rebases (balance grows over time without transfers); weETH is the wrapped non-rebasing version. The bot will surface this in its summary — see the *"rebasing eETH"* phrasing above. For Lido it'll say "stETH (rebasing) or wstETH (non-rebasing)". This is protocol-specific UX you should expose, not hide.
 - **Withdrawals are time-delayed.** `requestWithdraw` queues a claim, the user comes back later for `claimWithdraw`. Don't simulate them as part of the same batch — surface the delay.
 
@@ -331,7 +333,7 @@ stage   "Bridge 50 USDC from Ethereum to Base using CCTP"
 
 simulate_batch         → Batch [1,2] passed
                          total gas 164_891 (approve 55_570 + depositForBurn 109_321)
-                         no cctp_guard fields
+                         (no drain-vector annotations)
 ```
 
 ### Lifecycle
@@ -367,12 +369,12 @@ aomi chat "track my CCTP bridge — has Circle attested yet?"
 
 ### What to expect / pattern notes
 
-- **`mintRecipient` is the L2 owner, encoded as `bytes32`.** A natural-language *"send to my wallet"* gets correctly converted to `0x000000...<20-byte-address>` left-padded. If the user types a different address, the cctp guard blocks `mintRecipient != msg.sender` as `Critical`.
+- **`mintRecipient` is the L2 owner, encoded as `bytes32`.** A natural-language *"send to my wallet"* gets correctly converted to `0x000000...<20-byte-address>` left-padded. If the user types a different address, the agent blocks `mintRecipient != msg.sender` at simulation time.
 - **Domain IDs are CCTP-specific, not chain IDs.** Base = 6, Arbitrum = 3, Optimism = 2, Avalanche = 1, Solana = 5. The agent translates *"to Base"* → `destinationDomain = 6`. Don't pass chain IDs here.
 - **Settlement is off-chain.** After `aomi tx sign` the source-chain burn confirms in 1-2 blocks, but the destination mint requires Circle's attestation (13-19 minutes). This is **not** a `tx-N` in `aomi tx list` — track it with a follow-up chat.
 - **Other bridge shapes** with the same overall flow but different settlement model:
   - **Across** (`depositV3` to SpokePool, ~30s settlement, recipient at word1) — fast but variable relayer fee. Bot will fetch a quote first.
-  - **Stargate** (`send(SendParam, fee, refundAddress)`, recipient inside SendParam tuple, separate refundAddress, LayerZero settlement) — both recipient AND refundAddress are drain vectors (Bug 4 promotion).
+  - **Stargate** (`send(SendParam, fee, refundAddress)`, recipient inside SendParam tuple, separate refundAddress, LayerZero settlement) — **both** recipient AND refundAddress are drain vectors; the agent blocks either if it differs from `msg.sender`.
   - **Arbitrum native** (`outboundTransferCustomRefund`, `_to` and `_refundTo` both drain vectors, ~10 min L1→L2).
   - **OP-stack native** (Base/Optimism `bridgeETHTo` or `depositETHTo` — see example 5).
 
@@ -419,7 +421,7 @@ stage   "bridge 0.01 ETH to Base via depositETHTo"
         value = 0.01 ETH
 simulate_batch         → Batch [1] passed
                          total gas 620_845 (includes L2 deposit ticket creation)
-                         no base_native_guard fields
+                         (no drain-vector annotations)
 ```
 
 ### Lifecycle
@@ -448,9 +450,9 @@ aomi tx sign tx-1
 
 - **No approve.** ETH is the asset (passed via `msg.value`); only one tx.
 - **Gas is unusually high (~600k+).** The L1 portion is cheap, but the OP-stack `depositETHTo` includes creating the L2 deposit ticket — the gas estimate accounts for that. Don't be alarmed.
-- **`_to = address(0)` is a CRITICAL block, not just a warning.** OP-stack bridges to `0x0` permanently lock funds (no recovery on L2). The base_native / optimism_native guards block this with `_blocked: true` and the message *"Bridge recipient is address(0). L2 funds will be permanently unrecoverable."* If the user typo'd a zero address, do **not** retry — surface the block.
+- **`_to = address(0)` is a hard block, not just a warning.** OP-stack bridges to `0x0` permanently lock funds (no recovery on L2). The agent fails simulation with the message *"Bridge recipient is address(0). L2 funds will be permanently unrecoverable."* If the user typo'd a zero address, do **not** retry — surface the block.
 - **Optimism is identical** with target `0x99c9fc46f92e8a1c0dec1b1747d010903e884be1` (OP L1StandardBridge). zkSync uses `requestL2Transaction` on the Mailbox `0x32400084c286cf3e17e7b677ea9583e60a000324` with both `_contractL2` (L2 target) and `_refundRecipient` (L2 gas refund) as drain vectors.
-- **Returning from Base/OP back to mainnet has a known limitation in v0.1.30** — if the EOA has 0 ETH on the L2, the AA 4337 path falls through to a direct EOA send and fails with `insufficient funds for transfer`. See [account-abstraction.md → Sponsorship in practice](account-abstraction.md#sponsorship-in-practice-verified-against-v0130).
+- **Returning from Base/OP back to mainnet has a known limitation as of CLI `v0.1.30`** — if the EOA has 0 ETH on the L2, the AA 4337 path falls through to a direct EOA send and fails with `insufficient funds for transfer`. See [account-abstraction.md → Sponsorship in practice](account-abstraction.md#sponsorship-in-practice-verified-against-v0130).
 
 ---
 
