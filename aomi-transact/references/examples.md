@@ -14,7 +14,7 @@ The CLI lifecycle is consistent across every example:
 
 If you only remember one thing: **the user gives intent in plain English; aomi composes calldata; simulate is the gate; the wallet only sees what passed simulation.**
 
-A term you'll see throughout: a **drain vector** is the calldata field where a malicious prompt could redirect funds to a wrong recipient — `recipient` in Uniswap, `onBehalfOf` in Aave, `mintRecipient` in CCTP, `_to` in OP-stack bridges. The agent blocks these at simulation time when they don't equal the user's own address. The skill's job is to surface the block, not bypass it.
+A term you'll see throughout: a **drain vector** is the calldata field where a malicious prompt could redirect funds to a wrong recipient — `recipient` in Uniswap, `onBehalfOf` in Aave, `mintRecipient` in CCTP, `_to` in OP-stack bridges. The agent blocks these at simulation time when they don't equal the user's own address. The skill's job is to surface the block, not bypass it. Full per-protocol table in [drain-vectors.md](drain-vectors.md).
 
 Two notes on what you'll see in the terminal:
 

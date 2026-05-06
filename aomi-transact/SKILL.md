@@ -29,6 +29,20 @@ The skill targets `@aomi-labs/client` v0.1.30 or newer. Two equivalent ways to i
 
 Throughout this skill, commands are written as `aomi <command>` for brevity. If the user does not have a global install (e.g. `which aomi` returns nothing), substitute `npx @aomi-labs/client` everywhere `aomi` appears. To detect which path applies, run `aomi --version 2>/dev/null || npx @aomi-labs/client --version` once at the start of a session and remember the result for the rest of the turn.
 
+## What You Probably Got Wrong
+
+LLMs have stale training data. These are the most common mistakes the skill is shaped to prevent. Each correction is anchored to live v0.1.30 behavior or to a section of the references that explains it in depth.
+
+- **"Aomi is a wallet"** → Aomi is an agent + CLI. It composes calldata and queues a wallet request; the user signs. The CLI does not custody funds, never signs without an explicit `aomi tx sign`, and never broadcasts on its own initiative.
+- **"`aomi chat` always queues a transaction"** → Often the first response is a quote, route, or clarifying question. The agent only stages calldata when it has enough context. Always run `aomi tx list` after chat to see what's actually pending — never assume.
+- **"Approval and swap are one transaction"** → Most DeFi flows are two-step: `approve` then `supply`/`swap`/`deposit`. Aomi stages them as a batch and `aomi tx simulate tx-1 tx-2` runs them sequentially on a fork so the second step sees the first's state changes. Sign them as a batch, not individually.
+- **"Use `--rpc-url` to switch chains"** → `--chain` controls the wallet/session context (which chain the agent thinks you're on); `--rpc-url` controls where `aomi tx sign` estimates and submits. They are independent. For a cross-chain flow, the queued tx has its own `chain` field — pass `--rpc-url` matching *that* chain when signing.
+- **"AA always sponsors gas on L2s"** → The zero-config proxy path on Base/Arbitrum/Optimism does **not** reliably sponsor in v0.1.30. If the EOA has 0 native gas on the destination chain, signing fails with `insufficient funds for transfer`. Either fund the EOA with a tiny amount of native gas, or configure a real BYOK Alchemy/Pimlico provider with a sponsorship policy. Do not retry with `--eoa` — that path also needs gas. See [references/account-abstraction.md → Sponsorship in practice](references/account-abstraction.md#sponsorship-in-practice-verified-against-v0130).
+- **"`--new-session` should always be passed"** → Pass it on the *first* command of a new task. Reusing it mid-task starts a fresh conversation and the agent loses context (e.g. the quote it just gave you). For follow-up confirmations like *"yes, proceed"*, omit `--new-session`.
+- **"Failed simulation txs disappear"** → They don't. `aomi tx list` shows orphaned `tx-N` from earlier failed attempts alongside the current passing batch. Check the `batch_status` line and only sign txs marked `Batch [...] passed`. See [references/troubleshooting.md → Quirks](references/troubleshooting.md#quirks-observed-in-v0130).
+- **"7702 and 4337 are interchangeable"** → They're not. 7702 is a native EIP-7702 type-4 transaction with EOA delegation; the EOA pays gas. 4337 is a bundler+paymaster UserOperation; the paymaster can sponsor. Default chain modes: 7702 on Ethereum, 4337 on Polygon/Arbitrum/Base/Optimism. Use 4337 if you need gasless execution.
+- **"Drain vectors are aomi-specific"** → They're protocol-specific calldata fields where a malicious prompt could redirect funds (`recipient` in Uniswap, `onBehalfOf` in Aave, `mintRecipient` in CCTP, `_to` in OP-stack bridges). The agent blocks these at simulation time when they don't equal `msg.sender`. The skill's job is to surface the block, not bypass it. Full table in [references/drain-vectors.md](references/drain-vectors.md).
+
 ## Use This Skill When
 
 - The user wants to chat with the Aomi agent from the terminal.
@@ -109,6 +123,8 @@ If the user is asking for a read-only result, that may be enough. If they want t
 6. Verify with `aomi tx list`, `aomi session log`, or `aomi session status`.
 
 The CLI output is the source of truth. If you do not see `Wallet request queued: tx-N`, there is nothing to sign yet.
+
+For users who want to wrap this flow in scripts or CI, [templates/aomi-workflow.sh](templates/aomi-workflow.sh) provides a reusable bash function library covering chat → list → simulate → sign → verify, plus session resume/recovery and cross-chain RPC overrides.
 
 ## Workflow Details
 
