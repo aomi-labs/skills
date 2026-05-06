@@ -1,0 +1,28 @@
+
+Audit Results: aomi-transact
+
+  ! prompt: 4 finding(s) [7 file(s)]
+  ✓ secrets (trufflehog): passed [9 file(s)]
+  ✓ shellcheck: passed [1 file(s)]
+  ✓ semgrep: passed
+
+                                    Findings                                    
+┏━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┓
+┃ Severity ┃ Scanner ┃ Rule             ┃ Message           ┃ Location         ┃
+┡━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━┩
+│ WARN     │ prompt  │ prompt/(read|ac… │ Attempts to       │ aomi-transact/r… │
+│          │         │                  │ access sensitive  │                  │
+│          │         │                  │ data              │                  │
+│ WARN     │ prompt  │ prompt/(delete|… │ Potentially       │ aomi-transact/r… │
+│          │         │                  │ destructive file  │                  │
+│          │         │                  │ operation pattern │                  │
+│ WARN     │ prompt  │ prompt/(delete|… │ Potentially       │ aomi-transact/r… │
+│          │         │                  │ destructive file  │                  │
+│          │         │                  │ operation pattern │                  │
+│ WARN     │ prompt  │ prompt/(delete|… │ Potentially       │ aomi-transact/r… │
+│          │         │                  │ destructive file  │                  │
+│          │         │                  │ operation pattern │                  │
+└──────────┴─────────┴──────────────────┴───────────────────┴──────────────────┘
+
+✓ PASSED - No errors found
+

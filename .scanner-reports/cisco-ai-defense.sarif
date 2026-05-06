@@ -1,0 +1,23 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "skill-scanner",
+          "version": "1.0.0",
+          "informationUri": "https://github.com/cisco-ai-defense/skill-scanner",
+          "rules": []
+        }
+      },
+      "results": [],
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "endTimeUtc": "2026-05-06T11:43:19Z"
+        }
+      ]
+    }
+  ]
+}

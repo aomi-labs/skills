@@ -1,0 +1,4 @@
+Snyk Agent Scan v0.5.1
+
+To use Agent Scan, set the SNYK_TOKEN environment variable. To get a token, go 
+to https://app.snyk.io/account (API Token -> KEY -> click to show).

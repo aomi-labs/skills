@@ -1,0 +1,94 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "skill-audit",
+          "version": "0.1.0",
+          "informationUri": "https://github.com/markpors/skill-audit",
+          "rules": []
+        }
+      },
+      "results": [
+        {
+          "ruleId": "prompt/(read|access|get|ext",
+          "message": {
+            "text": "Attempts to access sensitive data"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "aomi-transact/references/examples.md"
+                },
+                "region": {
+                  "startLine": 362
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "prompt/(delete|remove|rm)\\s",
+          "message": {
+            "text": "Potentially destructive file operation pattern"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "aomi-transact/references/session.md"
+                },
+                "region": {
+                  "startLine": 89
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "prompt/(delete|remove|rm)\\s",
+          "message": {
+            "text": "Potentially destructive file operation pattern"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "aomi-transact/references/apps.md"
+                },
+                "region": {
+                  "startLine": 97
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "prompt/(delete|remove|rm)\\s",
+          "message": {
+            "text": "Potentially destructive file operation pattern"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "aomi-transact/references/apps.md"
+                },
+                "region": {
+                  "startLine": 179
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

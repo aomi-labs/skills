@@ -10,7 +10,7 @@
 #   4. Use the functions below. Each handles a complete flow with safety checks.
 #
 # Dependencies:
-#   - @aomi-labs/client v0.1.30+ (`aomi --version` or `npx @aomi-labs/client --version`)
+#   - @aomi-labs/client v0.1.30+ (`aomi --version` or `npx @aomi-labs/client@0.1.30 --version`)
 #   - jq (for tx-list parsing)
 #
 # Conventions:
@@ -27,17 +27,17 @@ set -euo pipefail
 
 : "${USER_ADDR:?USER_ADDR must be set to your wallet address (0x...)}"
 : "${AOMI_CHAIN_ID:=1}"             # Default to Ethereum mainnet
-: "${AOMI_CMD:=aomi}"               # Override to "npx @aomi-labs/client" if not installed globally
+: "${AOMI_CMD:=aomi}"               # Override to "npx @aomi-labs/client@0.1.30" if not installed globally
 
 # ============================================================================
-# Detection: aomi vs npx @aomi-labs/client
+# Detection: aomi vs npx @aomi-labs/client@0.1.30
 # ============================================================================
 
 aomi_detect() {
     if command -v aomi >/dev/null 2>&1; then
         AOMI_CMD="aomi"
     else
-        AOMI_CMD="npx @aomi-labs/client"
+        AOMI_CMD="npx @aomi-labs/client@0.1.30"
         echo "[aomi-workflow] aomi not found on PATH — using: $AOMI_CMD" >&2
     fi
     echo "[aomi-workflow] using: $AOMI_CMD" >&2

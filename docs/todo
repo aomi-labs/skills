@@ -1,0 +1,157 @@
+# aomi-transact release checklist
+
+Two phases. Phase 2 is gated on Phase 1 task #7 (clean scanner reports captured in repo).
+
+---
+
+## Phase 1 — Pass all skill scanners
+
+### #1 — Add OWASP AST03 permission manifest to SKILL.md frontmatter
+Declare a permission manifest in SKILL.md frontmatter: files (read/write paths), network (allowlisted domains, not boolean), shell (which commands), tools (which MCPs/APIs). This is the foundational AST03 control — most scanners flag skills without one.
+- Spec: https://owasp.org/www-project-agentic-skills-top-10/ast03
+- Required before any scanner pass will be clean.
+
+### #2 — Run Snyk agent-scan and resolve W-code findings
+```
+uvx snyk-agent-scan@latest --skills ./SKILL.md
+```
+- Resolve all W-code findings.
+- Verify exact W-code mappings against https://github.com/snyk/agent-scan/blob/main/docs/issue-codes.md before fixing — search summaries gave conflicting answers about W007/W008.
+- Snyk powers agentskills.io's "non-suspicious" filter, so passing this is table stakes for several distribution channels.
+
+### #3 — Run Cisco AI Defense skill-scanner
+- Repo: https://github.com/cisco-ai-defense/skill-scanner
+- Hybrid YARA + LLM-judge + behavioral dataflow.
+- Supports Codex/Cursor/Claude formats so it catches cross-host issues that single-target scanners miss.
+- Resolve findings.
+
+### #4 — Wire pors/skill-audit into CI as GitHub Action
+- Repo: https://github.com/pors/skill-audit
+- Regex/static scanner with SARIF output, designed for CI.
+- Add as a GitHub Action that runs on every PR.
+- SARIF output integrates with GitHub's security tab.
+- Catches regressions on future edits.
+
+### #5 — Walk through OWASP AST01–AST10 checklist manually
+- Spec: https://owasp.org/www-project-agentic-skills-top-10/
+- Critical controls for aomi-transact:
+  - **AST01** (Malicious Skills) — prove provenance, signed releases.
+  - **AST03** (Over-Privileged) — done in #1.
+  - **AST10** (Cross-Platform Reuse) — verify the same bundle is safe under Codex AND Claude AND OpenClaw.
+- Document each control's status in `SECURITY.md` so reviewers can audit.
+
+### #6 — Run NMitchem/SkillScan sandboxed runtime test
+- Repo: https://github.com/NMitchem/SkillScan
+- Three-stage scanner: static + LLM behavioral + Docker sandbox runtime.
+- Catches behavioral issues that static scanners miss.
+- Optional for most skills, recommended for transaction-signing skills since runtime behavior is the actual attack surface.
+
+### #7 — Capture clean scanner reports as audit artifacts in repo (GATE)
+- After all fixes, re-run Snyk + Cisco + pors and save outputs to `.scanner-reports/` in the repo.
+- Link from README.
+- Lets reviewers audit the result without re-running.
+- **Gating criterion for moving to Phase 2** — if any scanner is dirty, do not advance.
+
+---
+
+## Phase 2 — Register in all distribution channels (blocked on #7)
+
+### #8 — Add gh skill provenance metadata to SKILL.md frontmatter
+- Spec: https://github.blog/changelog/2026-04-16-manage-agent-skills-with-github-cli/
+- `gh skill` writes repository / ref / tree SHA into frontmatter on install.
+- Pre-populate the schema fields so the metadata structure is right.
+- Without this, GitHub CLI users lose origin tracking when the skill travels.
+
+### #9 — Verify Codex install path with agents/openai.yaml end-to-end
+- Drop the bundle into a Codex skills directory.
+- Confirm SKILL.md frontmatter is read for triggers.
+- Confirm `agents/openai.yaml` is read for UI metadata, invocation policy, and `tools_required`.
+- Test that invocation patterns ("sign tx", "check balance") fire correctly.
+- Required gate before submitting to Codex-targeting registries.
+
+### Tier 1 — real-reach channels
+
+### #10 — Submit to anthropics/claude-plugins-official
+- Repo: https://github.com/anthropics/claude-plugins-official
+- Highest-trust channel. Open PR with `marketplace.json` entry.
+- End-user install becomes:
+  ```
+  /plugin marketplace add anthropics/claude-code
+  /plugin install aomi-transact
+  ```
+- Acceptance is curated and not guaranteed; budget review time.
+
+### #11 — Self-host marketplace.json at repo root as fallback
+- Expose `marketplace.json` at the `aomi-labs/skills` repo root.
+- Lets users run:
+  ```
+  /plugin marketplace add aomi-labs/skills
+  /plugin install aomi-transact
+  ```
+- Most important channel after the official one — it's the canonical install path that doesn't depend on Anthropic's curation.
+
+### #17 — PR aomi-transact into antigravity-awesome-skills catalog
+- Repo: https://github.com/sickn33/antigravity-awesome-skills
+- Multi-host installer:
+  ```
+  npx antigravity-awesome-skills --claude
+  npx antigravity-awesome-skills --codex
+  npx antigravity-awesome-skills --cursor
+  npx antigravity-awesome-skills --gemini
+  npx antigravity-awesome-skills --antigravity
+  ```
+- One PR adds aomi-transact to all five host installers at once. High-leverage submission.
+
+### Tier 2 — catalog visibility
+
+### #12 — Submit listing to claudemarketplaces.com
+- https://claudemarketplaces.com — discovery/catalog site for Claude Code plugins.
+- Find the submission flow (likely a form or GitHub issue).
+
+### #13 — Submit listing to skillsmp.com
+- https://skillsmp.com — multi-host marketplace (Claude / Codex / ChatGPT).
+- One of the few cross-host registries.
+
+### #14 — Submit listing to agensi.io
+- https://agensi.io — registry with install guides and curated catalog.
+- Backed by Snyk Skill Inspector for the "non-suspicious" filter.
+- Submission requires clean Snyk agent-scan output (handled in Phase 1).
+- Most quality-gated registry.
+
+### #15 — Submit listing to lobehub.com/skills
+- https://lobehub.com/skills — large mirror/registry.
+- Submit and link back to canonical GitHub repo so users get authoritative source.
+
+### #16 — Submit to cryptoskill.org via GitHub issue template
+- Crypto-specific registry, directly relevant for a tx-signing skill.
+- Submit at: https://github.com/jiayaoqijia/cryptoskill/issues/new?template=skill_submission.md
+- Category: `ai-crypto` (primary). Cross-list under `wallets` / `trading`.
+- Single-maintainer registry — treat as visibility play, not trust signal.
+
+### #18 — PR aomi-transact into ccpi catalog
+- Repo: https://github.com/jeremylongshore/claude-code-plugins-plus-skills
+- Ships its own `ccpi` package manager (npm-style).
+- Open PR to add aomi-transact.
+
+### Tier 3 — skip unless evidence demands
+
+### #19 — Optional: publish to clawhub for OpenClaw ecosystem
+- https://clawhub.ai — OpenClaw skill registry (third-party, separate ecosystem from Claude).
+  ```
+  clawhub login
+  clawhub publish
+  ```
+- Low priority: small audience and adds a third-party trust hop.
+- Skip unless you have evidence of OpenClaw users specifically.
+
+### Final verification
+
+### #20 — Verify end-to-end install on a fresh machine across 3+ channels
+- On a clean machine:
+  - (a) `/plugin install` via Claude Code
+  - (b) `gh skill install`
+  - (c) one community installer (`npx antigravity-awesome-skills` or `ccpi`)
+- Confirm SKILL.md frontmatter triggers correctly on each host.
+- Confirm a representative flow (e.g. "check balance") works end-to-end.
+- If any channel is broken, fix before announcing.
+- Blocked on #7, #10, #11, #17.

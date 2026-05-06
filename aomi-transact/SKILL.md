@@ -7,13 +7,62 @@ description: >
   guess, echo, or log credential values on the skill's own initiative;
   credential values may pass to the CLI only when the user has explicitly
   supplied them for a specific setup step they asked for.
-compatibility: "Requires @aomi-labs/client v0.1.30 or newer. Two invocation paths: (1) install globally — `npm install -g @aomi-labs/client` — and run as `aomi <command>`; (2) run on demand without installing — `npx @aomi-labs/client <command>`. Both accept the same flags and env vars; run `aomi --help` (or `npx @aomi-labs/client --help`) for the full list."
+compatibility: "Requires @aomi-labs/client v0.1.30 or newer. Two invocation paths: (1) install globally — `npm install -g @aomi-labs/client` — and run as `aomi <command>`; (2) run on demand without installing — `npx @aomi-labs/client@0.1.30 <command>`. Both accept the same flags and env vars; run `aomi --help` (or `npx @aomi-labs/client@0.1.30 --help`) for the full list."
 
 license: MIT
-allowed-tools: Bash(aomi:*), Bash(npx:*)
+# Claude Code allowed-tools. Broad Bash + Grep covers the diagnostic
+# commands documented in references/ (cast code verification, jq session
+# inspection, find cleanup) without enumerating every variant. Operational
+# scope is locked down by OWASP permissions.shell below to `aomi` and
+# `npx @aomi-labs/client@0.1.30` only — defense in depth.
+allowed-tools: Bash, Grep
 metadata:
   author: aomi-labs
   version: "0.10"
+
+# OWASP AST03 (Over-Privileged Skills) permission manifest.
+# Spec: https://owasp.org/www-project-agentic-skills-top-10/ast03
+# Universal Skill Format v1.0 (March 2026).
+permissions:
+  files:
+    # Read-only: session cache, app registry, chain config, secret handle names.
+    # $AOMI_STATE_DIR overrides ~/.aomi at runtime (envvar interpolation is
+    # not in the spec grammar, so the default path is declared explicitly).
+    read:
+      - ~/.aomi/
+    # Skill-driven writes are scoped to the CLI's own state dir.
+    # The CLI itself writes session JSON; the skill never writes files directly.
+    write:
+      - ~/.aomi/
+    # Identity files must never be modified (AST03 mitigation #3).
+    deny_write:
+      - SOUL.md
+      - MEMORY.md
+      - AGENTS.md
+
+  network:
+    # Domain allowlist, not a boolean (AST03 mitigation #5).
+    # User-configured RPC endpoints are passed via --rpc-url and resolved by
+    # the CLI; operators MUST review them before allowing the skill to sign.
+    allow:
+      - api.aomi.dev
+    deny: "*"
+
+  # Shell access restricted to two argv prefixes (least-privilege extension
+  # of the spec's boolean form, consistent with AST03 intent).
+  shell:
+    - aomi
+    - npx @aomi-labs/client@0.1.30
+
+  # No MCP/tool surface beyond the CLI itself.
+  tools: []
+
+# Risk tier per spec: L0 safe, L1 low, L2 elevated, L3 destructive.
+# L2 = the skill can sign and broadcast on-chain transactions.
+risk_tier: L2
+
+requires:
+  binaries: [aomi, npx]
 ---
 
 # Aomi Transact
@@ -25,9 +74,9 @@ Use the CLI as an agent operating procedure, not as a long-running shell. Each `
 The skill targets `@aomi-labs/client` v0.1.30 or newer. Two equivalent ways to invoke it:
 
 - **Globally installed** (recommended for repeated use): `npm install -g @aomi-labs/client`, then run `aomi <command>`.
-- **On demand via npx** (no install): `npx @aomi-labs/client <command>`. Same flags, same behavior, just longer to type.
+- **On demand via npx** (no install): `npx @aomi-labs/client@0.1.30 <command>`. Same flags, same behavior, just longer to type.
 
-Throughout this skill, commands are written as `aomi <command>` for brevity. If the user does not have a global install (e.g. `which aomi` returns nothing), substitute `npx @aomi-labs/client` everywhere `aomi` appears. To detect which path applies, run `aomi --version 2>/dev/null || npx @aomi-labs/client --version` once at the start of a session and remember the result for the rest of the turn.
+Throughout this skill, commands are written as `aomi <command>` for brevity. If the user does not have a global install (e.g. `which aomi` returns nothing), substitute `npx @aomi-labs/client@0.1.30` everywhere `aomi` appears. To detect which path applies, run `aomi --version 2>/dev/null || npx @aomi-labs/client@0.1.30 --version` once at the start of a session and remember the result for the rest of the turn.
 
 ## What You Probably Got Wrong
 
@@ -101,15 +150,15 @@ aomi secret list|clear|add
 
 ## Quick Start
 
-Run this once at the start of the session. If `aomi` is not on PATH, swap in `npx @aomi-labs/client` for every `aomi` below:
+Run this once at the start of the session. If `aomi` is not on PATH, swap in `npx @aomi-labs/client@0.1.30` for every `aomi` below:
 
 ```bash
-aomi --version 2>/dev/null || npx @aomi-labs/client --version
+aomi --version 2>/dev/null || npx @aomi-labs/client@0.1.30 --version
 aomi --prompt "hello" --new-session
 aomi session status 2>/dev/null || echo "no session"
 ```
 
-Expected: `aomi --version` prints `0.1.30` (or newer). If it prints something older, `npm install -g @aomi-labs/client@latest` (or `npx @aomi-labs/client@latest …` for one-shot use) before continuing.
+Expected: `aomi --version` prints `0.1.30` (or newer). If it prints something older, `npm install -g @aomi-labs/client@latest` (or `npx @aomi-labs/client@0.1.30 …` for one-shot use) before continuing.
 
 If the user is asking for a read-only result, that may be enough. If they want to build or sign a transaction, continue with the workflow below.
 

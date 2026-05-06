@@ -1,0 +1,89 @@
+name: skill-audit
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write   # SARIF upload
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install scanner backends
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+          pip install semgrep
+          curl -sSfL https://raw.githubusercontent.com/trufflesecurity/trufflehog/main/scripts/install.sh \
+            | sudo sh -s -- -b /usr/local/bin
+
+      - name: Install skill-audit (pors/skill-audit)
+        # pinned to main; consider swapping to a commit SHA for reproducibility
+        run: pip install "git+https://github.com/pors/skill-audit@main"
+
+      - name: Verify scanner tools
+        run: skill-audit check-tools
+
+      - name: Audit aomi-transact (SARIF, non-blocking)
+        run: |
+          skill-audit audit ./aomi-transact/ \
+            --format sarif -o results.sarif || true
+
+      - name: Upload SARIF to GitHub Security tab
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
+          category: skill-audit
+
+      - name: Fail on critical findings
+        # default exit semantics: 0 pass, 1 errors, 2 tool failure.
+        # do NOT add --strict; that would also fail on warnings.
+        run: skill-audit audit ./aomi-transact/
+
+  cisco-skill-scanner:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install cisco-ai-skill-scanner
+        run: pip install cisco-ai-skill-scanner
+
+      - name: Scan aomi-transact (offline analyzers only)
+        run: |
+          skill-scanner scan ./aomi-transact \
+            --use-behavioral --lenient \
+            --format markdown --detailed \
+            --output cisco-report.md
+          skill-scanner scan ./aomi-transact \
+            --use-behavioral --lenient \
+            --format sarif \
+            --output cisco-report.sarif
+
+      - name: Upload Cisco SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: cisco-report.sarif
+          category: cisco-ai-skill-scanner
+
+      - name: Upload markdown report as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cisco-skill-scanner-report
+          path: cisco-report.md

@@ -1,0 +1,18 @@
+{
+  "skill_name": "aomi-transact",
+  "skill_path": "/Users/cecilia/Code/aomi-skill/aomi-transact/SKILL.md",
+  "risk_score": 2.0,
+  "threshold": 6.0,
+  "passed": true,
+  "finding_count": 1,
+  "findings": [
+    {
+      "analyzer": "rules",
+      "severity": "HIGH",
+      "message": "MCP_001: MCP server launched via npx without version pinning allows supply-chain attacks",
+      "line": null,
+      "evidence": "npx @aomi-labs/clien",
+      "source": "static"
+    }
+  ]
+}

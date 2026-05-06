@@ -1,0 +1,11 @@
+
+ HIGH          MCP_001: MCP server launched via npx without version pinning allows supply-chain     
+               attacks                                                                              
+                            npx @aomi-labs/clien                                                    
+
+╭─ aomi-transact ─────╮
+│ Risk: 2.0/10 — PASS │
+│ 1 finding           │
+╰─────────────────────╯
+
+

@@ -31,8 +31,8 @@ Read this when a command fails unexpectedly or behaves differently than the work
 
 ## Invocation
 
-- If `aomi: command not found`, the user does not have the global install. Substitute `npx @aomi-labs/client` for `aomi` in every command and retry.
-- If `aomi --version` reports a version older than `0.1.30`, advise `npm install -g @aomi-labs/client@latest` (or use `npx @aomi-labs/client@latest …` for one-shot calls) before continuing — older versions may lack flags this skill assumes (`--aa`, `--aa-provider`, `--aa-mode`).
+- If `aomi: command not found`, the user does not have the global install. Substitute `npx @aomi-labs/client@0.1.30` for `aomi` in every command and retry.
+- If `aomi --version` reports a version older than `0.1.30`, advise `npm install -g @aomi-labs/client@latest` (or use `npx @aomi-labs/client@0.1.30 …` for one-shot calls) before continuing — older versions may lack flags this skill assumes (`--aa`, `--aa-provider`, `--aa-mode`).
 
 ## Quirks observed in v0.1.30
 
