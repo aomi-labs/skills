@@ -1,0 +1,29 @@
+{
+  "name": "aomi-skills",
+  "owner": {
+    "name": "Aomi Labs",
+    "url": "https://aomi.dev",
+    "email": "info@aomi.dev"
+  },
+  "metadata": {
+    "description": "Agent Skills for Aomi — open-source AI infrastructure for automating crypto. Drive the Aomi CLI from natural-language prompts (`aomi-transact`) and scaffold new Aomi apps from API specs (`aomi-build`).",
+    "homepage": "https://github.com/aomi-labs/skills",
+    "pluginRoot": "."
+  },
+  "plugins": [
+    {
+      "name": "aomi-build",
+      "source": "./aomi-build",
+      "description": "Build Aomi apps and plugins from API docs, OpenAPI/Swagger specs, SDK docs, runtime interfaces, and product requirements. Scaffolds Rust SDK crates with lib.rs, client.rs, and tool.rs plus tool schemas, preambles, and host-interop flows.",
+      "category": "Dev Tools",
+      "homepage": "https://github.com/aomi-labs/skills/tree/main/aomi-build"
+    },
+    {
+      "name": "aomi-transact",
+      "source": "./aomi-transact",
+      "description": "Drive the Aomi CLI from natural-language prompts: chat, simulate, and sign with account-abstraction-first execution. Wraps swaps, lending, bridges, staking, perps, and CEX read across 25+ apps on EVM mainnets and L2s.",
+      "category": "AI Agents",
+      "homepage": "https://github.com/aomi-labs/skills/tree/main/aomi-transact"
+    }
+  ]
+}

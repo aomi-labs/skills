@@ -19,6 +19,11 @@ allowed-tools: Bash, Grep
 metadata:
   author: aomi-labs
   version: "0.10"
+  # Provenance — author-declared upstream coordinates.
+  # `gh skill install` will add/overwrite `ref`, `tree_sha`, `installed_via`,
+  # and `installed_at` at install time. Do not pre-populate those fields.
+  repository: aomi-labs/skills
+  homepage: https://github.com/aomi-labs/skills/tree/main/aomi-transact
 
 # OWASP AST03 (Over-Privileged Skills) permission manifest.
 # Spec: https://owasp.org/www-project-agentic-skills-top-10/ast03
