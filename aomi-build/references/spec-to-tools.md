@@ -121,7 +121,22 @@ Good result shapes often include:
 - concise summaries
 - arrays of candidate objects
 - `requires_selection`, `selection_reason`, or `next_step_hint` when ambiguity remains
-- `SYSTEM_NEXT_ACTION` when the host must take over
+
+When the host must take over (sign a transaction, sign typed data, simulate a batch), return a structured `ToolReturn` envelope rather than a prose `SYSTEM_NEXT_ACTION` field. The runtime resolves the route, splices wallet-callback artifacts into the next tool's args, and injects the continuation prompt — see [host-routes.md](host-routes.md) for the full shape.
+
+```rust
+use aomi_sdk::{RouteStep, ToolReturn};
+
+ToolReturn::with_routes(value, [
+    RouteStep::on_return("commit_eip712", typed_data)
+        .bind_as("signature")
+        .prompt("Suggested next step: sign the typed data."),
+    RouteStep::on_bound_event("submit_my_order", submit_template, "signature")
+        .prompt("Wallet signed — submit the order now."),
+])
+```
+
+The route's structured fields are the contract; the runtime never parses prose.
 
 Avoid:
 
@@ -146,4 +161,4 @@ Avoid:
    - post-write verification
 9. Update docs or examples if the repo includes them.
 
-If the app is brand new in `aomi-sdk`, remember that `cargo run -p xtask -- build-aomi --app <name>` may skip an untracked app. A direct `cargo build --manifest-path apps/<name>/Cargo.toml` is the fastest compile check until the manifest is tracked.
+If the app is brand new in `aomi-apps`, remember that `cargo run -p xtask -- build-aomi --app <name>` may skip an untracked app — discovery uses `git ls-files apps/*/Cargo.toml` with a directory-scan fallback. A direct `cargo build --manifest-path apps/<name>/Cargo.toml` is the fastest compile check until the manifest is tracked. After bumping `sdk/Cargo.toml` `package.version`, all apps must be rebuilt because the host enforces an exact-match SDK version gate.

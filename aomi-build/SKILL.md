@@ -27,14 +27,20 @@ Use this skill for tasks like:
 
 ## First Read
 
-If a local `aomi-sdk` checkout exists, inspect these first:
+If a local `aomi-apps` checkout exists (often at `../aomi-apps`), inspect these first. The current SDK is **v0.1.15**, Rust 2024 edition, and apps live in the workspace's `exclude = [...]` list discovered via `git ls-files apps/*/Cargo.toml`.
 
-- `sdk/examples/app-template-http/src/lib.rs`
+- `sdk/examples/app-template-http/src/lib.rs` — canonical HTTP-API template (sync read-only)
 - `sdk/examples/app-template-http/src/client.rs`
 - `sdk/examples/app-template-http/src/tool.rs`
-- `docs/repo-structure.md`
-- `docs/host-interop.md`
-- 2 or 3 relevant apps under `apps/*/src/{lib,client,tool}.rs`
+- `sdk/examples/app-template-http/Cargo.toml` — note `edition = "2024"` and `crate-type = ["cdylib"]`
+- `sdk/examples/hello-app/src/lib.rs` — async tools (`IS_ASYNC = true`, `run_async`, `DynAsyncSink`), cancellation via `sink.is_canceled()`, panic containment
+- `docs/repo-structure.md` — file roles and authoring guidelines
+- `docs/host-interop.md` — public host tools (`view_state`, `run_tx`, `stage_tx`, `simulate_batch`, `commit_tx`, `commit_eip712`) and the `ToolReturn`/`RouteStep` envelope for multi-step flows
+- `docs/sdk-version-compatibility.md` — exact-match SDK version gate enforced via `aomi_sdk_version` symbol
+- 2 or 3 relevant apps under `apps/*/src/{lib,client,tool}.rs`. Recommended:
+  - `apps/binance` — execution-oriented with auth, normalized models, `namespaces = ["common"]`
+  - `apps/oneinch` — execution planner with multi-step preamble (quote → approval → swap)
+  - `apps/khalani` or `apps/polymarket` — host handoff via `ToolReturn::with_routes(...)`
 
 If the supplied docs mostly point to GitHub repositories, SDKs, or examples instead of listing public endpoints:
 
@@ -49,10 +55,11 @@ If the current repo is `aomi-widget`, also inspect:
 - `apps/landing/content/examples/*.mdx`
 - `apps/landing/content/guides/build/**/*.mdx`
 
-If the SDK repo is not available, read:
+If the `aomi-apps` checkout is not available, read:
 
-- [references/aomi-sdk-patterns.md](references/aomi-sdk-patterns.md)
-- [references/spec-to-tools.md](references/spec-to-tools.md)
+- [references/aomi-sdk-patterns.md](references/aomi-sdk-patterns.md) — manifest shape, file roles, real-app conventions
+- [references/spec-to-tools.md](references/spec-to-tools.md) — converting OpenAPI / SDK docs / endpoint lists into intent-shaped tools
+- [references/host-routes.md](references/host-routes.md) — `ToolReturn` envelope and `RouteStep` builders for execution apps that hand off to the host wallet
 
 ## Default Workflow
 
@@ -74,10 +81,10 @@ If the SDK repo is not available, read:
    - keep the first pass to the smallest sufficient toolset for that workflow unless the user asked for broader API coverage
 3. Reduce the spec into semantically meaningful tools.
 4. Scaffold or update the Aomi app using the standard file split:
-   - `lib.rs` for manifest and preamble
+   - `lib.rs` for manifest and preamble. Register with `dyn_aomi_app!` including the `namespaces = [...]` field — `["common"]` for execution apps that depend on host tools (`stage_tx`, `simulate_batch`, `commit_tx`, `commit_eip712`), `[]` for read-only apps that don't.
    - `client.rs` for HTTP client, auth, models, and normalization
-   - `tool.rs` for `DynAomiTool` implementations
-5. Write the preamble around actual tool behavior, confirmation rules, and any host handoff.
+   - `tool.rs` for `DynAomiTool` implementations. Sync tools implement `run`; async tools set `const IS_ASYNC: bool = true` and implement `run_async` with `DynAsyncSink::emit`/`complete`/`is_canceled` (see `sdk/examples/hello-app/src/lib.rs`).
+5. Write the preamble around actual tool behavior, confirmation rules, and any host handoff. Execution apps that drive multi-step wallet flows return `ToolReturn::with_routes(...)` instead of bare JSON — see [references/host-routes.md](references/host-routes.md).
 6. Validate with the SDK build flow and add focused tests when logic is non-trivial.
 
 ## Tool Design Rules
@@ -109,7 +116,7 @@ If the SDK repo is not available, read:
 
 - Keep it easy to scan.
 - Define `PREAMBLE` or a small `build_preamble()` hook.
-- Register tools with `dyn_aomi_app!`.
+- Register tools with `dyn_aomi_app!`. Always include the `namespaces` field explicitly — `namespaces = ["common"]` for execution apps, `namespaces = []` for read-only apps. The macro generates the C ABI exports (`aomi_create`, `aomi_manifest`, `aomi_async_tool_start`, etc.) and embeds the SDK version stamp the host uses for the exact-match compatibility check.
 - Only keep manifest-level wiring here.
 
 ### `client.rs`
@@ -120,10 +127,11 @@ If the SDK repo is not available, read:
 
 ### `tool.rs`
 
-- Implement `DynAomiTool`.
+- Implement `DynAomiTool`. Required associated types: `App` (the app struct from `client.rs`) and `Args` (a `JsonSchema + Deserialize` struct). Required consts: `NAME`, `DESCRIPTION`. Optional const: `IS_ASYNC` (defaults to `false`).
 - Use descriptions that tell the model when to call the tool, not just what endpoint it wraps.
-- Map normalized client results into concise JSON results.
-- Use `DynToolCallCtx` when host state such as connected wallet, session state, or caller attributes is needed.
+- Map normalized client results into concise JSON results. Sync tools return `Result<Value, String>` from `run()`; async tools return `Result<(), String>` from `run_async()` and emit progress through the `DynAsyncSink`. Cancellation: poll `sink.is_canceled()` and return `Ok(())` early.
+- Use `DynToolCallCtx` when host state such as connected wallet, session state, or caller attributes is needed. `ctx.session_id` and `ctx.call_id` are stable identifiers for logging or routing.
+- For execution apps that hand off to the wallet, return `ToolReturn::with_routes(value, [RouteStep::on_return(...).bind_as(...).prompt(...)])` instead of a bare `Value`. The `run_with_routes()` method on `DynAomiTool` has a default impl that wraps `run()` — only override it when you need routes. See [references/host-routes.md](references/host-routes.md).
 
 ## Preamble Rules
 
@@ -141,21 +149,24 @@ For deeper patterns and examples, read [references/aomi-sdk-patterns.md](referen
 
 For execution-oriented apps:
 
-- Follow the public host conventions from `docs/host-interop.md`.
-- Do not invent private namespaces or internal fallback behavior.
-- When the next step belongs to the host wallet or signer, return machine-readable `SYSTEM_NEXT_ACTION` guidance.
-- Preserve exact transaction or signature args when a downstream host tool must execute them.
+- Follow the public host conventions from `docs/host-interop.md`. The available host tools are `view_state` (read-only `eth_call`), `run_tx` (state-changing simulation), `stage_tx` (queue for later signing), `simulate_batch` (dry-run staged txs by `pending_tx_id`), `commit_tx` (sign and broadcast one staged tx), and `commit_eip712` (sign typed data). Apps reference these by name in tool descriptions and route hints — they are public contract, not private infrastructure.
+- Do not invent private namespaces (`CommonNamespace` etc.) or internal fallback behavior.
+- When the next step belongs to the host wallet or signer, return a `ToolReturn` envelope with explicit `RouteStep` builders instead of any prose-based `SYSTEM_NEXT_ACTION` convention. The runtime's `RoutedEventBridge` resolves `OnSyncReturn` and `OnBoundEvent` triggers, splices wallet-callback artifacts (`signature`, `transaction_hash`) into hinted args, and injects the continuation prompt. The runtime never parses prose — structured fields are the contract.
+- Preserve exact transaction or signature args when a downstream host tool must execute them. For raw external tx payloads, use `stage_tx` with `data: { raw: "0x..." }`; for ABI-driven calls, use `data: { encode: { signature, args } }`.
 - Do not claim a write succeeded until the upstream API submit step has actually completed.
+
+For deeper coverage of the routes pattern, including `OnSyncReturn` vs `OnBoundEvent`, `bind_as` aliases, and worked examples from `apps/khalani` and `apps/polymarket`, read [references/host-routes.md](references/host-routes.md).
 
 ## Validation
 
-When working inside `aomi-sdk`:
+When working inside `aomi-apps`:
 
-- Scaffold with `cargo run -p xtask -- new-app <name>` if starting from scratch, or copy `sdk/examples/app-template-http`.
-- Build the plugin with `cargo run -p xtask -- build-aomi --app <name>`.
-- If `build-aomi` reports zero built plugins for a brand new app, check whether the new `apps/<name>/Cargo.toml` is still untracked. The current xtask prefers `git ls-files` discovery for app manifests.
+- Scaffold with `cargo run -p xtask -- new-app <name>` if starting from scratch, or copy `sdk/examples/app-template-http`. The xtask auto-derives `StructName` from the app name, generates `lib.rs`/`client.rs`/`tool.rs`, and registers the app in the workspace `exclude = [...]` list.
+- Build the plugin with `cargo run -p xtask -- build-aomi --app <name>`. Optional flags: `--release`, `--target <triple>`. The build validates the manifest, codesigns on macOS, and validates the produced plugin.
+- If `build-aomi` reports zero built plugins for a brand new app, check whether the new `apps/<name>/Cargo.toml` is still untracked. The xtask prefers `git ls-files apps/*/Cargo.toml` for discovery and falls back to a directory scan only when nothing is tracked. Apps marked with `[package.metadata.aomi.skip]` are skipped intentionally.
 - For a direct compile signal on an untracked app, use `cargo build --manifest-path apps/<name>/Cargo.toml`.
-- If the app has meaningful branching or normalization logic, add unit tests with `aomi_sdk::testing::{TestCtxBuilder, run_tool, run_async_tool}`.
+- If the app has meaningful branching or normalization logic, add unit tests with `aomi_sdk::testing::{TestCtxBuilder, run_tool, run_async_tool}`. `TestCtxBuilder::new(tool_name).build()` produces a `DynToolCallCtx`; `run_tool` returns a full `ToolReturn` with routes; `run_async_tool` returns `(updates, terminal)`.
+- The host-plugin compatibility gate is **exact-match SDK version**. After bumping `sdk/Cargo.toml` `package.version`, all apps must be rebuilt — the host rejects plugins whose `aomi_sdk_version` symbol does not match its compiled `AOMI_SDK_VERSION`. See `docs/sdk-version-compatibility.md`.
 - If a real target is available, validate the app with a short ladder:
   - compile/build
   - connectivity check
