@@ -60,6 +60,8 @@ If the `aomi-apps` checkout is not available, read:
 - [references/aomi-sdk-patterns.md](references/aomi-sdk-patterns.md) — manifest shape, file roles, real-app conventions
 - [references/spec-to-tools.md](references/spec-to-tools.md) — converting OpenAPI / SDK docs / endpoint lists into intent-shaped tools
 - [references/host-routes.md](references/host-routes.md) — `ToolReturn` envelope and `RouteStep` builders for execution apps that hand off to the host wallet
+- [references/examples.md](references/examples.md) — five end-to-end walkthroughs anchored to real apps (`binance`, builder fallback, `polymarket` routes upgrade, async tool with cancellation, SDK version bump)
+- [references/troubleshooting.md](references/troubleshooting.md) — common build/runtime failures with concrete fixes (untracked `Cargo.toml`, SDK version mismatch, async tool hangs, route resolution issues, JsonSchema derive failures)
 
 ## Default Workflow
 
@@ -161,7 +163,7 @@ For deeper coverage of the routes pattern, including `OnSyncReturn` vs `OnBoundE
 
 When working inside `aomi-apps`:
 
-- Scaffold with `cargo run -p xtask -- new-app <name>` if starting from scratch, or copy `sdk/examples/app-template-http`. The xtask auto-derives `StructName` from the app name, generates `lib.rs`/`client.rs`/`tool.rs`, and registers the app in the workspace `exclude = [...]` list.
+- Scaffold with `cargo run -p xtask -- new-app <name>` if starting from scratch, or copy `sdk/examples/app-template-http`. The xtask auto-derives `StructName` from the app name, generates `lib.rs`/`client.rs`/`tool.rs`, and registers the app in the workspace `exclude = [...]` list. For a one-shot wrapper that also handles `git add` for discovery and runs an initial compile check, use [templates/quick-scaffold.sh](templates/quick-scaffold.sh) — pass the app name and optionally `--build` to also run `xtask build-aomi`.
 - Build the plugin with `cargo run -p xtask -- build-aomi --app <name>`. Optional flags: `--release`, `--target <triple>`. The build validates the manifest, codesigns on macOS, and validates the produced plugin.
 - If `build-aomi` reports zero built plugins for a brand new app, check whether the new `apps/<name>/Cargo.toml` is still untracked. The xtask prefers `git ls-files apps/*/Cargo.toml` for discovery and falls back to a directory scan only when nothing is tracked. Apps marked with `[package.metadata.aomi.skip]` are skipped intentionally.
 - For a direct compile signal on an untracked app, use `cargo build --manifest-path apps/<name>/Cargo.toml`.

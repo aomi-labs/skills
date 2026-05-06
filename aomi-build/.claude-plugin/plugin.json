@@ -1,0 +1,22 @@
+{
+  "name": "aomi-build",
+  "description": "Build Aomi apps and plugins from API docs, OpenAPI/Swagger specs, SDK docs, runtime interfaces, and product requirements. Scaffolds Rust SDK crates with lib.rs, client.rs, and tool.rs plus tool schemas, preambles, and host-interop flows.",
+  "version": "0.10",
+  "author": {
+    "name": "aomi-labs",
+    "url": "https://aomi.dev"
+  },
+  "homepage": "https://github.com/aomi-labs/skills/tree/main/aomi-build",
+  "repository": "https://github.com/aomi-labs/skills",
+  "license": "MIT",
+  "keywords": [
+    "aomi",
+    "sdk",
+    "scaffold",
+    "openapi",
+    "rust",
+    "code-generation",
+    "agent-tools",
+    "developer-tools"
+  ]
+}
