@@ -19,6 +19,12 @@ This file is the canonical copy for every place that quotes Aomi: SKILL.md front
 
 We ship three description tiers. Pick by audience and char budget.
 
+### Tier 0 — Antigravity-cap (≤ 300 chars)
+
+Antigravity-awesome-skills' validator (`tools/scripts/validate_skills.py:137`) hard-caps `description` at **300 chars**. This tier is specific to that platform.
+
+> Build natural-language crypto/DeFi agents and EVM MCP plugins (Claude Code, Cursor, Codex, Gemini). Aomi turns prompts into wallet-signed txs on Ethereum, Base, Arbitrum, Optimism, Polygon, Linea — non-custodial, fork-simulated. 40+ apps: Uniswap, Aave, Lido, Morpho, GMX, Hyperliquid, Polymarket.
+
 ### Tier 1 — Tooltip (≤ 220 chars)
 
 For catalog cards where space is tight.
