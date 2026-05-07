@@ -1,0 +1,56 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "skill-audit",
+          "version": "0.1.0",
+          "informationUri": "https://github.com/markpors/skill-audit",
+          "rules": []
+        }
+      },
+      "results": [
+        {
+          "ruleId": "prompt/(delete|remove|rm)\\s",
+          "message": {
+            "text": "Potentially destructive file operation pattern"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "aomi-build/references/examples.md"
+                },
+                "region": {
+                  "startLine": 45
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "prompt/(read|access|get|ext",
+          "message": {
+            "text": "Attempts to access sensitive data"
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "aomi-build/references/spec-to-tools.md"
+                },
+                "region": {
+                  "startLine": 86
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

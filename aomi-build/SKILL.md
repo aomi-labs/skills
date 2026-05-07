@@ -7,12 +7,90 @@ description: >
   SDK crates with `lib.rs`, `client.rs`, and `tool.rs`, plus tool schemas,
   preambles, host-interop flows, and validation steps. Prefer real product
   integrations over docs-only helpers whenever a callable surface exists.
-compatibility: "Best when a local `aomi-sdk` checkout is available, often at `../aomi-sdk`. Falls back to bundled references when the SDK repo is not present."
+  MUST NOT scaffold a `build.rs` (Rust build script that runs arbitrary code at
+  compile time) without explicit user consent; MUST NOT fabricate endpoints,
+  auth flows, or contract addresses the source material does not actually
+  document; MUST NOT embed credential values in scaffolded source files.
+compatibility: "Best when a local `aomi-apps` checkout is available, often at `../aomi-apps`. Falls back to bundled references when the SDK repo is not present. Targets aomi-sdk v0.1.15+ (Rust 2024 edition)."
 license: MIT
-allowed-tools: Bash
+# Claude Code allowed-tools. The skill scaffolds Rust source files (Write/Edit),
+# inspects existing apps and SDK examples (Read/Grep), and runs cargo + git
+# (Bash). Operational scope is locked down by OWASP permissions.shell below
+# to `cargo` and `git` only — defense in depth.
+allowed-tools: Bash, Read, Write, Edit, Grep
 metadata:
   author: aomi-labs
   version: "0.1"
+  # Provenance — author-declared upstream coordinates.
+  # `gh skill install` will add/overwrite `ref`, `tree_sha`, `installed_via`,
+  # and `installed_at` at install time. Do not pre-populate those fields.
+  repository: aomi-labs/skills
+  homepage: https://github.com/aomi-labs/skills/tree/main/aomi-build
+
+# OWASP AST03 (Over-Privileged Skills) permission manifest.
+# Spec: https://owasp.org/www-project-agentic-skills-top-10/ast03
+# Universal Skill Format v1.0 (March 2026).
+permissions:
+  files:
+    # The skill reads source files in the user's project (the aomi-apps
+    # checkout or wherever the user runs from) and the SDK's bundled
+    # docs/examples for pattern reference.
+    read:
+      - ./
+      - ../aomi-apps/
+    # The skill writes new Rust source files within the project's apps/ tree
+    # and may amend the workspace manifest to add the new crate to `exclude`.
+    # cargo writes to target/ as a compile artifact; git writes index entries
+    # when staging the new manifest for xtask discovery.
+    write:
+      - ./apps/
+      - ./Cargo.toml
+      - ./Cargo.lock
+      - ./target/
+      - ../aomi-apps/apps/
+      - ../aomi-apps/Cargo.toml
+      - ../aomi-apps/Cargo.lock
+      - ../aomi-apps/target/
+    # Identity files must never be modified (AST03 mitigation #3).
+    # build.rs is denied because Rust build scripts run user-supplied
+    # code at compile time; the standard Aomi app shape (lib.rs,
+    # client.rs, tool.rs) does not need one. If the user genuinely
+    # needs a build script they must opt in explicitly outside the
+    # skill's default flow.
+    deny_write:
+      - SOUL.md
+      - MEMORY.md
+      - AGENTS.md
+      - build.rs
+
+  network:
+    # The skill makes no network calls of its own. Any docs / specs / repo
+    # links the user references are fetched out-of-band by the user (or by
+    # the agent's own WebFetch capability operating outside the skill's
+    # operational scope), then pasted into the conversation.
+    allow: []
+    deny: "*"
+
+  # Shell access restricted to `cargo` and `git` argv prefixes (least-privilege
+  # extension of the spec's boolean form, consistent with AST03 intent).
+  # `cargo` runs xtask (new-app, build-aomi), build, and test; `git` runs
+  # ls-files (used by xtask discovery) and add (track new Cargo.toml so
+  # xtask discovery picks it up).
+  shell:
+    - cargo
+    - git
+
+  # No MCP/tool surface beyond local cargo + git + filesystem.
+  tools: []
+
+# Risk tier per spec: L0 safe, L1 low, L2 elevated, L3 destructive.
+# L1 = the skill writes source files and runs the Rust toolchain.
+# It does not move funds, sign transactions, custody secrets, or make
+# network calls of its own.
+risk_tier: L1
+
+requires:
+  binaries: [cargo, git]
 ---
 
 # Aomi Build

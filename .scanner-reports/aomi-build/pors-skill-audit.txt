@@ -1,0 +1,22 @@
+
+Audit Results: aomi-build
+
+  ! prompt: 2 finding(s) [8 file(s)]
+  ✓ secrets (trufflehog): passed [12 file(s)]
+  ✓ shellcheck: passed [1 file(s)]
+  ✓ semgrep: passed
+
+                                    Findings                                    
+┏━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┓
+┃ Severity ┃ Scanner ┃ Rule             ┃ Message           ┃ Location         ┃
+┡━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━┩
+│ WARN     │ prompt  │ prompt/(delete|… │ Potentially       │ aomi-build/refe… │
+│          │         │                  │ destructive file  │                  │
+│          │         │                  │ operation pattern │                  │
+│ WARN     │ prompt  │ prompt/(read|ac… │ Attempts to       │ aomi-build/refe… │
+│          │         │                  │ access sensitive  │                  │
+│          │         │                  │ data              │                  │
+└──────────┴─────────┴──────────────────┴───────────────────┴──────────────────┘
+
+✓ PASSED - No errors found
+

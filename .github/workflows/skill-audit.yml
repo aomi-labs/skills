@@ -37,19 +37,34 @@ jobs:
       - name: Audit aomi-transact (SARIF, non-blocking)
         run: |
           skill-audit audit ./aomi-transact/ \
-            --format sarif -o results.sarif || true
+            --format sarif -o results-transact.sarif || true
 
-      - name: Upload SARIF to GitHub Security tab
+      - name: Audit aomi-build (SARIF, non-blocking)
+        run: |
+          skill-audit audit ./aomi-build/ \
+            --format sarif -o results-build.sarif || true
+
+      - name: Upload aomi-transact SARIF
         if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: results.sarif
-          category: skill-audit
+          sarif_file: results-transact.sarif
+          category: skill-audit-transact
 
-      - name: Fail on critical findings
+      - name: Upload aomi-build SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results-build.sarif
+          category: skill-audit-build
+
+      - name: Fail on critical findings (aomi-transact)
         # default exit semantics: 0 pass, 1 errors, 2 tool failure.
         # do NOT add --strict; that would also fail on warnings.
         run: skill-audit audit ./aomi-transact/
+
+      - name: Fail on critical findings (aomi-build)
+        run: skill-audit audit ./aomi-build/
 
   cisco-skill-scanner:
     runs-on: ubuntu-latest
@@ -68,22 +83,42 @@ jobs:
           skill-scanner scan ./aomi-transact \
             --use-behavioral --lenient \
             --format markdown --detailed \
-            --output cisco-report.md
+            --output cisco-transact.md
           skill-scanner scan ./aomi-transact \
             --use-behavioral --lenient \
             --format sarif \
-            --output cisco-report.sarif
+            --output cisco-transact.sarif
 
-      - name: Upload Cisco SARIF
+      - name: Scan aomi-build (offline analyzers only)
+        run: |
+          skill-scanner scan ./aomi-build \
+            --use-behavioral --lenient \
+            --format markdown --detailed \
+            --output cisco-build.md
+          skill-scanner scan ./aomi-build \
+            --use-behavioral --lenient \
+            --format sarif \
+            --output cisco-build.sarif
+
+      - name: Upload Cisco SARIF (aomi-transact)
         if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: cisco-report.sarif
-          category: cisco-ai-skill-scanner
+          sarif_file: cisco-transact.sarif
+          category: cisco-ai-skill-scanner-transact
 
-      - name: Upload markdown report as artifact
+      - name: Upload Cisco SARIF (aomi-build)
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: cisco-build.sarif
+          category: cisco-ai-skill-scanner-build
+
+      - name: Upload markdown reports as artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cisco-skill-scanner-report
-          path: cisco-report.md
+          name: cisco-skill-scanner-reports
+          path: |
+            cisco-transact.md
+            cisco-build.md
