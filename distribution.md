@@ -24,7 +24,7 @@ Sorted by leverage (Tier 1 first). The "Shape" column signals whether the platfo
 | Bonus | **cryptoskills.dev** (0xinit) | The richer crypto-skills directory; 10-file enriched format | [cryptoskills.dev](https://cryptoskills.dev) ([github.com/0xinit/cryptoskills](https://github.com/0xinit/cryptoskills)) | **Light enriched** (10-file per-skill) | [brian-api](https://github.com/0xinit/cryptoskills/tree/main/skills/brian-api) — closest analogue (NL→tx) | [x] PR [#21](https://github.com/0xinit/cryptoskills/pull/21) open with all 10 files, validator clean, Tier 3 long-form description (1017 chars), marketing pitch + About in body<br>[ ] Wait on merge |
 | 15 | **LobeHub Skills** | Multi-AI agent marketplace, auto-imports from GitHub | [lobehub.com/skills](https://lobehub.com/skills) | **Light** (auto-pulls each SKILL.md) | [coinbase-agentic-wallet-skills-fund](https://lobehub.com/skills/coinbase-agentic-wallet-skills-fund) | [x] **Live** — [aomi-transact](https://lobehub.com/skills/aomi-labs-aomi-aomi-transact), [aomi-build](https://lobehub.com/skills/aomi-labs-aomi-aomi-build)<br>[ ] Visual render check (low priority) |
 | 13 | **skillsmp.com** | Auto-indexed Claude/Codex/ChatGPT marketplace. Filter: ≥2 GitHub stars + topic | [skillsmp.com](https://skillsmp.com) | **Light** (auto-index via GitHub topics) | [defi-amm-security](https://skillsmp.com/skills/defi-amm-security), [k3-blockchain-agent](https://skillsmp.com/skills/k3-blockchain-agent) | [x] GitHub topics set (`claude-skills`, `claude-code-skill`, `agent-skills`, `defi`, `crypto`, `account-abstraction`, `evm`, `aomi`)<br>[ ] Wait on next scrape (24–48h), verify listing renders |
-| 14 | **agensi.io** | Curated marketplace, manual zip upload, runs their own 8-point scanner | [agensi.io](https://agensi.io) | **Comprehensive** (zip upload) | [defi-autopilot](https://agensi.io/skills/defi-autopilot) — closest analogue | [x] **Submitted** via Creator Dashboard, account + Stripe Connect set up<br>[ ] Wait on 8-point auto-scan + 24–48h manual review<br>[ ] If reviewers re-flag W007/W009/W011/W012, point them at the SECURITY.md mitigation table |
+| 14 | **agensi.io** | Curated marketplace, manual zip upload, runs their own 8-point scanner | [agensi.io](https://agensi.io) | **Comprehensive** (zip upload) | [defi-autopilot](https://agensi.io/skills/defi-autopilot) — closest analogue | [x] **Live** at [agensi.io/skills/aomi-transact](https://www.agensi.io/skills/aomi-transact)<br>[ ] Visual render check<br>[ ] Submit `aomi-build` as a second listing if relevant |
 | 12 | **claudemarketplaces.com** | Discovery/catalog auto-crawled from `skills.sh` | [claudemarketplaces.com](https://claudemarketplaces.com) | **Light** (passive, gated on 500 installs) | (n/a — registry, not skill listings) | [ ] Skip until install volume crosses 500 |
 | 19 | **clawhub.ai** (OpenClaw ecosystem) | Open community registry — ~180k users, ~52.7k tools. Submissions gated only by GitHub-account-age ≥ 1 week + automated security scan. Recognized by other registries (cryptoskill.org, gh-upskill `clawhub:<slug>`). Skill format = folder with SKILL.md (zero-effort for us); plugin format requires `package.json` with `openclaw` schema (skip) | [clawhub.ai](https://clawhub.ai) ([CLI: `npm i -g clawhub`](https://www.npmjs.com/package/clawhub)) | **Light** (skill, two submissions) | [`clawdhub`](https://clawhub.ai/steipete/clawdhub) and many SKILL.md-only entries | [ ] **Two skill submissions ready to fire** (manual — needs `clawhub login` browser auth):<br>&nbsp;&nbsp;`clawhub skill publish ./plugins/aomi/skills/transact --slug aomi-transact ...`<br>&nbsp;&nbsp;`clawhub skill publish ./plugins/aomi/skills/build --slug aomi-build ...`<br>[ ] Pre-filled command + flags in `.staging/clawhub-aomi-transact.md` and `.staging/clawhub-aomi-build.md`<br>[ ] Or web upload at [clawhub.ai/publish-skill](https://clawhub.ai/publish-skill) — drag the skill folder |
 
@@ -47,7 +47,6 @@ Sorted by leverage (Tier 1 first). The "Shape" column signals whether the platfo
 - 🟡 antigravity PR [#575](https://github.com/sickn33/antigravity-awesome-skills/pull/575)
 - 🟡 cryptoskills.dev PR [#21](https://github.com/0xinit/cryptoskills/pull/21)
 - 🟡 cryptoskill.org issue [#36](https://github.com/jiayaoqijia/cryptoskill/issues/36)
-- 🟡 agensi.io (uploaded, in review)
 
 **Ready to submit (manual, needs login):**
 - 🟡 clawhub.ai × 2 — `clawhub skill publish` for `aomi-transact` + `aomi-build`. Commands pre-filled at `.staging/clawhub-aomi-{transact,build}.md`
@@ -55,6 +54,7 @@ Sorted by leverage (Tier 1 first). The "Shape" column signals whether the platfo
 **Live:**
 - ✅ Self-hosted `marketplace.json` at `aomi-labs/skills`
 - ✅ LobeHub auto-imported (both skills)
+- ✅ agensi.io — [aomi-transact listing](https://www.agensi.io/skills/aomi-transact)
 
 **Passive / waiting:**
 - 🟡 skillsmp.com (topics set, awaiting next scrape)
