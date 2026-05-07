@@ -1,4 +1,47 @@
 Snyk Agent Scan v0.5.1
 
-To use Agent Scan, set the SNYK_TOKEN environment variable. To get a token, go 
-to https://app.snyk.io/account (API Token -> KEY -> click to show).
+● Scanning /Users/cecilia/Code/aomi-skill found 1 skill
+│
+└── aomi-transact (4 high)
+    ● [W007 high]: Insecure credential handling detected (high risk: 1.00). The 
+    skill explicitly permits running commands that embed user-supplied secrets 
+    verbatim (e.g., `aomi secret add NAME=<value>`, `aomi wallet set 
+    <SIGNING_KEY>`), so the agent must include secret values directly in its 
+    generated command output, creating an exfiltration risk.
+    ● [W011 high]: Third-party content exposure detected (high risk: 0.90). The 
+    skill explicitly calls external public sources (e.g., web search via 
+    brave_search in references/apps.md, social apps "x" and "neynar", and 
+    aggregator apps like oneinch/khalani shown in references/apps.md and 
+    examples.md) and the agent reads and uses those third‑party responses to 
+    build/choose calldata and routing as part of the documented 
+    chat→simulate→sign workflow in SKILL.md, so untrusted/user-generated content
+    can materially influence tool decisions and actions.
+    ● [W012 high]: Potentially malicious external URL detected (high risk: 
+    0.80). The skill explicitly runs the Aomi CLI via npx (npx 
+    @aomi-labs/client@0.1.30) which fetches and executes remote package code 
+    from the npm package page (https://www.npmjs.com/package/@aomi-labs/client) 
+    at runtime and the skill declares that CLI as a required dependency, so this
+    remote fetch executes code used by the agent.
+    ● [W009 high]: Direct money access detected (high risk: 1.00). The skill is 
+    explicitly built to construct, simulate, sign, and submit cryptocurrency 
+    blockchain transactions. It exposes commands like "aomi tx sign <id>..." 
+    (sign and submit), "aomi tx simulate" (forked-chain dry runs for 
+    approve→swap batches), supports EIP‑712 payload signing, and has wallet 
+    management primitives ("aomi wallet set <SIGNING_KEY>", secret ingestion). 
+    It also documents RPC overrides, AA/EOA signing modes, and broadcasting 
+    behavior. These are specific crypto/blockchain financial execution 
+    capabilities (wallets, signing, broadcasting swaps/bridges/market 
+    operations), not generic tooling.
+    ├── instructionSKILL.md                             
+    ├── instructionreferences/examples.md               
+    ├── instructionreferences/drain-vectors.md          
+    ├── instructionreferences/troubleshooting.md        
+    ├── instructionreferences/account-abstraction.md    
+    ├── instructionreferences/session.md                
+    ├── instructionreferences/apps.md                   
+    ├── instructionREADME.md                            
+    ├── instructionSECURITY.md                          
+    ├── asset      LICENSE                              
+    ├── asset      openai.yaml                          
+    ├── asset      plugin.json                          
+    └── script     aomi-workflow.sh                     

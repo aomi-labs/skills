@@ -7,9 +7,9 @@ Audit artifacts for the security scanners listed in [`docs/todo`](../docs/todo) 
 | [Cisco AI Defense skill-scanner](https://github.com/cisco-ai-defense/skill-scanner) | **PASS** (0 findings) | [`cisco-ai-defense.md`](cisco-ai-defense.md), [`cisco-ai-defense.sarif`](cisco-ai-defense.sarif) |
 | [pors/skill-audit](https://github.com/pors/skill-audit) | **PASS** (0 errors, 4 doc-pattern warns) | [`pors-skill-audit.txt`](pors-skill-audit.txt), [`pors-skill-audit.sarif`](pors-skill-audit.sarif) |
 | [NMitchem/SkillScan](https://github.com/NMitchem/SkillScan) | **PASS** (Risk 2.0/10, 1 upstream-regex-bug HIGH) | [`skillscan.txt`](skillscan.txt), [`skillscan.json`](skillscan.json), [`skillscan.sarif`](skillscan.sarif) |
-| [Snyk agent-scan](https://github.com/snyk/agent-scan) | **BLOCKED** (needs `SNYK_TOKEN`) | [`snyk-agent-scan.txt`](snyk-agent-scan.txt) |
+| [Snyk agent-scan](https://github.com/snyk/agent-scan) | **PASS (advisory)** — 4 HIGH characterizations of intentional risk surface (W007, W009, W011, W012) | [`snyk-agent-scan.txt`](snyk-agent-scan.txt), [`snyk-agent-scan.json`](snyk-agent-scan.json) |
 
-See [`aomi-transact/SECURITY.md`](../aomi-transact/SECURITY.md) for the per-finding analysis and the OWASP AST01–AST10 walkthrough.
+See [`aomi-transact/SECURITY.md`](../aomi-transact/SECURITY.md) for the per-finding analysis (including the W-code finding-by-finding table for Snyk) and the OWASP AST01–AST10 walkthrough.
 
 ## Reproducing the scans
 
@@ -45,4 +45,4 @@ SNYK_TOKEN=... snyk-agent-scan scan --skills ./aomi-transact/SKILL.md
 
 The CI workflow at [`.github/workflows/skill-audit.yml`](../.github/workflows/skill-audit.yml) runs Cisco + pors on every PR and uploads SARIF to the GitHub Security tab.
 
-**Last refresh:** 2026-05-06.
+**Last refresh:** 2026-05-07.

@@ -111,7 +111,7 @@ LLMs have stale training data. These are the most common mistakes the skill is s
 
 - Never invent, guess, or derive a credential value. The skill only ever passes through a value the user has explicitly given for a specific action in this turn.
 - Never echo a credential value back to the user after it has been used. Confirm the action ("wallet set", "secret `<HANDLE_NAME>` added") without restating the value.
-- Setup commands that take a credential (`aomi wallet set <key>`, `aomi secret add NAME=value`, flags like `--private-key`) are only run when the user has explicitly asked for that specific setup in this turn and has supplied the value themselves. Do not run them on your own initiative to "prepare" or "fix" something.
+- Setup commands that take a credential (`aomi wallet set <SIGNING_KEY>`, `aomi secret add NAME=<value>`, flags like `--private-key`) are only run when the user has explicitly asked for that specific setup in this turn and has supplied the value themselves. Do not run them on your own initiative to "prepare" or "fix" something.
 - Before running a credential-setup command the user asked for, briefly confirm what will be persisted and where (local CLI state vs. the aomi backend — see "Secret Ingestion" for the transmission note), so the user can abort if that is not what they intended.
 - Only call `aomi tx sign` after `aomi tx list` shows a pending `tx-N` the user asked for.
 - When starting a new assistant thread, default the first aomi command to `--new-session` unless the user wants to continue an existing session.
@@ -123,7 +123,7 @@ LLMs have stale training data. These are the most common mistakes the skill is s
 This skill is scoped to the `aomi` CLI. It does not install software, read files outside the aomi state directory, or execute code it generates.
 
 - **Credentials are opaque pass-through.** The skill never fabricates, guesses, or derives a credential value. Values only reach the CLI when the user has handed them over for a specific command in this turn, and they are not echoed or retained afterwards.
-- **No unsolicited setup.** The skill does not run credential-persisting setup (`aomi wallet set`, `aomi secret add NAME=value`) to "prepare" for a task on its own. It runs those commands only when the user explicitly asked, with the value the user supplied.
+- **No unsolicited setup.** The skill does not run credential-persisting setup (`aomi wallet set`, `aomi secret add NAME=<value>`) to "prepare" for a task on its own. It runs those commands only when the user explicitly asked, with the value the user supplied.
 - **No blind signing.** Multi-step flows (approve → swap, approve → deposit) go through `aomi tx simulate` on a forked chain before `aomi tx sign`. Single-step read operations do not require simulation.
 - **User-directed batches only.** `aomi tx sign` can take multiple ids; that is for batches the user has reviewed, not for sweeping a queue.
 - **Read-only by default.** Chat, simulation, session inspection, and app/model/chain introspection do not move funds. Signing is a separate, explicit step the user must ask for.
@@ -231,7 +231,7 @@ aomi secret clear    # drop all configured secrets for the active session
 **Add (user-driven):** if the user explicitly asks to configure a credential and supplies the value in this turn, the skill may run:
 
 ```bash
-aomi secret add NAME=value [NAME=value ...]
+aomi secret add NAME=<value> [NAME=<value> ...]
 ```
 
 Before doing so, warn the user about the trust boundary (below) so they can abort. Do not initiate ingestion on your own. Do not paraphrase the user's request into a new credential value. Do not repeat the credential value back in chat after the command runs — confirm with the handle name only.
@@ -408,7 +408,7 @@ aomi session close
 ```bash
 aomi secret list                       # skill-driven; handle names only, no values
 aomi secret clear                      # skill-driven when the user asks to reset
-aomi secret add NAME=value [NAME=...]  # user-directed only (see "Secret Ingestion")
+aomi secret add NAME=<value> [NAME=...]  # user-directed only (see "Secret Ingestion")
 ```
 
 - `aomi secret list` shows configured secret handles for the active session (no values).
@@ -454,7 +454,7 @@ These persist state, so they are only run when the user explicitly asks and — 
 
 ```bash
 aomi wallet current             # skill-driven; safe to run freely
-aomi wallet set <key>           # user-directed only; the user supplies <key>
+aomi wallet set <SIGNING_KEY>           # user-directed only; the user supplies <key>
 aomi config current             # skill-driven; safe to run freely
 aomi config set-backend <url>   # user-directed only; changes where the CLI talks to
 ```

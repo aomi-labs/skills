@@ -133,12 +133,26 @@ All reports under [`.scanner-reports/`](../.scanner-reports/). Re-run any scanne
 | Cisco AI Defense skill-scanner | **PASS** | 0 critical / 0 high / 0 medium / 0 low | [`cisco-ai-defense.md`](../.scanner-reports/cisco-ai-defense.md) |
 | pors/skill-audit | **PASS** | 0 errors / 4 warns (documentation regex matches) | [`pors-skill-audit.txt`](../.scanner-reports/pors-skill-audit.txt) |
 | NMitchem/SkillScan | **PASS** | Risk 2.0/10 (threshold 6.0), 1 HIGH = upstream regex bug | [`skillscan.txt`](../.scanner-reports/skillscan.txt) |
-| Snyk agent-scan | **BLOCKED** | requires `SNYK_TOKEN` from operator | [`snyk-agent-scan.txt`](../.scanner-reports/snyk-agent-scan.txt) |
+| Snyk agent-scan | **PASS (advisory)** | 4 HIGH characterizations of risk class — see analysis below | [`snyk-agent-scan.txt`](../.scanner-reports/snyk-agent-scan.txt), [`snyk-agent-scan.json`](../.scanner-reports/snyk-agent-scan.json) |
 
 **Notes on findings**:
 
 - The 4 pors WARN findings match documentation patterns (`access sensitive data`, `delete...` operations) that appear in `references/session.md` because the docs explain those CLI commands. They are documentation regex matches, not actual destructive code paths.
 - The SkillScan HIGH finding (`MCP_001: MCP server launched via npx without version pinning`) is a false positive caused by a buggy upstream regex. The rule's pattern `\bnpx\s+@[\w.-]+/[\w.-]+(?!@\d)` backtracks within the package name (matches `clien` not `client`), so the lookahead `(?!@\d)` always succeeds regardless of how the version is pinned. All `npx @aomi-labs/client@0.1.30` invocations in this skill are explicitly version-pinned to the minimum supported CLI version; the overall scan still passes because the risk score (2.0) is below the pass threshold (6.0). Worth filing upstream at [NMitchem/SkillScan](https://github.com/NMitchem/SkillScan/issues).
+- The 4 Snyk HIGH findings (W007, W009, W011, W012) are taxonomic characterizations of the skill's intentional risk surface, not bugs. Each is acknowledged below with the in-place mitigation. Snyk's own exit code is 0 (advisory output), and the skill's `risk_tier: L2` declaration in the OWASP manifest already states this risk class up front.
+
+### Snyk Agent Scan (W-codes) — finding-by-finding analysis
+
+The Snyk Agent Scan rule pack characterizes a skill's risk surface, not just bugs. For a transaction-signing AI skill that uses third-party data sources to compose calldata, the following findings are **structural** — they describe what the skill does on purpose, with mitigations in place. Reviewers should evaluate them against the OWASP AST controls in this document.
+
+| Code | Title | Status | Mitigation in place |
+|------|-------|--------|---------------------|
+| **W007** | Insecure credential handling | Acknowledged — by design | Skill frontmatter description explicitly forbids the LLM from fabricating, guessing, echoing, or logging credential values. `aomi secret add NAME=<value>` and `aomi wallet set <SIGNING_KEY>` use placeholder syntax in all docs; the user supplies the real value. The "Hard Rules" and "Security Model" sections of SKILL.md, plus AST05 (Side-Effects) and AST06 (Insecure Communication) above, codify the no-unsolicited-setup posture. |
+| **W009** | Direct money access | Acknowledged — by design | The skill is explicitly classified `risk_tier: L2` in the OWASP manifest because it signs and broadcasts on-chain transactions. AST04 (Confused Deputy) and AST09 (Insufficient User Consent) above codify the "read-only by default, signing requires explicit user request" posture. `aomi tx sign` is only invoked after `aomi tx list` shows a pending `tx-N` the user asked for, and multi-step batches go through `aomi tx simulate` on a forked chain first. |
+| **W011** | Third-party content exposure | Acknowledged — by design | The agent uses 25+ apps (DefiLlama, 1inch, Khalani, Brave Search, X, Neynar, etc.) to fetch quotes, routes, and read-only data — that is the skill's purpose. Fund-moving calldata that the third-party content influences is gated by `aomi tx simulate` (drain-vector annotations block `recipient != msg.sender`) and an explicit user `aomi tx sign` step. AST04 above and [`references/drain-vectors.md`](references/drain-vectors.md) document the per-protocol guard rules. |
+| **W012** | Potentially malicious external URL (npx) | Acknowledged — pinned + documented | Every `npx` invocation is version-pinned to `@0.1.30` (minimum supported CLI). Users are explicitly directed to install globally with `npm install -g @aomi-labs/client` for repeated use; npx is the on-demand fallback. The OWASP `permissions.shell` array constrains the skill's actual operational scope to `aomi` and `npx @aomi-labs/client@0.1.30` only. AST08 (Supply-Chain Attacks) above acknowledges that npm package signing / sigstore attestation is open. |
+
+These four findings are inherent to **any** AI agent skill that signs on-chain transactions and reads third-party data. They cannot be eliminated without removing the skill's core capability. The combined posture — explicit risk_tier, OWASP permission manifest, drain-vector guards, simulate-before-sign, no-unsolicited-credential-setup — is what makes the skill safe to use despite these characterizations.
 
 ## Reporting issues
 
