@@ -1,0 +1,30 @@
+{
+  "name": "aomi",
+  "description": "Aomi for AI agents — drive the Aomi CLI from natural-language prompts (chat, simulate, sign on-chain transactions with account-abstraction-first execution) and scaffold new Aomi apps from API specs. Two skills bundled: aomi-transact (run on-chain) and aomi-build (build new Aomi app integrations).",
+  "version": "0.10",
+  "author": {
+    "name": "Aomi Labs",
+    "url": "https://aomi.dev",
+    "email": "info@aomi.dev"
+  },
+  "homepage": "https://aomi.dev",
+  "repository": "https://github.com/aomi-labs/skills",
+  "license": "MIT",
+  "keywords": [
+    "aomi",
+    "ai-agents",
+    "account-abstraction",
+    "intent",
+    "natural-language",
+    "transactions",
+    "simulation",
+    "evm",
+    "defi",
+    "cli",
+    "sdk",
+    "scaffold",
+    "openapi",
+    "rust",
+    "code-generation"
+  ]
+}
