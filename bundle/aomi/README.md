@@ -112,14 +112,16 @@ The bundle has been scanned by four independent tools: Cisco AI Defense skill-sc
 
 MIT. See [LICENSE](LICENSE).
 
-## Links
-
-- [aomi.dev](https://aomi.dev) — official docs
-- [@aomi-labs/client on npm](https://www.npmjs.com/package/@aomi-labs/client) — the CLI `aomi-transact` drives
-- [aomi-labs/skills on GitHub](https://github.com/aomi-labs/skills) — upstream
-- [aomi-labs/skills issues](https://github.com/aomi-labs/skills/issues) — bug reports & feature requests
-- [Aomi on X](https://x.com/aomi_labs)
-
 ## About Aomi
 
-Aomi Labs builds the blockchain harness for agentic AI. Execution and settlement across any on-chain protocol or off-chain API — think Claude Code, on-chain. Aomi also hosts agentic applications built and deployed by developers, companies, and the agents themselves. We ship end-to-end: a chat UI, agent Skills, and SDKs in TypeScript and Rust.
+Aomi Labs builds the native harness for blockchains, functioning like Claude Code on-chain. We specialize in executions against arbitrary protocols with non-custodial workflow, account abstraction, and full security via fork-chain simulation. Aomi also hosts agentic applications deployed and owned by developers, companies, and the agents themselves. We ship end-to-end: chat UI, agent Skills, and SDKs in TypeScript and Rust.
+
+**Links:**
+- 🌐 Website: [aomi.dev](https://aomi.dev)
+- 🤖 Agents: [aomi.dev/agents](https://aomi.dev/agents)
+- 𝕏 Twitter: [x.com/aomi_labs](https://x.com/aomi_labs)
+- 💻 GitHub: [github.com/aomi-labs](https://github.com/aomi-labs)
+- 📦 Packages:
+  - [@aomi-labs/widget-lib](https://www.npmjs.com/package/@aomi-labs/widget-lib)
+  - [@aomi-labs/client](https://www.npmjs.com/package/@aomi-labs/client)
+  - [aomi-sdk](https://crates.io/crates/aomi-sdk)

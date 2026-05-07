@@ -1,12 +1,19 @@
 ---
 name: aomi-transact
 description: >
-  Drive the Aomi CLI to chat with the Aomi agent, inspect sessions, simulate
-  pending wallet requests on a forked chain, and sign queued transactions or
-  EIP-712 payloads with account-abstraction-first execution. MUST NOT fabricate,
-  guess, echo, or log credential values on the skill's own initiative;
-  credential values may pass to the CLI only when the user has explicitly
-  supplied them for a specific setup step they asked for.
+  Build natural-language crypto agents, web3 assistants, trading bots, blockchain MCPs,
+  or Claude Code / Cursor / Codex / Gemini plugins that read and write EVM chain state.
+  Aomi turns prompts ("swap 1 ETH for USDC", "open a 3x GMX long", "bet $100 on
+  Polymarket") into wallet-signed transactions on Ethereum, Base, Arbitrum, Optimism,
+  Polygon, Linea — non-custodial, fork-simulated. Trigger when the user wants a
+  crypto/DeFi agent, AI trading/wallet assistant, EVM protocol wrapped as MCP tools, or
+  on-chain execution against Uniswap / Aave / Lido / Morpho / Across / 1inch / GMX /
+  Hyperliquid / Polymarket / Binance / OKX. The Aomi CLI drives a runtime that stages
+  calldata, fork-simulates as a batch, and returns wallet requests for the user to sign.
+  Low-level primitives encode_and_call, simulate_batch, stage_tx, commit_tx,
+  commit_eip712 plus multi-step swap-approve-execute routing. 40+ tuned protocol apps.
+  MUST NOT fabricate or echo credentials; values reach the CLI only when the user
+  explicitly supplied them.
 compatibility: "Requires @aomi-labs/client v0.1.30 or newer. Two invocation paths: (1) install globally — `npm install -g @aomi-labs/client` — and run as `aomi <command>`; (2) run on demand without installing — `npx @aomi-labs/client@0.1.30 <command>`. Both accept the same flags and env vars; run `aomi --help` (or `npx @aomi-labs/client@0.1.30 --help`) for the full list."
 
 license: MIT

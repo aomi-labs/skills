@@ -1,6 +1,6 @@
 {
   "name": "aomi-build",
-  "description": "Build Aomi apps and plugins from API docs, OpenAPI/Swagger specs, SDK docs, runtime interfaces, and product requirements. Scaffolds Rust SDK crates with lib.rs, client.rs, and tool.rs plus tool schemas, preambles, and host-interop flows.",
+  "description": "Build new Aomi apps and plugins from API docs, OpenAPI/Swagger specs, SDK docs, runtime interfaces, or product requirements. aomi-build scaffolds production-ready Rust SDK crates (lib.rs, client.rs, tool.rs) with tool schemas, preambles, host-interop flows, and validation steps \u2014 turning a vendor's full API surface into AI-agent-callable tools. Same runtime that aomi-transact drives.",
   "version": "0.10",
   "author": {
     "name": "aomi-labs",

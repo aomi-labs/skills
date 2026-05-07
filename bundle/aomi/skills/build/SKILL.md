@@ -1,16 +1,18 @@
 ---
 name: aomi-build
 description: >
-  Use when the user wants to build, scaffold, or update an Aomi app/plugin from
-  API docs, OpenAPI or Swagger specs, SDK docs, repository examples, endpoint
-  notes, runtime interfaces, or product requirements. Converts specs into Aomi
-  SDK crates with `lib.rs`, `client.rs`, and `tool.rs`, plus tool schemas,
-  preambles, host-interop flows, and validation steps. Prefer real product
-  integrations over docs-only helpers whenever a callable surface exists.
-  MUST NOT scaffold a `build.rs` (Rust build script that runs arbitrary code at
-  compile time) without explicit user consent; MUST NOT fabricate endpoints,
-  auth flows, or contract addresses the source material does not actually
-  document; MUST NOT embed credential values in scaffolded source files.
+  Build new Aomi apps and plugins from API docs, OpenAPI/Swagger specs, SDK docs,
+  runtime interfaces, or product requirements. aomi-build scaffolds production-ready
+  Rust SDK crates (lib.rs, client.rs, tool.rs) with tool schemas, preambles,
+  host-interop flows, and validation steps — turning a vendor's full API surface into
+  AI-agent-callable tools. Trigger when the user wants to scaffold a new Aomi app from
+  an OpenAPI/Swagger spec, wrap a REST API as agent-callable tools, port an existing
+  SDK to Aomi, generate a tool surface from product requirements, or extend an Aomi
+  runtime with new integrations. Prefers real product integrations over docs-only
+  helpers whenever a callable surface exists. Output crates support sync HTTP, async
+  tools (cancellation-safe via DynAsyncSink), proxy-unwrap (EIP-1967), and host-interop
+  flows that route quote → approval → swap as multi-step transactions. Same runtime
+  that aomi-transact drives.
 compatibility: "Best when a local `aomi-apps` checkout is available, often at `../aomi-apps`. Falls back to bundled references when the SDK repo is not present. Targets aomi-sdk v0.1.15+ (Rust 2024 edition)."
 license: MIT
 # Claude Code allowed-tools. The skill scaffolds Rust source files (Write/Edit),

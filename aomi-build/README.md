@@ -46,8 +46,18 @@ aomi-build/
 
 MIT. See [LICENSE](LICENSE).
 
-## Links
+## About Aomi
 
-- [Aomi.dev](https://aomi.dev) — official docs
-- [aomi-labs/skills on GitHub](https://github.com/aomi-labs/skills) — upstream repo
-- Companion skill: [aomi-transact](../aomi-transact) — drive the Aomi CLI from natural language
+Aomi Labs builds the native harness for blockchains, functioning like Claude Code on-chain. We specialize in executions against arbitrary protocols with non-custodial workflow, account abstraction, and full security via fork-chain simulation. Aomi also hosts agentic applications deployed and owned by developers, companies, and the agents themselves. We ship end-to-end: chat UI, agent Skills, and SDKs in TypeScript and Rust.
+
+**Links:**
+- 🌐 Website: [aomi.dev](https://aomi.dev)
+- 🤖 Agents: [aomi.dev/agents](https://aomi.dev/agents)
+- 𝕏 Twitter: [x.com/aomi_labs](https://x.com/aomi_labs)
+- 💻 GitHub: [github.com/aomi-labs](https://github.com/aomi-labs)
+- 📦 Packages:
+  - [@aomi-labs/widget-lib](https://www.npmjs.com/package/@aomi-labs/widget-lib)
+  - [@aomi-labs/client](https://www.npmjs.com/package/@aomi-labs/client)
+  - [aomi-sdk](https://crates.io/crates/aomi-sdk)
+
+Companion skill: [aomi-transact](../aomi-transact) — drive the Aomi CLI from natural language.

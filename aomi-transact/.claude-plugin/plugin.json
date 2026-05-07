@@ -1,6 +1,6 @@
 {
   "name": "aomi-transact",
-  "description": "Drive the Aomi CLI from natural-language prompts: chat, simulate, and sign with account-abstraction-first execution. Wraps swaps, lending, bridges, staking, perps, and CEX read across 25+ apps on EVM mainnets and L2s.",
+  "description": "The Aomi CLI drives an Aomi runtime that reads and writes EVM chain state: stages calldata, simulates as a batch on a forked chain, and returns wallet requests for the user to sign. Works on any EVM contract via low-level primitives \u2014 ABI encoding (encode_and_call), fork-batch simulation (simulate_batch), staged-tx queueing (stage_tx), and wallet handoff with EIP-712 (commit_tx, commit_eip712) \u2014 including multi-step swap-approve-execute routing. Ships with 40+ tuned protocol apps (Polymarket, 1inch, Dune, GMX, Binance, Hyperliquid, Kaito, \u2026), each loaded dynamically and tuned to the vendor's full API. Every action simulates first, batches when possible, and is signed by the end-user wallet.",
   "version": "0.10",
   "author": {
     "name": "aomi-labs",
