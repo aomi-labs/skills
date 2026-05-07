@@ -1,0 +1,27 @@
+{
+  "name": "aomi-build",
+  "version": "0.10",
+  "description": "Build new Aomi apps and plugins from API docs, OpenAPI/Swagger specs, SDK docs, runtime interfaces, or product requirements. aomi-build scaffolds production-ready Rust SDK crates (lib.rs, client.rs, tool.rs) with tool schemas, preambles, host-interop flows, and validation steps — turning a vendor's full API surface into AI-agent-callable tools. Same runtime that aomi-transact drives.",
+  "author": {
+    "name": "aomi-labs",
+    "url": "https://aomi.dev"
+  },
+  "homepage": "https://github.com/aomi-labs/skills/tree/main/aomi-build",
+  "repository": "https://github.com/aomi-labs/skills",
+  "license": "MIT",
+  "keywords": [
+    "aomi",
+    "sdk",
+    "scaffold",
+    "openapi",
+    "rust",
+    "code-generation",
+    "agent-tools",
+    "developer-tools"
+  ],
+  "interface": {
+    "display_name": "Aomi Build",
+    "short_description": "Build Aomi apps from APIs and specs",
+    "default_prompt": "Use $aomi-build to turn this API, OpenAPI spec, or product brief into an Aomi SDK app/plugin with a clean tool surface, preamble, and validation plan."
+  }
+}

@@ -14,6 +14,7 @@ This file is the canonical copy for every place that quotes Aomi: SKILL.md front
 - **No t.co / shortener URLs.** Real URLs only. Shorteners trip security scanners (Snyk W012 already flags one for `npx`); adding more reduces trust signal.
 - **Non-custodial framing is the differentiator.** "Keys never leave the user", "fork-chain simulation before every signature", "wallet handoff" — these distinguish us from custodial agent frameworks.
 - **40+ protocol apps.** We're scaling there. If the actual count grows, update this file and propagate. Don't say 25+ anymore.
+- **Codex parallel.** Both Anthropic and OpenAI Codex have plugin marketplaces. Anthropic's: split community (broad) + official (curated). OpenAI's: official is "coming soon"; the immediate option is the third-party `codex-marketplace.com`. Our plugin manifest is duplicated into `.claude-plugin/plugin.json` AND `.codex-plugin/plugin.json` per spec — keep both in sync when descriptions change.
 
 ## Versions
 
@@ -98,6 +99,8 @@ Aomi Labs builds native harness around blockchains functioning like Claude Code 
 
 | Surface | Tier | Notes |
 |---|---|---|
+| `bundle/aomi/.codex-plugin/plugin.json` `description:` | **Short** (bundle) | OpenAI Codex plugin loader reads this |
+| Legacy `aomi-{transact,build}/.codex-plugin/plugin.json` | **Short** (per skill) | Mirror until legacy dirs are removed |
 | `bundle/aomi/skills/transact/SKILL.md` frontmatter `description:` | **Long** (transact) | Agent triggers fire on this |
 | `bundle/aomi/skills/build/SKILL.md` frontmatter `description:` | **Long** (build) | Same |
 | Legacy `aomi-transact/SKILL.md` frontmatter | **Long** (transact) | Mirror until legacy dirs are removed |
@@ -106,8 +109,10 @@ Aomi Labs builds native harness around blockchains functioning like Claude Code 
 | `aomi-transact/.claude-plugin/plugin.json` (legacy) | **Short** (transact) | |
 | `aomi-build/.claude-plugin/plugin.json` (legacy) | **Short** (build) | |
 | Self-hosted `.claude-plugin/marketplace.json` `plugins[].description` | **Short** (bundle) | One entry, points at `./bundle/aomi` |
-| Anthropic `claude-plugins-official` form `description` | **Short** (bundle) | Catalog tooltip; brief is better |
+| Anthropic `claude-plugins-official` form `description` | **Short** (bundle) | Catalog tooltip; brief is better. Realistic landing tier: `claude-plugins-community` (~1,920 plugins). Form: platform.claude.com/plugins/submit |
 | Anthropic form "Notes for reviewer" | **Long** (bundle) + scanner summary | Full SEO + risk story |
+| codex-marketplace.com form (third-party Codex directory) | **Short** (bundle or per-skill) | Form auto-validates `.codex-plugin/plugin.json`. Submission packets pre-filled at `.staging/codex-marketplace-*.md` |
+| OpenAI official Codex Plugin Directory | **Short** (bundle) | Self-serve submissions "coming soon" per OpenAI docs — wait, then mirror Anthropic submission |
 | ccpi `sources.yaml` and `marketplace.extended.json` | **Short** (bundle) | Card on tonsofskills.com |
 | antigravity PR #575 SKILL.md `description:` | **Long** (transact) | Their `description` field is the agent trigger |
 | cryptoskills.dev PR #21 SKILL.md `description:` | **Long** (transact) | Their validator caps at 1024 |
