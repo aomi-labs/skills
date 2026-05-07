@@ -97,7 +97,7 @@ MIT. See [LICENSE](LICENSE).
 
 ## About Aomi
 
-Aomi Labs builds the native harness for blockchains, functioning like Claude Code on-chain. We specialize in executions against arbitrary protocols with non-custodial workflow, account abstraction, and full security via fork-chain simulation. Aomi also hosts agentic applications deployed and owned by developers, companies, and the agents themselves. We ship end-to-end: chat UI, agent Skills, and SDKs in TypeScript and Rust.
+Aomi Labs builds native harness around blockchains functioning like Claude Code on-chain. We specialize in executions against arbitrary protocol with non-custodial workflow, account abstraction, and full security with simulations. Aomi also host agentic applications deployed and owned by developers, companies, and agents. Aomi provides E2E integration with UI, Skills and SDKs.
 
 **Links:**
 - 🌐 Website: [aomi.dev](https://aomi.dev)
@@ -105,8 +105,7 @@ Aomi Labs builds the native harness for blockchains, functioning like Claude Cod
 - 𝕏 Twitter: [x.com/aomi_labs](https://x.com/aomi_labs)
 - 💻 GitHub: [github.com/aomi-labs](https://github.com/aomi-labs)
 - 📦 Packages:
-  - [@aomi-labs/widget-lib](https://www.npmjs.com/package/@aomi-labs/widget-lib)
-  - [@aomi-labs/client](https://www.npmjs.com/package/@aomi-labs/client)
+  - [@aomi-labs/react](https://www.npmjs.com/package/@aomi-labs/react)
   - [aomi-sdk](https://crates.io/crates/aomi-sdk)
 
 Companion skill: [aomi-build](../aomi-build) — scaffold new Aomi apps from API specs.
