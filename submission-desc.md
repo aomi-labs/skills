@@ -99,16 +99,16 @@ Aomi Labs builds native harness around blockchains functioning like Claude Code 
 
 | Surface | Tier | Notes |
 |---|---|---|
-| `bundle/aomi/.codex-plugin/plugin.json` `description:` | **Short** (bundle) | OpenAI Codex plugin loader reads this |
+| `plugins/aomi/.codex-plugin/plugin.json` `description:` | **Short** (bundle) | OpenAI Codex plugin loader reads this |
 | Legacy `aomi-{transact,build}/.codex-plugin/plugin.json` | **Short** (per skill) | Mirror until legacy dirs are removed |
-| `bundle/aomi/skills/transact/SKILL.md` frontmatter `description:` | **Long** (transact) | Agent triggers fire on this |
-| `bundle/aomi/skills/build/SKILL.md` frontmatter `description:` | **Long** (build) | Same |
+| `plugins/aomi/skills/transact/SKILL.md` frontmatter `description:` | **Long** (transact) | Agent triggers fire on this |
+| `plugins/aomi/skills/build/SKILL.md` frontmatter `description:` | **Long** (build) | Same |
 | Legacy `aomi-transact/SKILL.md` frontmatter | **Long** (transact) | Mirror until legacy dirs are removed |
 | Legacy `aomi-build/SKILL.md` frontmatter | **Long** (build) | Same |
-| `bundle/aomi/.claude-plugin/plugin.json` `description:` | **Short** (bundle) | Anthropic git-subdir loader reads this |
+| `plugins/aomi/.claude-plugin/plugin.json` `description:` | **Short** (bundle) | Anthropic git-subdir loader reads this |
 | `aomi-transact/.claude-plugin/plugin.json` (legacy) | **Short** (transact) | |
 | `aomi-build/.claude-plugin/plugin.json` (legacy) | **Short** (build) | |
-| Self-hosted `.claude-plugin/marketplace.json` `plugins[].description` | **Short** (bundle) | One entry, points at `./bundle/aomi` |
+| Self-hosted `.claude-plugin/marketplace.json` `plugins[].description` | **Short** (bundle) | One entry, points at `./plugins/aomi` |
 | Anthropic `claude-plugins-official` form `description` | **Short** (bundle) | Catalog tooltip; brief is better. Realistic landing tier: `claude-plugins-community` (~1,920 plugins). Form: platform.claude.com/plugins/submit |
 | Anthropic form "Notes for reviewer" | **Long** (bundle) + scanner summary | Full SEO + risk story |
 | codex-marketplace.com form (third-party Codex directory) | **Short** (bundle or per-skill) | Form auto-validates `.codex-plugin/plugin.json`. Submission packets pre-filled at `.staging/codex-marketplace-*.md` |
@@ -131,12 +131,12 @@ When the pitch shifts (e.g. count goes from 40+ to 60+, new chain added, new fla
 
 1. Edit this file first — update the relevant Tier paragraphs.
 2. Fan out via:
-   - Edit `bundle/aomi/skills/{transact,build}/SKILL.md` frontmatter
+   - Edit `plugins/aomi/skills/{transact,build}/SKILL.md` frontmatter
    - Edit `aomi-transact/SKILL.md` and `aomi-build/SKILL.md` frontmatter (legacy mirror)
-   - Edit `bundle/aomi/.claude-plugin/plugin.json` description
+   - Edit `plugins/aomi/.claude-plugin/plugin.json` description
    - Edit `aomi-transact/.claude-plugin/plugin.json` and `aomi-build/.claude-plugin/plugin.json` descriptions (legacy)
    - Edit `.claude-plugin/marketplace.json` plugin entry
-   - Edit `bundle/aomi/README.md`, `aomi-transact/README.md`, `aomi-build/README.md`, top-level `README.md` (sync About)
+   - Edit `plugins/aomi/README.md`, `aomi-transact/README.md`, `aomi-build/README.md`, top-level `README.md` (sync About)
    - Edit `.staging/anthropic-form-submission.md` (form values)
 3. Push updates to open external PRs:
    - antigravity PR #575 — update `skills/aomi-transact/SKILL.md` description

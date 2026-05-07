@@ -40,7 +40,7 @@ gh upskill aomi-labs/skills --skill aomi
 
 ```bash
 git clone https://github.com/aomi-labs/skills
-cp -r skills/bundle/aomi ~/.claude/skills/
+cp -r skills/plugins/aomi ~/.claude/skills/
 ```
 
 ## Prerequisites

@@ -2,7 +2,7 @@
 
 `docs/todo` item #20 calls for end-to-end install verification across 3+ channels on a clean machine. Below is what's verifiable today (2026-05-07) given that the Anthropic + ccpi + antigravity PRs are open but not yet merged.
 
-> **Bundle migration**: as of 2026-05-07 the canonical install target is the `aomi` bundle at [`bundle/aomi/`](../bundle/aomi/), shipping both `aomi-transact` and `aomi-build` skills under one plugin. The legacy top-level `aomi-transact/` and `aomi-build/` directories remain in place for backwards compatibility. End-user install: `/plugin install aomi`.
+> **Bundle migration**: as of 2026-05-07 the canonical install target is the `aomi` bundle at [`plugins/aomi/`](../plugins/aomi/), shipping both `aomi-transact` and `aomi-build` skills under one plugin. The legacy top-level `aomi-transact/` and `aomi-build/` directories remain in place for backwards compatibility. End-user install: `/plugin install aomi`.
 
 ## Channel A — Self-hosted Claude Code marketplace (#11)
 
@@ -34,7 +34,7 @@ End-user flow once Claude Code is installed:
 /plugin install aomi
 ```
 
-Cannot fully exercise this without a Claude Code instance on the verifying machine, but the JSON validates against the same schema used by Anthropic's `claude-plugins-official` marketplace and the cryptoskills marketplace. The single `aomi` plugin entry resolves to `bundle/aomi/` which contains both `skills/transact/SKILL.md` and `skills/build/SKILL.md`.
+Cannot fully exercise this without a Claude Code instance on the verifying machine, but the JSON validates against the same schema used by Anthropic's `claude-plugins-official` marketplace and the cryptoskills marketplace. The single `aomi` plugin entry resolves to `plugins/aomi/` which contains both `skills/transact/SKILL.md` and `skills/build/SKILL.md`.
 
 ## Channel B — `gh upskill` install (#8 / community installer)
 

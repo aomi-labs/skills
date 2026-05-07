@@ -13,10 +13,10 @@
   "plugins": [
     {
       "name": "aomi",
-      "source": "./bundle/aomi",
+      "source": "./plugins/aomi",
       "description": "Aomi for AI agents \u2014 drive the Aomi CLI from natural-language prompts (chat, simulate, sign on-chain transactions with account-abstraction-first execution) and scaffold new Aomi apps from API specs. Bundle ships two skills: aomi-transact (run on-chain across 40+ DeFi/perps/CEX/social apps on EVM mainnets and L2s) and aomi-build (scaffold Rust SDK crates from OpenAPI/Swagger specs).",
       "category": "AI Agents",
-      "homepage": "https://github.com/aomi-labs/skills/tree/main/bundle/aomi"
+      "homepage": "https://github.com/aomi-labs/skills/tree/main/plugins/aomi"
     }
   ]
 }
