@@ -1,3 +1,4 @@
 .DS_Store
 .staging/
 node_modules/
+.claude/worktrees/
