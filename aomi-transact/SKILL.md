@@ -17,6 +17,9 @@ description: >
 compatibility: "Requires @aomi-labs/client v0.1.30 or newer. Two invocation paths: (1) install globally — `npm install -g @aomi-labs/client` — and run as `aomi <command>`; (2) run on demand without installing — `npx @aomi-labs/client@0.1.30 <command>`. Both accept the same flags and env vars; run `aomi --help` (or `npx @aomi-labs/client@0.1.30 --help`) for the full list."
 
 license: MIT
+version: "0.10"
+author: aomi-labs
+compatible-with: claude-code
 # Claude Code allowed-tools. Broad Bash + Grep covers the diagnostic
 # commands documented in references/ (cast code verification, jq session
 # inspection, find cleanup) without enumerating every variant. Operational
@@ -79,6 +82,61 @@ requires:
 
 # Aomi Transact
 
+## Overview
+
+Aomi Transact is an agent skill for building natural-language crypto agents, web3 assistants,
+and trading bots on EVM blockchains. It drives the `aomi` CLI to compose calldata,
+fork-simulate transactions as a batch, and stage wallet requests for explicit user signing —
+non-custodial throughout. Supported networks: Ethereum, Base, Arbitrum, Optimism, Polygon,
+Linea. 40+ integrated protocol apps (Uniswap, Aave, Lido, GMX, Polymarket, and more).
+
+## Prerequisites
+
+- Node.js 18+ with npm or npx available
+- `@aomi-labs/client` v0.1.30 or newer: `npm install -g @aomi-labs/client`
+- An EVM-compatible wallet with a signing key (EOA or AA-capable)
+- (Optional) Alchemy or Pimlico API key for account-abstraction gas sponsorship
+
+## Instructions
+
+1. Detect or install the CLI: `aomi --version 2>/dev/null || npx @aomi-labs/client@0.1.30 --version`
+2. Start a new session: `aomi --prompt "swap 1 ETH for USDC" --new-session`
+3. Confirm queue: `aomi tx list`
+4. For multi-step flows, simulate: `aomi tx simulate tx-1 tx-2`
+5. Sign: `aomi tx sign tx-1`
+6. Verify: `aomi session status`
+
+## Examples
+
+```bash
+aomi --prompt "what is the price of ETH?" --new-session
+aomi chat "swap 1 ETH for USDC" --new-session --public-key 0xYourAddress --chain 1
+aomi tx list && aomi tx simulate tx-1 tx-2 && aomi tx sign tx-1 tx-2
+aomi chat "stake 0.5 ETH on Lido" --app lido --chain 1 --new-session
+```
+
+See [references/examples.md](references/examples.md) for four end-to-end walkthroughs.
+
+## Output
+
+- `aomi chat`: agent response or `⚡ Wallet request queued: tx-N`
+- `aomi tx list`: table of pending/signed tx IDs with `batch_status`
+- `aomi tx simulate`: per-step success/failure, revert reason, gas usage
+- `aomi tx sign`: transaction hash and on-chain confirmation
+
+## Error Handling
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `insufficient funds for transfer` | EOA has no native gas | Fund EOA or configure AA sponsorship |
+| `AA provider not configured` | No Alchemy/Pimlico key | Use `--eoa` or `aomi secret add ALCHEMY_KEY=<value>` |
+| `stateful: false` in simulation | Wrong batch order | Reorder tx IDs to match execution dependency |
+| `RPC 401`/`429` | Rate-limited or missing key | Set `--rpc-url` to authenticated endpoint |
+| No tx queued after chat | Agent returned quote first | Run `aomi tx list`; send a confirmation reply |
+| Orphaned `tx-N` in list | Previous simulation failed | Only sign txs with `batch_status: passed` |
+
+---
+
 Use the CLI as an agent operating procedure, not as a long-running shell. Each `aomi` command starts, runs, and exits. Conversation history lives on the backend. Local session data lives under `AOMI_STATE_DIR` or `~/.aomi`.
 
 ## Invocation
@@ -104,7 +162,7 @@ LLMs have stale training data. These are the most common mistakes the skill is s
 - **"7702 and 4337 are interchangeable"** → They're not. 7702 is a native EIP-7702 type-4 transaction with EOA delegation; the EOA pays gas. 4337 is a bundler+paymaster UserOperation; the paymaster can sponsor. Default chain modes: 7702 on Ethereum, 4337 on Polygon/Arbitrum/Base/Optimism. Use 4337 if you need gasless execution.
 - **"Drain vectors are aomi-specific"** → They're protocol-specific calldata fields where a malicious prompt could redirect funds (`recipient` in Uniswap, `onBehalfOf` in Aave, `mintRecipient` in CCTP, `_to` in OP-stack bridges). The agent blocks these at simulation time when they don't equal `msg.sender`. The skill's job is to surface the block, not bypass it. Full table in [references/drain-vectors.md](references/drain-vectors.md).
 
-## Use This Skill When
+## When to Use
 
 - The user wants to chat with the Aomi agent from the terminal.
 - The user wants balances, prices, routes, quotes, or transaction status.

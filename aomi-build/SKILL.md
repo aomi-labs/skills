@@ -15,11 +15,14 @@ description: >
   that aomi-transact drives.
 compatibility: "Best when a local `aomi-apps` checkout is available, often at `../aomi-apps`. Falls back to bundled references when the SDK repo is not present. Targets aomi-sdk v0.1.15+ (Rust 2024 edition)."
 license: MIT
+version: "0.1"
+author: aomi-labs
+compatible-with: claude-code
 # Claude Code allowed-tools. The skill scaffolds Rust source files (Write/Edit),
 # inspects existing apps and SDK examples (Read/Grep), and runs cargo + git
 # (Bash). Operational scope is locked down by OWASP permissions.shell below
 # to `cargo` and `git` only — defense in depth.
-allowed-tools: Bash, Read, Write, Edit, Grep
+allowed-tools: "Bash(cargo:*, git:*), Read, Write, Edit, Grep"
 metadata:
   author: aomi-labs
   version: "0.1"
@@ -96,6 +99,82 @@ requires:
 ---
 
 # Aomi Build
+
+## Overview
+
+Aomi Build scaffolds production-ready Rust SDK crates for Aomi apps and plugins from
+OpenAPI/Swagger specs, SDK docs, or product requirements. Generates `lib.rs`, `client.rs`,
+`tool.rs` with typed tool schemas, host-interop flows, and validation steps.
+
+## When to Use
+
+- Scaffold a new Aomi app from an OpenAPI spec or REST API
+- Wrap an existing SDK as agent-callable Aomi tools
+- Extend an Aomi runtime with new protocol integrations
+
+Do **not** use this skill for executing transactions — use **aomi-transact** for that.
+
+## Prerequisites
+
+- Rust toolchain (2024 edition) and `cargo` on PATH
+- `git` on PATH
+- Aomi SDK v0.1.15 or newer
+- Local `aomi-apps` checkout at `../aomi-apps` (recommended)
+
+## Quick Start
+
+```bash
+cd ../aomi-apps
+cargo run -p xtask -- new-app my-integration
+cargo run -p xtask -- build-aomi --app my-integration
+```
+
+## Instructions
+
+1. Identify the integration target and its callable surface.
+2. State the proposed toolset (3–8 intent-shaped tools) before coding.
+3. Scaffold with `cargo run -p xtask -- new-app <name>`.
+4. Implement `client.rs` (HTTP, auth, models), `tool.rs` (`DynAomiTool` impls), `lib.rs` (manifest + preamble).
+5. For execution apps, return `ToolReturn::with_routes(...)` instead of bare JSON.
+6. Build and validate: `cargo run -p xtask -- build-aomi --app <name>`.
+
+## Examples
+
+```bash
+grep -r "dyn_aomi_app!" ../aomi-apps/apps/
+cargo run -p xtask -- build-aomi --app binance
+cargo test --manifest-path apps/my-integration/Cargo.toml
+```
+
+## Output
+
+- Rust crate at `apps/<name>/` with `lib.rs`, `client.rs`, `tool.rs`, `Cargo.toml`
+- Compiled `.so`/`.dylib` plugin artifact under `target/`
+- Typed tool schema embedded in the plugin manifest
+
+## Error Handling
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `build-aomi` reports zero plugins | `Cargo.toml` untracked | `git add apps/<name>/Cargo.toml` then rebuild |
+| `SDK version mismatch` | Plugin built against old SDK | Bump version in `Cargo.toml`, rebuild all |
+| `JsonSchema derive failed` | Missing derive on Args | Add `schemars` dep, `#[derive(JsonSchema)]` on Args |
+| Async tool hangs | `is_canceled()` not polled | Add cancellation check in `run_async` loop |
+
+## Safety Justification
+
+`Bash(cargo:*, git:*)` — restricted to two argv prefixes. `cargo` runs xtask and compiles
+crates; `git` runs `ls-files` and `add` only. No other shell commands permitted;
+`permissions.shell` enforces this at the OWASP AST03 level.
+
+`Read` — reads within `./` and `../aomi-apps/` only. `Write` — writes to `./apps/`,
+`../aomi-apps/apps/`, `Cargo.toml`, `Cargo.lock`, `target/` only; identity files
+(`SOUL.md`, `MEMORY.md`, `AGENTS.md`, `build.rs`) are `deny_write`-listed.
+`Edit` — same paths as Write. `Grep` — read-only search, no writes.
+
+Risk tier: L1 (source files + Rust toolchain only; no fund movement, no network calls).
+
+---
 
 Use this skill for tasks like:
 

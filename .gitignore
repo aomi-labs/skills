@@ -2,3 +2,4 @@
 .staging/
 node_modules/
 .claude/worktrees/
+.worktrees/

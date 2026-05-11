@@ -1,0 +1,169 @@
+# aomi-skill distribution registry — managed by ./aomi-skill-manager.sh
+schema_version: "1.0"
+
+skills:
+  aomi-transact:
+    canonical: aomi-transact/SKILL.md
+    version: "0.10"
+    risk_tier: L2
+  aomi-build:
+    canonical: aomi-build/SKILL.md
+    version: "0.1"
+    risk_tier: L1
+  plugin-aomi:
+    canonical: plugins/aomi/.claude-plugin/plugin.json
+    version: "0.10"
+
+platforms:
+  self-hosted:
+    type: self-hosted
+    tier: 1
+    description: Canonical self-hosted marketplace.json at aomi-labs/skills
+    url: https://github.com/aomi-labs/skills
+    install_cmd: /plugin marketplace add aomi-labs/skills
+    skills: [plugin-aomi]
+    status: live
+
+  anthropic-community:
+    type: artifact
+    tier: 1
+    description: anthropics/claude-plugins-community (~1920 plugins)
+    path: distribution/anthropic/
+    submit_url: https://platform.claude.com/plugins/submit
+    skills: [plugin-aomi]
+    status: pending
+    submitted: "2026-05-08"
+    notes: Awaiting security scan + nightly sync
+
+  antigravity:
+    type: git-pr
+    tier: 1
+    description: antigravity-awesome-skills — fans out to Claude/Codex/Cursor/Gemini
+    branch: platform/antigravity
+    worktree: .worktrees/antigravity
+    pr: https://github.com/sickn33/antigravity-awesome-skills/pull/575
+    skills: [aomi-transact]
+    status: merged
+    submitted: "2026-05-08"
+    last_synced_sha: null
+
+  codex-official:
+    type: artifact
+    tier: 1
+    description: OpenAI Codex official Plugin Directory — self-serve not yet open
+    path: distribution/codex-official/
+    skills: [plugin-aomi]
+    status: waiting
+    notes: Watch developers.openai.com/codex/changelog for self-serve launch
+
+  ccpi:
+    type: git-pr
+    tier: 2
+    description: claude-code-plugins-plus-skills (@intentsolutionsio/ccpi)
+    branch: platform/ccpi
+    worktree: .worktrees/ccpi
+    pr: https://github.com/jeremylongshore/claude-code-plugins-plus-skills/pull/679
+    skills: [aomi-transact, aomi-build]
+    status: blocked
+    submitted: "2026-05-06"
+    blocker: grade-D schema + aomi-build security gate — fix on main, run sync+push
+    fix_committed: true
+    last_synced_sha: null
+    validator: python3 scripts/validate-skills-schema.py --enterprise --verbose
+
+  cryptoskills:
+    type: git-pr
+    tier: 2
+    description: cryptoskills.dev (0xinit) — enriched 10-file format
+    branch: platform/cryptoskills
+    worktree: .worktrees/cryptoskills
+    pr: https://github.com/0xinit/cryptoskills/pull/21
+    skills: [aomi-transact]
+    status: open
+    submitted: "2026-05-07"
+    last_synced_sha: null
+
+  cryptoskill-jia:
+    type: git-pr
+    tier: 2
+    description: cryptoskill.org (jiayaoqijia) — issue-based submission
+    branch: platform/cryptoskill-jia
+    worktree: .worktrees/cryptoskill-jia
+    issue: https://github.com/jiayaoqijia/cryptoskill/issues/36
+    skills: [aomi-transact]
+    status: open
+    submitted: "2026-05-07"
+    last_synced_sha: null
+
+  lobehub:
+    type: auto-index
+    tier: 2
+    description: LobeHub Skills — auto-imports SKILL.md from GitHub
+    urls:
+      aomi-transact: https://lobehub.com/skills/aomi-labs-aomi-aomi-transact
+      aomi-build: https://lobehub.com/skills/aomi-labs-aomi-aomi-build
+    skills: [aomi-transact, aomi-build]
+    status: live
+    notes: 403 on last automated check — verify in browser
+
+  skillsmp:
+    type: auto-index
+    tier: 2
+    description: skillsmp.com — auto-indexed via GitHub topics
+    url: https://skillsmp.com/?q=aomi
+    skills: [aomi-transact, aomi-build]
+    status: not-indexed
+    notes: Topics set. Not scraped as of 2026-05-11.
+
+  agensi:
+    type: artifact
+    tier: 2
+    description: agensi.io — curated marketplace, manual zip upload
+    path: distribution/agensi/
+    url: https://www.agensi.io/skills/aomi-transact
+    skills: [aomi-transact]
+    status: live
+    install_count: 1
+    last_checked: "2026-05-11"
+    notes: aomi-build not yet submitted
+
+  codex-marketplace:
+    type: artifact
+    tier: 2
+    description: codex-marketplace.com — third-party Codex directory
+    path: distribution/codex-marketplace/
+    login_url: https://codex-marketplace.com
+    skills: [plugin-aomi, aomi-transact, aomi-build]
+    status: pending
+    submitted: "2026-05-08"
+    submissions:
+      - {type: PLUGIN, path: plugins/aomi/, status: under_review}
+      - {type: SKILL, path: plugins/aomi/skills/transact/, status: under_review}
+      - {type: SKILL, path: plugins/aomi/skills/build/, status: under_review}
+
+  clawhub:
+    type: cli-publish
+    tier: 2
+    description: clawhub.ai (OpenClaw) — ~180k users, CLI publish
+    path: distribution/clawhub/
+    url: https://clawhub.ai
+    publish_cmd_transact: clawhub skill publish ./plugins/aomi/skills/transact --slug aomi-transact --license MIT
+    publish_cmd_build: clawhub skill publish ./plugins/aomi/skills/build --slug aomi-build --license MIT
+    skills: [aomi-transact, aomi-build]
+    status: ready
+    blocker: slugs squatted by merkle-seeds, flagged SUSPICIOUS. Monitor for soft-delete.
+
+  anthropic-official:
+    type: artifact
+    tier: 1
+    description: Anthropic-curated official tier (~55 plugins) — BD play
+    status: deferred
+    notes: Pursue after community listing lands and install volume grows
+
+  claudemarketplaces:
+    type: auto-index
+    tier: 3
+    description: claudemarketplaces.com — gated on 500 installs
+    url: https://claudemarketplaces.com
+    status: deferred
+    notes: Revisit when installs cross 500
