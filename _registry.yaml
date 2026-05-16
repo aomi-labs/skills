@@ -192,3 +192,42 @@ platforms:
     status: deferred
     notes: Revisit when installs cross 500
     last_checked: '2026-05-16'
+  awesome-composio:
+    type: git-pr
+    tier: 2
+    description: ComposioHQ/awesome-claude-skills (~60k stars, ~4hr review)
+    pr: https://github.com/ComposioHQ/awesome-claude-skills/pull/856
+    skills:
+    - aomi-transact
+    - aomi-build
+    status: open
+    submitted: '2026-05-16'
+  awesome-behisecc:
+    type: git-pr
+    tier: 2
+    description: BehiSecc/awesome-claude-skills (~9k stars, 2-3 day review)
+    pr: https://github.com/BehiSecc/awesome-claude-skills/pull/309
+    skills:
+    - aomi-transact
+    - aomi-build
+    status: open
+    submitted: '2026-05-16'
+  awesome-onchain-agents:
+    type: git-pr
+    tier: 2
+    description: sodofi/awesome-onchain-agents (thematic match — onchain AI agents)
+    pr: https://github.com/sodofi/awesome-onchain-agents/pull/40
+    skills:
+    - aomi-transact
+    - aomi-build
+    status: open
+    submitted: '2026-05-16'
+  agensi-build:
+    type: artifact
+    tier: 2
+    description: agensi.io — aomi-build pending manual upload (zip at /tmp/aomi-build-agensi.zip)
+    path: distribution/agensi/
+    skills:
+    - aomi-build
+    status: ready-to-submit
+    notes: '[2026-05-16] zip prepared from aomi-build/, 49K, includes SKILL.md + 5 references + agents/openai.yaml + LICENSE + README + templates. Awaiting manual upload via agensi web UI (no public submission API).'
