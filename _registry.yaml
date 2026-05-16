@@ -167,14 +167,18 @@ platforms:
     skills:
     - aomi-transact
     - aomi-build
-    status: blocked
+    status: partial
     last_checked: '2026-05-16'
-    reserved_until: '2026-06-07'
-    blocker: 'Both slugs in clawhub 90-day reservation purgatory. Public Convex API returns 404, but `clawhub skill publish` returns ConvexError "reserved by an unpublished skill until 2026-06-07T14:16:13.566Z". `clawhub undelete` rejected (moderator-only). Three paths: (1) wait until 2026-06-07 then retry, (2) publish under alternate slug (e.g. aomi-labs-aomi-transact), (3) email clawhub moderators for early release.'
+    published:
+      aomi-transact: '0.10.0'
+    pending:
+      aomi-build:
+        reserved_until: '2026-06-07'
+        reason: 'Slug reservation held by merkle-seeds with no associated skill record — clawhub transfer requires a real skill record to act on. Three paths: (1) wait until 2026-06-07 reservation expiry, (2) merkle-seeds publishes a stub first then transfers, (3) ship without aomi-build on clawhub.'
     verify_urls:
       aomi-transact: https://wry-manatee-359.convex.site/api/v1/skills/aomi-transact
       aomi-build: https://wry-manatee-359.convex.site/api/v1/skills/aomi-build
-    notes: '[2026-05-16] Public 404 != claimable. Slugs locked to prior owner (merkle-seeds) until 2026-06-07T14:16. Earlier "ready to publish" assessment was wrong. CLI also required absolute path and --version in semver (frontmatter "0.10" rejected, need "0.10.0").'
+    notes: '[2026-05-16] aomi-transact@0.10.0 published live (owner: ceciliaz030, moderation: CLEAN) after merkle-seeds → CeciliaZ030 transfer (Jamie ran restore + transfer request, CeciliaZ030 ran accept + publish). aomi-build still blocked: slug reservation exists but no skill record, so transfer flow does not apply. Publish required CLI quirks: absolute path, --version semver (0.10.0 not "0.10"), --no-input global flag for unattended runs.'
   anthropic-official:
     type: artifact
     tier: 1
