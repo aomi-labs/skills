@@ -167,18 +167,15 @@ platforms:
     skills:
     - aomi-transact
     - aomi-build
-    status: partial
+    status: live
     last_checked: '2026-05-16'
     published:
       aomi-transact: '0.10.0'
-    pending:
-      aomi-build:
-        reserved_until: '2026-06-07'
-        reason: 'Slug reservation held by merkle-seeds with no associated skill record — clawhub transfer requires a real skill record to act on. Three paths: (1) wait until 2026-06-07 reservation expiry, (2) merkle-seeds publishes a stub first then transfers, (3) ship without aomi-build on clawhub.'
+      aomi-build: '0.1.0'
     verify_urls:
       aomi-transact: https://wry-manatee-359.convex.site/api/v1/skills/aomi-transact
       aomi-build: https://wry-manatee-359.convex.site/api/v1/skills/aomi-build
-    notes: '[2026-05-16] aomi-transact@0.10.0 published live (owner: ceciliaz030, moderation: CLEAN) after merkle-seeds → CeciliaZ030 transfer (Jamie ran restore + transfer request, CeciliaZ030 ran accept + publish). aomi-build still blocked: slug reservation exists but no skill record, so transfer flow does not apply. Publish required CLI quirks: absolute path, --version semver (0.10.0 not "0.10"), --no-input global flag for unattended runs.'
+    notes: '[2026-05-16] Both slugs live, owner ceciliaz030, moderation CLEAN. aomi-transact unblocked via direct transfer from merkle-seeds. aomi-build required stub-publish-then-transfer workaround (transfer requires a skill record, and the slug had only a reservation). Publish CLI quirks: absolute path, --version semver, --no-input.'
   anthropic-official:
     type: artifact
     tier: 1
