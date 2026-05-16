@@ -168,8 +168,11 @@ platforms:
     - aomi-transact
     - aomi-build
     status: ready
-    blocker: slugs squatted by merkle-seeds, flagged SUSPICIOUS. Monitor for soft-delete.
     last_checked: '2026-05-16'
+    verify_urls:
+      aomi-transact: https://wry-manatee-359.convex.site/api/v1/skills/aomi-transact
+      aomi-build: https://wry-manatee-359.convex.site/api/v1/skills/aomi-build
+    notes: '[2026-05-16] Verified FREE — earlier merkle-seeds squat is gone (404 on both slugs via Convex API). Ready to publish.'
   anthropic-official:
     type: artifact
     tier: 1

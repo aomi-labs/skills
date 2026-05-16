@@ -25,6 +25,7 @@ permissions:
       - agensi.io
       - www.agensi.io
       - clawhub.ai
+      - wry-manatee-359.convex.site
       - claudemarketplaces.com
     deny: "*"
 risk_tier: L1
@@ -116,6 +117,17 @@ Uses curl with a desktop browser User-Agent — LobeHub / Cloudflare-fronted
 sites return 403 to the default WebFetch UA. Do not use WebFetch for these
 URLs; use this command instead. Stamps `last_checked` on every 200.
 
+**Verify slug availability on squatter-prone platforms (clawhub):**
+```bash
+./aomi-skill-manager.sh verify           # all `verify_urls` entries
+./aomi-skill-manager.sh verify clawhub
+```
+For platforms with `verify_urls:` in the registry. Inverted semantics:
+**404 = available (green), 200 = SQUATTED (red)**. Clawhub is a pure SPA
+so the user-facing `/skills/<slug>` URL always returns 200 — `verify_urls`
+points at the Convex HTTP API (`/api/v1/skills/<slug>`) which returns a
+real 404 when the slug is unregistered.
+
 ## Examples
 
 ```bash
@@ -135,6 +147,7 @@ URLs; use this command instead. Stamps `last_checked` on every 200.
 - `diff` → standard git diff on skill files only
 - `open` → worktree path for use with `cd $(...)`
 - `check` → per-URL HTTP status + page title; updates `last_checked` on 200
+- `verify` → per-`verify_urls` status with inverted semantics (404=available)
 
 ## Error Handling
 

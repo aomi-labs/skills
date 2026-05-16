@@ -25,6 +25,7 @@ Commands:
   note  <platform> <text>     Append timestamped note to platform entry
   add   <name>                Interactively scaffold a new platform entry
   check [platform]            Curl every URL entry with browser UA; report status + title
+  verify [platform]           Hit each `verify_urls` (inverted: 404=available, 200=squatted)
   registry                    Pretty-print _registry.yaml
 EOF
 }
@@ -80,6 +81,10 @@ elif cmd == "urls":
 elif cmd == "update-checked":
     import datetime
     data["platforms"][sys.argv[2]]["last_checked"] = datetime.date.today().isoformat(); save()
+elif cmd == "verify-urls":
+    for n, p in data.get("platforms", {}).items():
+        for slug, url in (p.get("verify_urls") or {}).items():
+            print(f"{n}:{slug}|{url}")
 PYEOF
 }
 
@@ -238,6 +243,33 @@ cmd_check() {
     return 0
 }
 
+cmd_verify() {
+    _check_root
+    command -v curl >/dev/null || { echo "curl required"; exit 1; }
+    local ua='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    local filter="${1:-}" hit_any=0
+    while IFS='|' read -r key url; do
+        [[ -z "$url" ]] && continue
+        platform="${key%%:*}"
+        [[ -n "$filter" && "$platform" != "$filter" ]] && continue
+        hit_any=1
+        code=$(curl -sL -A "$ua" --max-time 10 -o /dev/null -w "%{http_code}" "$url" 2>/dev/null || echo "000")
+        case "$code" in
+            404)    color=$GRN; verdict="available" ;;
+            200)    color=$RED; verdict="SQUATTED — investigate" ;;
+            3*)     color=$CYN; verdict="redirect" ;;
+            5*|000) color=$YEL; verdict="api down?" ;;
+            *)      color=$NC;  verdict="?" ;;
+        esac
+        printf "${color}%3s${NC}  %-32s  %s\n" "$code" "$key" "$verdict"
+    done < <(_py verify-urls)
+    if [[ "$hit_any" -eq 0 ]]; then
+        printf "${YEL}No verify_urls entries%s${NC}\n" "${filter:+ matching $filter}"
+        return 1
+    fi
+    return 0
+}
+
 cmd_add() {
     _check_root; name="${1:?Usage: add <name>}"
     read -rp "Type [git-pr/artifact/cli-publish/auto-index]: " ptype; ptype="${ptype:-git-pr}"
@@ -273,6 +305,7 @@ case "${1:-help}" in
     note)       cmd_note "${2:-}" "${3:-}" ;;
     add)        cmd_add "${2:-}" ;;
     check)      cmd_check "${2:-}" ;;
+    verify)     cmd_verify "${2:-}" ;;
     registry)   cat "$REGISTRY" ;;
     help|--help|-h) usage ;;
     *) echo "Unknown: $1"; usage; exit 1 ;;
