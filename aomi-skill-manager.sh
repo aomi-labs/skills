@@ -24,6 +24,7 @@ Commands:
   set-status <platform> <s>   Update platform status in registry
   note  <platform> <text>     Append timestamped note to platform entry
   add   <name>                Interactively scaffold a new platform entry
+  check [platform]            Curl every URL entry with browser UA; report status + title
   registry                    Pretty-print _registry.yaml
 EOF
 }
@@ -70,6 +71,15 @@ elif cmd == "skills":
     [print(n) for n in data.get("skills", {})]
 elif cmd == "skill-version":
     print(data["skills"][sys.argv[2]].get("version", "?"))
+elif cmd == "urls":
+    for n, p in data.get("platforms", {}).items():
+        if p.get("url"):
+            print(f"{n}|{p['url']}")
+        for slug, url in (p.get("urls") or {}).items():
+            print(f"{n}:{slug}|{url}")
+elif cmd == "update-checked":
+    import datetime
+    data["platforms"][sys.argv[2]]["last_checked"] = datetime.date.today().isoformat(); save()
 PYEOF
 }
 
@@ -194,6 +204,40 @@ cmd_note() {
     _py append-note "${1:?Usage: note <platform> <text>}" "${2:?missing text}"
 }
 
+cmd_check() {
+    _check_root
+    command -v curl >/dev/null || { echo "curl required"; exit 1; }
+    local ua='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    local filter="${1:-}" hit_any=0
+    declare -A platform_seen
+    while IFS='|' read -r key url; do
+        [[ -z "$url" ]] && continue
+        platform="${key%%:*}"
+        [[ -n "$filter" && "$platform" != "$filter" ]] && continue
+        hit_any=1
+        body=$(curl -sL -A "$ua" --max-time 10 -w '\n__STATUS__%{http_code}' "$url" 2>/dev/null || printf '\n__STATUS__000')
+        status="${body##*__STATUS__}"
+        title=$(printf '%s' "${body%__STATUS__*}" | tr -d '\0' | grep -oE '<title>[^<]*</title>' | head -1 | sed -E 's/<[^>]*>//g; s/^[[:space:]]+//; s/[[:space:]]+$//' || true)
+        case "$status" in
+            200)    color=$GRN ;;
+            301|302|307|308) color=$CYN ;;
+            403|404|410)     color=$YEL ;;
+            5*|000) color=$RED ;;
+            *)      color=$NC  ;;
+        esac
+        printf "${color}%3s${NC}  %-32s  %s\n" "$status" "$key" "${title:0:70}"
+        if [[ "$status" == "200" && -z "${platform_seen[$platform]:-}" ]]; then
+            _py update-checked "$platform" >/dev/null
+            platform_seen[$platform]=1
+        fi
+    done < <(_py urls)
+    if [[ "$hit_any" -eq 0 ]]; then
+        printf "${YEL}No URL entries%s${NC}\n" "${filter:+ matching $filter}"
+        return 1
+    fi
+    return 0
+}
+
 cmd_add() {
     _check_root; name="${1:?Usage: add <name>}"
     read -rp "Type [git-pr/artifact/cli-publish/auto-index]: " ptype; ptype="${ptype:-git-pr}"
@@ -228,6 +272,7 @@ case "${1:-help}" in
     set-status) cmd_set_status "${2:-}" "${3:-}" ;;
     note)       cmd_note "${2:-}" "${3:-}" ;;
     add)        cmd_add "${2:-}" ;;
+    check)      cmd_check "${2:-}" ;;
     registry)   cat "$REGISTRY" ;;
     help|--help|-h) usage ;;
     *) echo "Unknown: $1"; usage; exit 1 ;;

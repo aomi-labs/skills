@@ -21,6 +21,7 @@ platforms:
     skills:
     - plugin-aomi
     status: live
+    last_checked: '2026-05-16'
   anthropic-community:
     type: artifact
     tier: 1
@@ -106,7 +107,10 @@ platforms:
     - aomi-transact
     - aomi-build
     status: live
-    notes: 403 on last automated check — verify in browser
+    last_synced: '2026-05-14'
+    last_checked: '2026-05-16'
+    notes: Verified live with browser UA — both listings populated, v0.1.30 metadata picked up. Earlier "403" was WebFetch
+      UA blocking, not a real outage.
   skillsmp:
     type: auto-index
     tier: 2
@@ -117,6 +121,7 @@ platforms:
     - aomi-build
     status: not-indexed
     notes: Topics set. Not scraped as of 2026-05-11.
+    last_checked: '2026-05-16'
   agensi:
     type: artifact
     tier: 2
@@ -127,7 +132,7 @@ platforms:
     - aomi-transact
     status: live
     install_count: 1
-    last_checked: '2026-05-11'
+    last_checked: '2026-05-16'
     notes: aomi-build not yet submitted
   codex-marketplace:
     type: artifact
@@ -164,6 +169,7 @@ platforms:
     - aomi-build
     status: ready
     blocker: slugs squatted by merkle-seeds, flagged SUSPICIOUS. Monitor for soft-delete.
+    last_checked: '2026-05-16'
   anthropic-official:
     type: artifact
     tier: 1
@@ -177,3 +183,4 @@ platforms:
     url: https://claudemarketplaces.com
     status: deferred
     notes: Revisit when installs cross 500
+    last_checked: '2026-05-16'

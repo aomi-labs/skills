@@ -10,14 +10,23 @@ version: "1.0"
 author: aomi-labs
 license: MIT
 compatible-with: claude-code
-allowed-tools: "Bash(./aomi-skill-manager.sh:*, git:*, python3:*), Read, Edit, Grep"
+allowed-tools: "Bash(./aomi-skill-manager.sh:*, git:*, python3:*, curl:*), Read, Edit, Grep"
 permissions:
   files:
     read: [_registry.yaml, aomi-transact/SKILL.md, aomi-build/SKILL.md, distribution/, .worktrees/]
     write: [_registry.yaml, distribution/]
     deny_write: [aomi-transact/SKILL.md, aomi-build/SKILL.md]
-  shell: [./aomi-skill-manager.sh, git, python3]
-  network: {allow: [], deny: "*"}
+  shell: [./aomi-skill-manager.sh, git, python3, curl]
+  network:
+    allow:
+      - github.com
+      - lobehub.com
+      - skillsmp.com
+      - agensi.io
+      - www.agensi.io
+      - clawhub.ai
+      - claudemarketplaces.com
+    deny: "*"
 risk_tier: L1
 requires:
   binaries: [git, python3]
@@ -57,6 +66,7 @@ Platform types: `git-pr` (GitHub PR → `platform/*` branch + `.worktrees/*`),
 ./aomi-skill-manager.sh status          # all platforms at a glance
 ./aomi-skill-manager.sh setup           # create all git-pr worktrees
 ./aomi-skill-manager.sh stale           # which branches lag main
+./aomi-skill-manager.sh check           # curl every URL with browser UA
 cd $(./aomi-skill-manager.sh open ccpi) # jump into a platform worktree
 ```
 
@@ -97,6 +107,15 @@ cd - && ./aomi-skill-manager.sh push smithery
 ./aomi-skill-manager.sh note clawhub "slug released — republishing"
 ```
 
+**Check liveness of auto-index / artifact platforms:**
+```bash
+./aomi-skill-manager.sh check            # all URLs
+./aomi-skill-manager.sh check lobehub    # one platform
+```
+Uses curl with a desktop browser User-Agent — LobeHub / Cloudflare-fronted
+sites return 403 to the default WebFetch UA. Do not use WebFetch for these
+URLs; use this command instead. Stamps `last_checked` on every 200.
+
 ## Examples
 
 ```bash
@@ -115,6 +134,7 @@ cd - && ./aomi-skill-manager.sh push smithery
 - `sync` → ok+synced or CONFLICT with recovery steps
 - `diff` → standard git diff on skill files only
 - `open` → worktree path for use with `cd $(...)`
+- `check` → per-URL HTTP status + page title; updates `last_checked` on 200
 
 ## Error Handling
 
@@ -130,4 +150,5 @@ cd - && ./aomi-skill-manager.sh push smithery
 
 Reads and writes `_registry.yaml` and `distribution/`. Does not modify canonical
 `aomi-transact/SKILL.md` or `aomi-build/SKILL.md` (deny_write). Shell restricted to
-`./aomi-skill-manager.sh`, `git`, `python3`. No network calls. Risk tier: L1.
+`./aomi-skill-manager.sh`, `git`, `python3`, `curl`. Network restricted to the
+seven platform hosts the `check` command verifies (GET-only via curl). Risk tier: L1.
