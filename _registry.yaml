@@ -162,8 +162,10 @@ platforms:
     description: clawhub.ai (OpenClaw) — ~180k users, CLI publish
     path: distribution/clawhub/
     url: https://clawhub.ai
-    publish_cmd_transact: clawhub skill publish /Users/cecilia/Code/aomi-skill/plugins/aomi/skills/transact --slug aomi-transact --version 0.10.0
-    publish_cmd_build: clawhub skill publish /Users/cecilia/Code/aomi-skill/plugins/aomi/skills/build --slug aomi-build --version 0.1.0
+    cli: clawhub
+    publish_paths:
+      aomi-transact: plugins/aomi/skills/transact
+      aomi-build: plugins/aomi/skills/build
     skills:
     - aomi-transact
     - aomi-build

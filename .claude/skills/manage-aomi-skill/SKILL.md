@@ -117,6 +117,17 @@ Uses curl with a desktop browser User-Agent — LobeHub / Cloudflare-fronted
 sites return 403 to the default WebFetch UA. Do not use WebFetch for these
 URLs; use this command instead. Stamps `last_checked` on every 200.
 
+**Publish to a cli-publish platform (clawhub today):**
+```bash
+./aomi-skill-manager.sh publish clawhub aomi-transact --dry-run   # preview
+./aomi-skill-manager.sh publish clawhub aomi-transact             # do it
+./aomi-skill-manager.sh publish clawhub aomi-build
+```
+Reads `publish_paths.<slug>` and the platform's `cli:` from the registry,
+coerces the SKILL.md frontmatter `version:` to semver (`0.10` → `0.10.0`),
+runs the CLI from `/tmp` (clawhub bug: rejects relative-to-cwd paths),
+then writes `published.<slug>` and `last_published` back into the registry.
+
 **Verify slug availability on squatter-prone platforms (clawhub):**
 ```bash
 ./aomi-skill-manager.sh verify           # all `verify_urls` entries
@@ -148,6 +159,7 @@ real 404 when the slug is unregistered.
 - `open` → worktree path for use with `cd $(...)`
 - `check` → per-URL HTTP status + page title; updates `last_checked` on 200
 - `verify` → per-`verify_urls` status with inverted semantics (404=available)
+- `publish` → CLI publish + register version; `--dry-run` previews the resolved command
 
 ## Error Handling
 

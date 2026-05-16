@@ -26,6 +26,7 @@ Commands:
   add   <name>                Interactively scaffold a new platform entry
   check [platform]            Curl every URL entry with browser UA; report status + title
   verify [platform]           Hit each `verify_urls` (inverted: 404=available, 200=squatted)
+  publish <plat> <slug>       Publish a cli-publish platform's skill (use --dry-run to preview)
   registry                    Pretty-print _registry.yaml
 EOF
 }
@@ -85,6 +86,17 @@ elif cmd == "verify-urls":
     for n, p in data.get("platforms", {}).items():
         for slug, url in (p.get("verify_urls") or {}).items():
             print(f"{n}:{slug}|{url}")
+elif cmd == "publish-path":
+    p = data["platforms"][sys.argv[2]].get("publish_paths") or {}
+    print(p.get(sys.argv[3], ""))
+elif cmd == "platform-cli":
+    print(data["platforms"][sys.argv[2]].get("cli", ""))
+elif cmd == "record-published":
+    pub = data["platforms"][sys.argv[2]].setdefault("publish" + "ed", {})
+    pub[sys.argv[3]] = sys.argv[4]
+    import datetime
+    data["platforms"][sys.argv[2]]["last_published"] = datetime.date.today().isoformat()
+    save()
 PYEOF
 }
 
@@ -243,6 +255,60 @@ cmd_check() {
     return 0
 }
 
+_semver_from_frontmatter() {
+    python3 - "$1" <<'PYEOF'
+import sys, re
+with open(sys.argv[1]) as f:
+    content = f.read()
+m = re.search(r'^---\s*\n(.*?)\n---', content, re.DOTALL)
+if not m: sys.exit("no frontmatter")
+fm = m.group(1)
+vm = re.search(r'^version:\s*[\'\"]?([0-9.]+)[\'\"]?\s*$', fm, re.MULTILINE)
+if not vm: sys.exit("no version field")
+parts = vm.group(1).split(".")
+while len(parts) < 3: parts.append("0")
+print(".".join(parts[:3]))
+PYEOF
+}
+
+cmd_publish() {
+    _check_root
+    local platform="${1:?Usage: publish <platform> <slug> [--dry-run]}"
+    local slug="${2:?Usage: publish <platform> <slug> [--dry-run]}"
+    local dry=""; [[ "${3:-}" == "--dry-run" ]] && dry=1
+    local cli; cli=$(_py platform-cli "$platform")
+    [[ -z "$cli" ]] && { printf "${RED}No 'cli:' field for platform '%s'${NC}\n" "$platform"; exit 1; }
+    command -v "$cli" >/dev/null || { printf "${RED}CLI not installed: %s${NC}\n" "$cli"; exit 1; }
+    local rel; rel=$(_py publish-path "$platform" "$slug")
+    [[ -z "$rel" ]] && { printf "${RED}No publish_paths.%s on platform %s${NC}\n" "$slug" "$platform"; exit 1; }
+    local abs; abs="$(pwd)/$rel"
+    [[ -d "$abs" ]] || { printf "${RED}Not a directory: %s${NC}\n" "$abs"; exit 1; }
+    [[ -f "$abs/SKILL.md" ]] || { printf "${RED}No SKILL.md in %s${NC}\n" "$abs"; exit 1; }
+    local version; version=$(_semver_from_frontmatter "$abs/SKILL.md") || exit 1
+    printf "${BOLD}publish${NC} %s/%s @ %s ${DIM}(%s)${NC}\n" "$platform" "$slug" "$version" "$abs"
+    if [[ -n "$dry" ]]; then
+        printf "${DIM}DRY-RUN — would run from /tmp:${NC}\n  %s --no-input skill publish %s --slug %s --version %s\n" \
+            "$cli" "$abs" "$slug" "$version"
+        return 0
+    fi
+    case "$cli" in
+        clawhub)
+            ( cd /tmp && "$cli" --no-input skill publish "$abs" --slug "$slug" --version "$version" )
+            ;;
+        *)
+            printf "${RED}publish not implemented for cli: %s${NC}\n" "$cli"; exit 1
+            ;;
+    esac
+    local rc=$?
+    if [[ "$rc" -eq 0 ]]; then
+        _py record-published "$platform" "$slug" "$version" >/dev/null
+        printf "${GRN}published${NC} %s/%s @ %s\n" "$platform" "$slug" "$version"
+    else
+        printf "${RED}publish failed${NC} (exit %s)\n" "$rc"
+        exit "$rc"
+    fi
+}
+
 cmd_verify() {
     _check_root
     command -v curl >/dev/null || { echo "curl required"; exit 1; }
@@ -306,6 +372,7 @@ case "${1:-help}" in
     add)        cmd_add "${2:-}" ;;
     check)      cmd_check "${2:-}" ;;
     verify)     cmd_verify "${2:-}" ;;
+    publish)    cmd_publish "${2:-}" "${3:-}" "${4:-}" ;;
     registry)   cat "$REGISTRY" ;;
     help|--help|-h) usage ;;
     *) echo "Unknown: $1"; usage; exit 1 ;;
