@@ -83,10 +83,11 @@ platforms:
     tier: 1
     description: OpenAI Codex official Plugin Directory — self-serve not yet open
     path: distribution/codex-official/
+    changelog_url: https://developers.openai.com/codex/changelog
     skills:
     - plugin-aomi
     status: waiting
-    notes: Watch developers.openai.com/codex/changelog for self-serve launch
+    notes: '[2026-05-17] Changelog reviewed. 2026-04-30 entry: "/plugins: remove marketplace". 2026-05-07/08 entries add plugin sharing + access controls + discoverability, but these are user-to-user share features, not a public submission directory. No self-serve publishing route yet. Recheck weekly.'
     health_check:
       method: manual
       reason: self-serve not yet open; monitor developers.openai.com/codex/changelog
@@ -202,7 +203,7 @@ platforms:
     tier: 2
     description: codex-marketplace.com — third-party Codex directory
     path: distribution/codex-marketplace/
-    login_url: https://codex-marketplace.com
+    login_url: https://www.codex-marketplace.com
     skills:
     - plugin-aomi
     - aomi-transact
@@ -219,9 +220,15 @@ platforms:
     - type: SKILL
       path: plugins/aomi/skills/build/
       status: under_review
+    notes: '[2026-05-17] 9 days under_review. All public slug URLs render the SPA "Plugin Not Found" page (200 status is misleading — needle-checked). Apex codex-marketplace.com 307-redirects to www. If still under_review at 14 days, ping their support/Discord.'
     health_check:
-      method: manual
-      reason: dashboard is login-walled; check submitter dashboard manually
+      method: http-200
+      urls:
+        plugin-aomi: https://www.codex-marketplace.com/plugins/aomi
+        aomi-transact: https://www.codex-marketplace.com/plugins/aomi-transact
+        aomi-build: https://www.codex-marketplace.com/plugins/aomi-build
+      needle: aomi-labs
+      needle_optional: false
     last_checked: '2026-05-17'
   clawhub:
     type: cli-publish
