@@ -2,11 +2,11 @@ schema_version: '1.1'
 skills:
   aomi-transact:
     canonical: aomi-transact/SKILL.md
-    version: '0.10'
+    version: '0.10.0'
     risk_tier: L2
   aomi-build:
     canonical: aomi-build/SKILL.md
-    version: '0.1'
+    version: '0.1.0'
     risk_tier: L1
   plugin-aomi:
     canonical: plugins/aomi/.claude-plugin/plugin.json
@@ -48,11 +48,15 @@ platforms:
     description: anthropics/claude-plugins-community (~1920 plugins)
     path: distribution/anthropic/
     submit_url: https://platform.claude.com/plugins/submit
+    dashboard_url: https://console.anthropic.com/plugins
     skills:
     - plugin-aomi
-    status: pending
+    status: published-not-synced
     submitted: '2026-05-08'
-    notes: Awaiting security scan + nightly sync
+    published_at:
+      aomi-build: '2026-05-08T01:42:00Z'
+      aomi-transact: '2026-05-07T21:35:00Z'
+    notes: '[2026-05-17] Both skills show Published in the Claude Console (dashboard_url above), but not yet present in anthropics/claude-plugins-community/.claude-plugin/marketplace.json. Anthropic-side approval is complete; awaiting their nightly sync to the public marketplace file. Verify by re-checking the marketplace.json contents needle.'
     health_check:
       method: marketplace-search
       url: https://raw.githubusercontent.com/anthropics/claude-plugins-community/main/.claude-plugin/marketplace.json
@@ -271,16 +275,18 @@ platforms:
   awesome-composio:
     type: git-pr
     tier: 2
-    description: ComposioHQ/awesome-claude-skills (~60k stars, ~4hr review)
+    description: ComposioHQ/awesome-claude-skills (~60k stars) — POLICY EXCLUSION
     pr: https://github.com/ComposioHQ/awesome-claude-skills/pull/856
     skills:
     - aomi-transact
     - aomi-build
-    status: open
+    status: closed-policy
     submitted: '2026-05-16'
+    closed_at: '2026-05-17'
+    blocker: 'Composio''s validate workflow hard-blocks any added bullet matching the regex /\b(crypto|cryptocurrency|web3|blockchain|nft|defi|token|wallet|solana|ethereum|bitcoin)\b/i. aomi-transact is a crypto skill — policy mismatch, no fixable path. Closed with polite note. Skip ComposioHQ for any aomi submissions.'
     health_check:
-      method: gh-pr
-      pr: https://github.com/ComposioHQ/awesome-claude-skills/pull/856
+      method: manual
+      reason: PR closed (policy bans crypto); no further checks needed
     last_checked: '2026-05-17'
   awesome-behisecc:
     type: git-pr
