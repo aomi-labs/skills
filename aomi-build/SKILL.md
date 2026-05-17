@@ -1,31 +1,29 @@
 ---
 name: aomi-build
 description: >
-  Build new Aomi apps and plugins from API docs, OpenAPI/Swagger specs, SDK docs,
-  runtime interfaces, or product requirements. aomi-build scaffolds production-ready
-  Rust SDK crates (lib.rs, client.rs, tool.rs) with tool schemas, preambles,
-  host-interop flows, and validation steps — turning a vendor's full API surface into
-  AI-agent-callable tools. Trigger when the user wants to scaffold a new Aomi app from
-  an OpenAPI/Swagger spec, wrap a REST API as agent-callable tools, port an existing
-  SDK to Aomi, generate a tool surface from product requirements, or extend an Aomi
-  runtime with new integrations. Prefers real product integrations over docs-only
-  helpers whenever a callable surface exists. Output crates support sync HTTP, async
-  tools (cancellation-safe via DynAsyncSink), proxy-unwrap (EIP-1967), and host-interop
-  flows that route quote → approval → swap as multi-step transactions. Same runtime
-  that aomi-transact drives.
-compatibility: "Best when a local `aomi-apps` checkout is available, often at `../aomi-apps`. Falls back to bundled references when the SDK repo is not present. Targets aomi-sdk v0.1.15+ (Rust 2024 edition)."
+  Scaffold new Aomi apps and plugins from API docs, OpenAPI/Swagger specs, or SDK
+  references. aomi-build generates production-ready Rust SDK crates (lib.rs,
+  client.rs, tool.rs) with tool schemas, preambles, host-interop flows, and
+  validation — turning a vendor's API surface into AI-agent-callable tools. Use when
+  the user wants to scaffold a new Aomi app from a spec, wrap a REST API as
+  agent-callable tools, port an existing SDK, or extend an Aomi runtime with new
+  integrations. Trigger with prompts about wrapping APIs, scaffolding Rust crates
+  from specs, or adding protocol integrations that aomi-transact can drive. Output
+  crates support sync HTTP, async tools (DynAsyncSink), proxy-unwrap (EIP-1967), and
+  multi-step quote→approval→swap flows. Same runtime that aomi-transact drives.
+tags: [crypto, web3, evm, rust, sdk-scaffolding, openapi, swagger, agent-tools, defi, builder-tools]
+compatibility: 'Best when a local aomi-apps checkout is available, often at ../aomi-apps. Falls back to bundled references when the SDK repo is not present. Targets aomi-sdk v0.1.15+ (Rust 2024 edition). Designed for claude-code; also works with Cursor, Codex CLI, Gemini, and any agent runtime that supports the Anthropic skill spec.'
 license: MIT
-version: "0.1"
-author: aomi-labs
-compatible-with: claude-code
+version: "0.1.0"
+author: 'aomi-labs <hello@aomi.dev>'
 # Claude Code allowed-tools. The skill scaffolds Rust source files (Write/Edit),
 # inspects existing apps and SDK examples (Read/Grep), and runs cargo + git
 # (Bash). Operational scope is locked down by OWASP permissions.shell below
 # to `cargo` and `git` only — defense in depth.
-allowed-tools: "Bash(cargo:*, git:*), Read, Write, Edit, Grep"
+allowed-tools: 'Bash(cargo:*), Bash(git:*), Read, Write, Edit, Grep'
 metadata:
-  author: aomi-labs
-  version: "0.1"
+  author: 'aomi-labs <hello@aomi.dev>'
+  version: "0.1.0"
   # Provenance — author-declared upstream coordinates.
   # `gh skill install` will add/overwrite `ref`, `tree_sha`, `installed_via`,
   # and `installed_at` at install time. Do not pre-populate those fields.
@@ -348,3 +346,15 @@ Aim to leave behind:
 - stable JSON outputs for the host/model
 - an app that can point at a real product surface when one exists
 - a short validation pass or a clear note about what could not be verified
+
+## Resources
+
+- Source repository: https://github.com/aomi-labs/skills/tree/main/aomi-build
+- Companion runtime skill: [aomi-transact](https://github.com/aomi-labs/skills/tree/main/aomi-transact)
+- npm runtime client: https://www.npmjs.com/package/@aomi-labs/client
+- Aomi SDK patterns: [references/aomi-sdk-patterns.md](references/aomi-sdk-patterns.md)
+- Spec-to-tools mapping: [references/spec-to-tools.md](references/spec-to-tools.md)
+- Host route conventions: [references/host-routes.md](references/host-routes.md)
+- End-to-end build examples: [references/examples.md](references/examples.md)
+- Troubleshooting playbook: [references/troubleshooting.md](references/troubleshooting.md)
+- Anthropic skill spec: https://docs.claude.com/en/docs/claude-code/skills
