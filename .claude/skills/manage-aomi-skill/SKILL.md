@@ -108,14 +108,35 @@ cd - && ./aomi-skill-manager.sh push smithery
 ./aomi-skill-manager.sh note clawhub "slug released — republishing"
 ```
 
-**Check liveness of auto-index / artifact platforms:**
+**Check platform health (the canonical routine):**
 ```bash
-./aomi-skill-manager.sh check            # all URLs
+./aomi-skill-manager.sh check            # every platform
 ./aomi-skill-manager.sh check lobehub    # one platform
 ```
-Uses curl with a desktop browser User-Agent — LobeHub / Cloudflare-fronted
-sites return 403 to the default WebFetch UA. Do not use WebFetch for these
-URLs; use this command instead. Stamps `last_checked` on every 200.
+**This is the only correct way to run routine checks.** Ad-hoc WebFetch
+calls produce false-positive 403s on Cloudflare-fronted sites and
+false-positive matches on loose substrings (e.g. "aomi" matches "Xiaomi"
+in marketplace.json). The dispatcher reads each platform's `health_check:`
+field and runs the correct probe per method. Stamps `last_checked` on
+every platform after each run.
+
+Methods (`health_check.method`):
+- `http-200` — GET url(s) with browser UA; optional `needle:` regex must
+  match; `needle_optional: true` lets indexing-pending platforms pass.
+- `http-404` — GET url(s); 404 expected (inverted, for slug-availability
+  on squatter-prone platforms).
+- `gh-pr` — `gh pr view <pr> --json state,...`; OPEN/MERGED green, CLOSED yellow.
+- `gh-issue` — `gh issue view <issue> --json state,...`.
+- `marketplace-search` — fetch a JSON URL, regex-search the body for `needle:`.
+- `npm-view` — `npm view <package> version`; non-empty result is green.
+- `manual` — never auto-fails; just prints `reason:` text. Use for
+  login-walled dashboards, deferred platforms, ready-to-submit zips.
+
+**Pick needles that can't false-positive.** "aomi" matches "Xiaomi";
+use `aomi-labs` or `aomi-transact`. For search pages whose `<input value>`
+echoes the query, the needle must be something that only appears in
+*result cards*, not the query echo (e.g. `aomi-labs/skills` for repo-link
+result cards).
 
 **Publish to a cli-publish platform (clawhub today):**
 ```bash
@@ -157,7 +178,7 @@ real 404 when the slug is unregistered.
 - `sync` → ok+synced or CONFLICT with recovery steps
 - `diff` → standard git diff on skill files only
 - `open` → worktree path for use with `cd $(...)`
-- `check` → per-URL HTTP status + page title; updates `last_checked` on 200
+- `check` → dispatches per-platform `health_check.method`; updates `last_checked`
 - `verify` → per-`verify_urls` status with inverted semantics (404=available)
 - `publish` → CLI publish + register version; `--dry-run` previews the resolved command
 

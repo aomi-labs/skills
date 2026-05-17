@@ -97,6 +97,18 @@ elif cmd == "record-published":
     import datetime
     data["platforms"][sys.argv[2]]["last_published"] = datetime.date.today().isoformat()
     save()
+elif cmd == "health-checks-tsv":
+    for n, p in data.get("platforms", {}).items():
+        hc = dict(p.get("health_check") or {})
+        if not hc:
+            # Back-compat inference if a platform lacks health_check.
+            if "pr" in p: hc = {"method": "gh-pr", "pr": p["pr"]}
+            elif "issue" in p: hc = {"method": "gh-issue", "issue": p["issue"]}
+            elif "urls" in p: hc = {"method": "http-200", "urls": p["urls"]}
+            elif "url" in p: hc = {"method": "http-200", "url": p["url"]}
+            else: hc = {"method": "manual", "reason": "no health_check configured"}
+        method = hc.pop("method", "manual")
+        print(f"{n}\t{method}\t{json.dumps(hc)}")
 PYEOF
 }
 
@@ -221,37 +233,188 @@ cmd_note() {
     _py append-note "${1:?Usage: note <platform> <text>}" "${2:?missing text}"
 }
 
+_UA='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+
+# Each method handler: prints one line per probe and returns 0 on overall pass, 1 on fail.
+# Args: $1=platform name, rest=method-specific JSON from _py health-check-json.
+
+_curl_with_retry() {
+    # $1=url; emits body + __STATUS__<code> on stdout. Retries once on 000 (transient).
+    local url="$1" body status
+    body=$(curl -sL -A "$_UA" --max-time 10 -w '\n__STATUS__%{http_code}' "$url" 2>/dev/null || printf '\n__STATUS__000')
+    status="${body##*__STATUS__}"
+    if [[ "$status" == "000" ]]; then
+        sleep 1
+        body=$(curl -sL -A "$_UA" --max-time 15 -w '\n__STATUS__%{http_code}' "$url" 2>/dev/null || printf '\n__STATUS__000')
+    fi
+    printf '%s' "$body"
+}
+
+_hc_http_200() {
+    local name="$1" cfg="$2" pass=1
+    # cfg is JSON; pull url(s) and optional needle
+    local urls; urls=$(echo "$cfg" | python3 -c "import json,sys; d=json.load(sys.stdin); us=d.get('urls') or {}; print('\n'.join(f'{k}\t{v}' for k,v in us.items()) if us else f'_\t{d.get(\"url\",\"\")}')")
+    local needle; needle=$(echo "$cfg" | python3 -c "import json,sys; print(json.load(sys.stdin).get('needle',''))")
+    local needle_optional; needle_optional=$(echo "$cfg" | python3 -c "import json,sys; print('1' if json.load(sys.stdin).get('needle_optional') else '')")
+    while IFS=$'\t' read -r slug url; do
+        [[ -z "$url" ]] && continue
+        [[ "$slug" == "_" ]] && slug=""
+        local key="$name"; [[ -n "$slug" ]] && key="$name:$slug"
+        local body; body=$(_curl_with_retry "$url")
+        local status="${body##*__STATUS__}"
+        local content; content=$(printf '%s' "${body%__STATUS__*}" | tr -d '\0')
+        local detail=""
+        local ok=1
+        if [[ "$status" != "200" ]]; then ok=0; detail="HTTP $status"; fi
+        if [[ -n "$needle" && "$ok" -eq 1 ]]; then
+            if ! grep -qE "$needle" <<<"$content"; then
+                if [[ -n "$needle_optional" ]]; then
+                    detail="200, needle '$needle' not found (ok: indexing pending)"
+                else
+                    ok=0; detail="200 but needle '$needle' missing"
+                fi
+            else
+                detail="200 + needle"
+            fi
+        fi
+        if [[ "$ok" -eq 1 ]]; then
+            printf "${GRN}  ok${NC}  %-32s  %s\n" "$key" "$detail"
+        else
+            printf "${RED}fail${NC}  %-32s  %s\n" "$key" "$detail"; pass=0
+        fi
+    done <<<"$urls"
+    return $((1 - pass))
+}
+
+_hc_http_404() {
+    local name="$1" cfg="$2" pass=1
+    local urls; urls=$(echo "$cfg" | python3 -c "import json,sys; d=json.load(sys.stdin); us=d.get('urls') or {}; print('\n'.join(f'{k}\t{v}' for k,v in us.items()) if us else f'_\t{d.get(\"url\",\"\")}')")
+    while IFS=$'\t' read -r slug url; do
+        [[ -z "$url" ]] && continue
+        [[ "$slug" == "_" ]] && slug=""
+        local key="$name"; [[ -n "$slug" ]] && key="$name:$slug"
+        local code; code=$(curl -sL -A "$_UA" --max-time 10 -o /dev/null -w "%{http_code}" "$url" 2>/dev/null || echo "000")
+        if [[ "$code" == "404" ]]; then
+            printf "${GRN}  ok${NC}  %-32s  404 (slug available)\n" "$key"
+        elif [[ "$code" == "200" ]]; then
+            printf "${RED}fail${NC}  %-32s  200 (slug SQUATTED — investigate)\n" "$key"; pass=0
+        else
+            printf "${YEL}warn${NC}  %-32s  HTTP $code (api state unknown)\n" "$key"; pass=0
+        fi
+    done <<<"$urls"
+    return $((1 - pass))
+}
+
+_hc_gh_pr() {
+    local name="$1" cfg="$2"
+    local pr; pr=$(echo "$cfg" | python3 -c "import json,sys; print(json.load(sys.stdin).get('pr',''))")
+    [[ -z "$pr" ]] && { printf "${YEL}warn${NC}  %-32s  no pr URL\n" "$name"; return 1; }
+    local info; info=$(gh pr view "$pr" --json state,isDraft,mergeable,statusCheckRollup,updatedAt 2>&1)
+    if ! echo "$info" | python3 -c "import json,sys; json.load(sys.stdin)" 2>/dev/null; then
+        printf "${RED}fail${NC}  %-32s  gh: %s\n" "$name" "$(echo "$info" | head -1 | head -c 60)"
+        return 1
+    fi
+    local state; state=$(echo "$info" | python3 -c "import json,sys; print(json.load(sys.stdin).get('state',''))")
+    local updated; updated=$(echo "$info" | python3 -c "import json,sys; print(json.load(sys.stdin).get('updatedAt','')[:10])")
+    local color="$NC" tag="$state"
+    case "$state" in
+        MERGED) color="$GRN"; tag="merged" ;;
+        OPEN)   color="$CYN"; tag="open" ;;
+        CLOSED) color="$YEL"; tag="closed (not merged)" ;;
+    esac
+    printf "${color}%4s${NC}  %-32s  %s · updated %s\n" "${tag:0:4}" "$name" "$tag" "$updated"
+    return 0
+}
+
+_hc_gh_issue() {
+    local name="$1" cfg="$2"
+    local issue; issue=$(echo "$cfg" | python3 -c "import json,sys; print(json.load(sys.stdin).get('issue',''))")
+    [[ -z "$issue" ]] && { printf "${YEL}warn${NC}  %-32s  no issue URL\n" "$name"; return 1; }
+    local info; info=$(gh issue view "$issue" --json state,comments,updatedAt 2>&1)
+    if ! echo "$info" | python3 -c "import json,sys; json.load(sys.stdin)" 2>/dev/null; then
+        printf "${RED}fail${NC}  %-32s  gh: %s\n" "$name" "$(echo "$info" | head -1 | head -c 60)"
+        return 1
+    fi
+    local state; state=$(echo "$info" | python3 -c "import json,sys; print(json.load(sys.stdin).get('state',''))")
+    local comments; comments=$(echo "$info" | python3 -c "import json,sys; print(len(json.load(sys.stdin).get('comments',[])))")
+    local updated; updated=$(echo "$info" | python3 -c "import json,sys; print(json.load(sys.stdin).get('updatedAt','')[:10])")
+    local color="$NC" tag="$state"
+    case "$state" in
+        OPEN)   color="$CYN"; tag="open" ;;
+        CLOSED) color="$GRN"; tag="closed" ;;
+    esac
+    printf "${color}%4s${NC}  %-32s  %s · %s comments · updated %s\n" "${tag:0:4}" "$name" "$tag" "$comments" "$updated"
+    return 0
+}
+
+_hc_marketplace_search() {
+    local name="$1" cfg="$2"
+    local url; url=$(echo "$cfg" | python3 -c "import json,sys; print(json.load(sys.stdin).get('url',''))")
+    local needle; needle=$(echo "$cfg" | python3 -c "import json,sys; print(json.load(sys.stdin).get('needle',''))")
+    local body; body=$(curl -sL -A "$_UA" --max-time 15 "$url" 2>/dev/null)
+    if [[ -z "$body" ]]; then sleep 1; body=$(curl -sL -A "$_UA" --max-time 30 "$url" 2>/dev/null); fi
+    if [[ -z "$body" ]]; then
+        printf "${RED}fail${NC}  %-32s  fetch failed: %s\n" "$name" "$url"
+        return 1
+    fi
+    if grep -qE "$needle" <<<"$body"; then
+        printf "${GRN}  ok${NC}  %-32s  needle '%s' found in marketplace\n" "$name" "$needle"
+        return 0
+    fi
+    printf "${YEL}pend${NC}  %-32s  needle '%s' not yet in %s\n" "$name" "$needle" "${url##*/}"
+    return 1
+}
+
+_hc_npm_view() {
+    local name="$1" cfg="$2"
+    local pkg; pkg=$(echo "$cfg" | python3 -c "import json,sys; print(json.load(sys.stdin).get('package',''))")
+    [[ -z "$pkg" ]] && { printf "${YEL}warn${NC}  %-32s  no package name\n" "$name"; return 1; }
+    command -v npm >/dev/null || { printf "${YEL}warn${NC}  %-32s  npm not installed\n" "$name"; return 1; }
+    local ver; ver=$(npm view "$pkg" version 2>/dev/null)
+    if [[ -n "$ver" ]]; then
+        printf "${GRN}  ok${NC}  %-32s  %s@%s\n" "$name" "$pkg" "$ver"
+        return 0
+    fi
+    printf "${RED}fail${NC}  %-32s  %s — npm view returned empty\n" "$name" "$pkg"
+    return 1
+}
+
+_hc_manual() {
+    local name="$1" cfg="$2"
+    local reason; reason=$(echo "$cfg" | python3 -c "import json,sys; print(json.load(sys.stdin).get('reason','manual check'))")
+    printf "${DIM} man${NC}  %-32s  %s\n" "$name" "$reason"
+    return 0
+}
+
 cmd_check() {
     _check_root
     command -v curl >/dev/null || { echo "curl required"; exit 1; }
-    local ua='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-    local filter="${1:-}" hit_any=0
-    declare -A platform_seen
-    while IFS='|' read -r key url; do
-        [[ -z "$url" ]] && continue
-        platform="${key%%:*}"
-        [[ -n "$filter" && "$platform" != "$filter" ]] && continue
+    local filter="${1:-}" hit_any=0 fail_count=0
+    while IFS=$'\t' read -r name method cfg; do
+        [[ -z "$name" ]] && continue
+        [[ -n "$filter" && "$name" != "$filter" ]] && continue
         hit_any=1
-        body=$(curl -sL -A "$ua" --max-time 10 -w '\n__STATUS__%{http_code}' "$url" 2>/dev/null || printf '\n__STATUS__000')
-        status="${body##*__STATUS__}"
-        title=$(printf '%s' "${body%__STATUS__*}" | tr -d '\0' | grep -oE '<title>[^<]*</title>' | head -1 | sed -E 's/<[^>]*>//g; s/^[[:space:]]+//; s/[[:space:]]+$//' || true)
-        case "$status" in
-            200)    color=$GRN ;;
-            301|302|307|308) color=$CYN ;;
-            403|404|410)     color=$YEL ;;
-            5*|000) color=$RED ;;
-            *)      color=$NC  ;;
+        local rc=0
+        case "$method" in
+            http-200) _hc_http_200 "$name" "$cfg" || rc=$? ;;
+            http-404) _hc_http_404 "$name" "$cfg" || rc=$? ;;
+            gh-pr)    _hc_gh_pr "$name" "$cfg" || rc=$? ;;
+            gh-issue) _hc_gh_issue "$name" "$cfg" || rc=$? ;;
+            marketplace-search) _hc_marketplace_search "$name" "$cfg" || rc=$? ;;
+            npm-view) _hc_npm_view "$name" "$cfg" || rc=$? ;;
+            manual)   _hc_manual "$name" "$cfg" || rc=$? ;;
+            *) printf "${YEL}skip${NC}  %-32s  unknown method: %s\n" "$name" "$method"; rc=1 ;;
         esac
-        printf "${color}%3s${NC}  %-32s  %s\n" "$status" "$key" "${title:0:70}"
-        if [[ "$status" == "200" && -z "${platform_seen[$platform]:-}" ]]; then
-            _py update-checked "$platform" >/dev/null
-            platform_seen[$platform]=1
-        fi
-    done < <(_py urls)
+        [[ "$rc" -ne 0 ]] && fail_count=$((fail_count + 1))
+        # Mark last_checked on every probe regardless of pass/fail (we ran the check).
+        _py update-checked "$name" >/dev/null 2>&1 || true
+    done < <(_py health-checks-tsv)
     if [[ "$hit_any" -eq 0 ]]; then
-        printf "${YEL}No URL entries%s${NC}\n" "${filter:+ matching $filter}"
+        printf "${YEL}No platforms%s${NC}\n" "${filter:+ matching $filter}"
         return 1
     fi
+    echo
+    printf "${BOLD}%d failures${NC}\n" "$fail_count"
     return 0
 }
 

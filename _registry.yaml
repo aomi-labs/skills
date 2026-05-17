@@ -1,4 +1,4 @@
-schema_version: '1.0'
+schema_version: '1.1'
 skills:
   aomi-transact:
     canonical: aomi-transact/SKILL.md
@@ -21,7 +21,27 @@ platforms:
     skills:
     - plugin-aomi
     status: live
-    last_checked: '2026-05-16'
+    last_checked: '2026-05-17'
+    health_check:
+      method: http-200
+      url: https://github.com/aomi-labs/skills
+      needle: aomi-labs/skills
+  npm:
+    type: cli-publish
+    tier: 1
+    description: '@aomi-labs/client on npm — runtime the skill drives'
+    url: https://www.npmjs.com/package/@aomi-labs/client
+    cli: npm
+    package: '@aomi-labs/client'
+    skills:
+    - aomi-transact
+    - aomi-build
+    status: live
+    notes: SKILL.md pins v0.1.30; latest published is newer. Bump pin when CLI changes break compatibility.
+    health_check:
+      method: npm-view
+      package: '@aomi-labs/client'
+    last_checked: '2026-05-17'
   anthropic-community:
     type: artifact
     tier: 1
@@ -33,6 +53,11 @@ platforms:
     status: pending
     submitted: '2026-05-08'
     notes: Awaiting security scan + nightly sync
+    health_check:
+      method: marketplace-search
+      url: https://raw.githubusercontent.com/anthropics/claude-plugins-community/main/.claude-plugin/marketplace.json
+      needle: aomi-labs
+    last_checked: '2026-05-17'
   antigravity:
     type: git-pr
     tier: 1
@@ -45,6 +70,10 @@ platforms:
     status: merged
     submitted: '2026-05-08'
     last_synced_sha: null
+    health_check:
+      method: gh-pr
+      pr: https://github.com/sickn33/antigravity-awesome-skills/pull/575
+    last_checked: '2026-05-17'
   codex-official:
     type: artifact
     tier: 1
@@ -54,6 +83,10 @@ platforms:
     - plugin-aomi
     status: waiting
     notes: Watch developers.openai.com/codex/changelog for self-serve launch
+    health_check:
+      method: manual
+      reason: self-serve not yet open; monitor developers.openai.com/codex/changelog
+    last_checked: '2026-05-17'
   ccpi:
     type: git-pr
     tier: 2
@@ -61,17 +94,21 @@ platforms:
     branch: platform/ccpi
     worktree: .worktrees/ccpi
     pr: https://github.com/jeremylongshore/claude-code-plugins-plus-skills/pull/679
+    re_grade_pr: https://github.com/jeremylongshore/claude-code-plugins-plus-skills/pull/727
     skills:
     - aomi-transact
     - aomi-build
-    status: open
+    status: merged
     submitted: '2026-05-06'
-    blocker: grade-D schema + aomi-build security gate — fix on main, run sync+push
-    fix_committed: true
-    last_synced_sha: null
-    validator: python3 scripts/validate-skills-schema.py --enterprise --verbose
-    notes: '[2026-05-11] Grade A fixes on main — commented on PR #679 requesting re-review [2026-05-11] Grade A fixes pushed
-      to PR branch — awaiting re-review'
+    grades:
+      aomi-transact: C-78
+      aomi-build: B-86
+    notes: '[2026-05-12] PR #679 merged; both skills materialized to plugins/crypto/aomi/. [2026-05-16] PR #727 opened to
+      lift aomi-transact to grade A via SKILL.md trim to 133 lines.'
+    health_check:
+      method: gh-pr
+      pr: https://github.com/jeremylongshore/claude-code-plugins-plus-skills/pull/727
+    last_checked: '2026-05-17'
   cryptoskills:
     type: git-pr
     tier: 2
@@ -84,6 +121,10 @@ platforms:
     status: open
     submitted: '2026-05-07'
     last_synced_sha: null
+    health_check:
+      method: gh-pr
+      pr: https://github.com/0xinit/cryptoskills/pull/21
+    last_checked: '2026-05-17'
   cryptoskill-jia:
     type: git-pr
     tier: 2
@@ -96,6 +137,10 @@ platforms:
     status: open
     submitted: '2026-05-07'
     last_synced_sha: null
+    health_check:
+      method: gh-issue
+      issue: https://github.com/jiayaoqijia/cryptoskill/issues/36
+    last_checked: '2026-05-17'
   lobehub:
     type: auto-index
     tier: 2
@@ -108,9 +153,14 @@ platforms:
     - aomi-build
     status: live
     last_synced: '2026-05-14'
-    last_checked: '2026-05-16'
-    notes: Verified live with browser UA — both listings populated, v0.1.30 metadata picked up. Earlier "403" was WebFetch
-      UA blocking, not a real outage.
+    last_checked: '2026-05-17'
+    notes: Auto-syncs from GitHub. Earlier "403" was WebFetch UA blocking, not a real outage; browser-UA curl returns 200.
+    health_check:
+      method: http-200
+      urls:
+        aomi-transact: https://lobehub.com/skills/aomi-labs-aomi-aomi-transact
+        aomi-build: https://lobehub.com/skills/aomi-labs-aomi-aomi-build
+      needle: aomi-labs
   skillsmp:
     type: auto-index
     tier: 2
@@ -121,7 +171,12 @@ platforms:
     - aomi-build
     status: not-indexed
     notes: Topics set. Not scraped as of 2026-05-11.
-    last_checked: '2026-05-16'
+    last_checked: '2026-05-17'
+    health_check:
+      method: http-200
+      url: https://skillsmp.com/?q=aomi-transact
+      needle: aomi-labs/skills
+      needle_optional: true
   agensi:
     type: artifact
     tier: 2
@@ -132,8 +187,12 @@ platforms:
     - aomi-transact
     status: live
     install_count: 1
-    last_checked: '2026-05-16'
-    notes: aomi-build not yet submitted
+    last_checked: '2026-05-17'
+    notes: aomi-build not yet submitted (tracked under agensi-build)
+    health_check:
+      method: http-200
+      url: https://www.agensi.io/skills/aomi-transact
+      needle: Aomi Transact
   codex-marketplace:
     type: artifact
     tier: 2
@@ -156,6 +215,10 @@ platforms:
     - type: SKILL
       path: plugins/aomi/skills/build/
       status: under_review
+    health_check:
+      method: manual
+      reason: dashboard is login-walled; check submitter dashboard manually
+    last_checked: '2026-05-17'
   clawhub:
     type: cli-publish
     tier: 2
@@ -170,20 +233,30 @@ platforms:
     - aomi-transact
     - aomi-build
     status: live
-    last_checked: '2026-05-16'
+    last_checked: '2026-05-17'
     published:
-      aomi-transact: '0.10.0'
-      aomi-build: '0.1.0'
+      aomi-transact: 0.10.0
+      aomi-build: 0.1.0
     verify_urls:
       aomi-transact: https://wry-manatee-359.convex.site/api/v1/skills/aomi-transact
       aomi-build: https://wry-manatee-359.convex.site/api/v1/skills/aomi-build
-    notes: '[2026-05-16] Both slugs live, owner ceciliaz030, moderation CLEAN. aomi-transact unblocked via direct transfer from merkle-seeds. aomi-build required stub-publish-then-transfer workaround (transfer requires a skill record, and the slug had only a reservation). Publish CLI quirks: absolute path, --version semver, --no-input.'
+    notes: '[2026-05-16] Both slugs live, owner ceciliaz030, moderation CLEAN.'
+    health_check:
+      method: http-200
+      urls:
+        aomi-transact: https://wry-manatee-359.convex.site/api/v1/skills/aomi-transact
+        aomi-build: https://wry-manatee-359.convex.site/api/v1/skills/aomi-build
+      needle: '"slug":'
   anthropic-official:
     type: artifact
     tier: 1
     description: Anthropic-curated official tier (~55 plugins) — BD play
     status: deferred
     notes: Pursue after community listing lands and install volume grows
+    health_check:
+      method: manual
+      reason: deferred; pursue after community listing lands and install volume grows
+    last_checked: '2026-05-17'
   claudemarketplaces:
     type: auto-index
     tier: 3
@@ -191,7 +264,10 @@ platforms:
     url: https://claudemarketplaces.com
     status: deferred
     notes: Revisit when installs cross 500
-    last_checked: '2026-05-16'
+    last_checked: '2026-05-17'
+    health_check:
+      method: manual
+      reason: deferred; gated on 500 installs
   awesome-composio:
     type: git-pr
     tier: 2
@@ -202,6 +278,10 @@ platforms:
     - aomi-build
     status: open
     submitted: '2026-05-16'
+    health_check:
+      method: gh-pr
+      pr: https://github.com/ComposioHQ/awesome-claude-skills/pull/856
+    last_checked: '2026-05-17'
   awesome-behisecc:
     type: git-pr
     tier: 2
@@ -212,6 +292,10 @@ platforms:
     - aomi-build
     status: open
     submitted: '2026-05-16'
+    health_check:
+      method: gh-pr
+      pr: https://github.com/BehiSecc/awesome-claude-skills/pull/309
+    last_checked: '2026-05-17'
   awesome-onchain-agents:
     type: git-pr
     tier: 2
@@ -222,6 +306,10 @@ platforms:
     - aomi-build
     status: open
     submitted: '2026-05-16'
+    health_check:
+      method: gh-pr
+      pr: https://github.com/sodofi/awesome-onchain-agents/pull/40
+    last_checked: '2026-05-17'
   agensi-build:
     type: artifact
     tier: 2
@@ -230,4 +318,8 @@ platforms:
     skills:
     - aomi-build
     status: ready-to-submit
-    notes: '[2026-05-16] zip prepared from aomi-build/, 49K, includes SKILL.md + 5 references + agents/openai.yaml + LICENSE + README + templates. Awaiting manual upload via agensi web UI (no public submission API).'
+    notes: '[2026-05-16] zip prepared from aomi-build/, 49K. agensi has no public submission API — upload via web UI.'
+    health_check:
+      method: manual
+      reason: zip ready at /tmp/aomi-build-agensi.zip; upload via agensi.io web UI
+    last_checked: '2026-05-17'
