@@ -30,6 +30,16 @@ npx skills add aomi-labs/skills
 
 Works with Claude Code, Cursor, Gemini CLI, VS Code Copilot, and any [Agent Skills](https://agentskills.io)-compatible tool.
 
+### OpenAI Codex
+
+Add this repo as a Codex plugin marketplace, then install the `aomi` bundle:
+
+```bash
+codex plugin marketplace add aomi-labs/skills
+```
+
+The `aomi` plugin (skills: `aomi-transact`, `aomi-build`) is defined by [`.codex-plugin/plugin.json`](plugins/aomi/.codex-plugin/plugin.json) and exposed through [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json).
+
 ## Prerequisites
 
 ```bash
