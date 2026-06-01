@@ -32,7 +32,9 @@ jobs:
         run: pip install "git+https://github.com/pors/skill-audit@main"
 
       - name: Verify scanner tools
-        run: skill-audit check-tools
+        # `check-tools` was removed from pors/skill-audit@main, so this errors
+        # with "Path does not exist: check-tools". Keep it informational, not blocking.
+        run: skill-audit check-tools || true
 
       - name: Audit aomi-transact (SARIF, non-blocking)
         run: |
@@ -45,14 +47,16 @@ jobs:
             --format sarif -o results-build.sarif || true
 
       - name: Upload aomi-transact SARIF
-        if: always()
+        if: always() && hashFiles('results-transact.sarif') != ''
+        continue-on-error: true
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: results-transact.sarif
           category: skill-audit-transact
 
       - name: Upload aomi-build SARIF
-        if: always()
+        if: always() && hashFiles('results-build.sarif') != ''
+        continue-on-error: true
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: results-build.sarif
