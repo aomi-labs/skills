@@ -32,18 +32,18 @@ jobs:
         run: pip install "git+https://github.com/pors/skill-audit@main"
 
       - name: Verify scanner tools
-        # `check-tools` was removed from pors/skill-audit@main, so this errors
-        # with "Path does not exist: check-tools". Keep it informational, not blocking.
+        # In current pors/skill-audit@main the top-level `[PATH]` argument shadows
+        # the `check-tools` subcommand, so this errors. Keep it informational, not blocking.
         run: skill-audit check-tools || true
 
       - name: Audit aomi-transact (SARIF, non-blocking)
         run: |
-          skill-audit audit ./aomi-transact/ \
+          skill-audit ./aomi-transact/ \
             --format sarif -o results-transact.sarif || true
 
       - name: Audit aomi-build (SARIF, non-blocking)
         run: |
-          skill-audit audit ./aomi-build/ \
+          skill-audit ./aomi-build/ \
             --format sarif -o results-build.sarif || true
 
       - name: Upload aomi-transact SARIF
@@ -65,10 +65,10 @@ jobs:
       - name: Fail on critical findings (aomi-transact)
         # default exit semantics: 0 pass, 1 errors, 2 tool failure.
         # do NOT add --strict; that would also fail on warnings.
-        run: skill-audit audit ./aomi-transact/
+        run: skill-audit ./aomi-transact/
 
       - name: Fail on critical findings (aomi-build)
-        run: skill-audit audit ./aomi-build/
+        run: skill-audit ./aomi-build/
 
   cisco-skill-scanner:
     runs-on: ubuntu-latest
