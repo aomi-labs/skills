@@ -12,6 +12,8 @@ The user types something like *"swap 1 ETH for USDC on Uniswap"*; the agent pick
 
 The CLI is **account-abstraction-first**: by default it signs through a zero-config Alchemy proxy (no provider credentials needed), using EIP-7702 on Ethereum mainnet and ERC-4337 on L2s.
 
+On top of that, every linked wallet carries a per-wallet signing policy — 🟢 `autonomous`, 🟠 `human_sync`, or 🔴 `denied`. `aomi wallet ls` shows the policy table; `aomi wallet set-mode` changes a policy through a signed EIP-712 permit ceremony (challenge → sign → commit). Autonomous signing requires both the policy and a live delegated grant (minted by `aomi login --provider privy`).
+
 ## Installation
 
 ### Prerequisites
@@ -70,7 +72,7 @@ aomi-transact/
 │   ├── apps.md                  # 25+ app catalog
 │   ├── drain-vectors.md         # Per-protocol drain-vector reference
 │   ├── examples.md              # End-to-end flow examples (real captures)
-│   ├── session.md               # Two-tier storage, lifecycle
+│   ├── thread.md                # Two-tier storage, lifecycle
 │   └── troubleshooting.md       # Chat, signing, RPC, simulation, AA
 └── templates/
     └── aomi-workflow.sh         # Reusable bash function library
@@ -87,7 +89,7 @@ Per-control analysis lives in [`SECURITY.md`](SECURITY.md). Captured scanner rep
 The skill explicitly forbids:
 
 - **Inventing or echoing credential values.** Credentials only reach the CLI when the user supplies them for a specific command; they are never echoed back.
-- **Unsolicited credential setup.** `aomi wallet set`, `aomi secret add`, `--api-key`, `--private-key` are run only when the user explicitly asks and supplies the value.
+- **Unsolicited credential setup.** `aomi wallet dev-key`, `aomi secret add`, `--api-key`, `--private-key` are run only when the user explicitly asks and supplies the value.
 - **Blind signing.** Multi-step batches go through `aomi tx simulate` on a forked chain before `aomi tx sign`.
 - **Drain-vector bypass.** When the agent rejects calldata where `recipient`/`onBehalfOf`/`mintRecipient` ≠ `msg.sender`, the skill surfaces the block to the user rather than reformulating the prompt.
 

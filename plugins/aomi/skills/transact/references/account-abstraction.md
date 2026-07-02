@@ -117,6 +117,6 @@ Use an RPC that matches the pending transaction's chain:
 
 Practical rule:
 
-- `--chain` affects the wallet/session context for chat and request building.
+- `--chain` affects the wallet/thread context for chat and request building.
 - `--rpc-url` affects where `aomi tx sign` estimates and submits the transaction.
 - Treat them as separate controls and keep them aligned with the transaction you are signing.

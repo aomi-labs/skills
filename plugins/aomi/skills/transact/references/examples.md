@@ -18,7 +18,7 @@ A term you'll see throughout: a **drain vector** is the calldata field where a m
 
 Two notes on what you'll see in the terminal:
 
-- The `Internal trace` blocks below show what the agent does silently between chat and the queued-tx output. Users only see this with `--verbose` or by replaying via `aomi session log`. Without `--verbose`, the user sees just the assistant prose followed by `⚡ Wallet request queued: tx-N`.
+- The `Internal trace` blocks below show what the agent does silently between chat and the queued-tx output. Users only see this with `--verbose` or by replaying via `aomi thread log`. Without `--verbose`, the user sees just the assistant prose followed by `⚡ Wallet request queued: tx-N`.
 - The shortest one-shot form is `aomi --prompt "<message>"`. The examples below use `aomi chat "<message>"` for readability — both behave the same.
 
 ---
@@ -57,7 +57,7 @@ Run `aomi tx simulate tx-1 tx-2` to dry-run, then `aomi tx sign tx-1 tx-2` to se
    chain: 1
 ```
 
-### Internal trace (visible with `--verbose` or `aomi session log`)
+### Internal trace (visible with `--verbose` or `aomi thread log`)
 
 The agent activates the skill, reads balance/allowance, then stages two txs and simulates:
 
@@ -260,7 +260,7 @@ Please approve the request in your wallet to broadcast the transaction.
 
 The two assistant messages around the queued-tx event is real CLI behavior — the agent narrates before staging and confirms after. Don't treat the second message as a duplicate.
 
-### Internal trace (visible with `--verbose` or `aomi session log`)
+### Internal trace (visible with `--verbose` or `aomi thread log`)
 
 The actual silent tool sequence captured from `current.json`:
 
@@ -495,7 +495,7 @@ aomi tx sign tx-1
 
 ## What All Five Flows Have in Common
 
-- **Always start a wallet-aware session** with `--public-key 0xUserAddress` and the right `--chain`.
+- **Always start a wallet-aware thread** with `--public-key 0xUserAddress` and the right `--chain`.
 - **Always read `aomi tx list`** between chat and signing — never guess what's queued.
 - **Always simulate multi-step batches** before signing. Single-tx flows are simulation-optional but never wrong to simulate.
 - **Always confirm** with the user before `aomi tx sign` for any flow that moves funds.
@@ -507,8 +507,8 @@ aomi tx sign tx-1
   > - *"supply 1000 USDC on Aave"* (verb amount asset protocol)
   > - *"stake 1 ETH on Rocket Pool"* (verb amount asset protocol)
   > - *"bridge 50 USDC from Ethereum to Base via CCTP, recipient my wallet, approve first"* (full template)
-- **Things the agent does silently before staging** — balance check, allowance check, ABI verification (proxy unwrap if applicable), selector verification. Visible to the user only with `--verbose` or via `aomi session log`. Don't bypass these by feeding raw calldata unless you're red-team testing the guard.
-- **The simulator is the gate, not the wallet.** If simulation reports `Batch success: false` (or you see a guard-block annotation in `aomi session events`), **do not** attempt `aomi tx sign` — surface the failure to the user and either rebuild (allowance retry pattern) or stop.
+- **Things the agent does silently before staging** — balance check, allowance check, ABI verification (proxy unwrap if applicable), selector verification. Visible to the user only with `--verbose` or via `aomi thread log`. Don't bypass these by feeding raw calldata unless you're red-team testing the guard.
+- **The simulator is the gate, not the wallet.** If simulation reports `Batch success: false` (or you see a guard-block annotation in `aomi thread events`), **do not** attempt `aomi tx sign` — surface the failure to the user and either rebuild (allowance retry pattern) or stop.
 - **Multi-tx batches return one hash on 7702 (AA), two hashes on EOA-batched.** Both `tx-1` and `tx-2` share the same `txHash` in `aomi tx list` after signing under the AA 7702 atomic-batch path — that's expected. On the EOA path with `batched: true` (e.g. when AA falls through or the user passes `--eoa`), each `tx-N` carries a **`txHashes: [hash1, hash2]`** array — the operation produces two on-chain transactions, with the second being the canonical one shown as `txHash`. Reference: real captures in `~/.aomi/sessions/session-*.json` show `executionKind: "eoa"`, `batched: true`, and the dual-hash array. If you see two hashes, that's not a duplicate-broadcast bug — that's the EOA-batched signing pattern.
 
 ## Verification provenance

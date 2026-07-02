@@ -57,7 +57,7 @@ This document maps the `aomi-transact` skill against [OWASP Agentic Skills Top 1
 
 **Controls in place:**
 
-- The skill is **read-only by default**. Chat, simulation, session inspection, and app/model/chain introspection do not move funds. Signing is a separate, explicit step the user must request (see the "Hard Rules" section in `SKILL.md`).
+- The skill is **read-only by default**. Chat, simulation, thread inspection, and app/model/chain introspection do not move funds. Signing is a separate, explicit step the user must request (see the "Hard Rules" section in `SKILL.md`).
 - `aomi tx sign` is only invoked after `aomi tx list` shows a pending `tx-N` the user asked for.
 - Drain-vector annotations on simulation (recipient ≠ msg.sender, etc.) cannot be bypassed by reformulating the prompt — the skill explicitly forbids this in the security section. See [`references/drain-vectors.md`](references/drain-vectors.md) for the full table.
 
@@ -67,9 +67,9 @@ This document maps the `aomi-transact` skill against [OWASP Agentic Skills Top 1
 
 **Controls in place:**
 
-- Side-effect-producing commands (`aomi wallet set <key>`, `aomi secret add NAME=value`, `aomi config set-backend`) are **only** run when the user explicitly asks for that specific setup in the current turn and supplies the value themselves. The skill never runs them on its own initiative.
+- Side-effect-producing commands (`aomi wallet dev-key <key>`, `aomi secret add NAME=value`, `aomi config set-backend`) are **only** run when the user explicitly asks for that specific setup in the current turn and supplies the value themselves. The skill never runs them on its own initiative.
 - Before running a credential-setup command the user asked for, the skill confirms what will be persisted and where (local CLI state vs. the aomi backend) so the user can abort.
-- Read-side variants (`aomi wallet current`, `aomi config current`, `aomi secret list`) are skill-driven and safe — they expose handle names only, never raw values.
+- Read-side variants (`aomi wallet ls`, `aomi config current`, `aomi secret list`) are skill-driven and safe — they expose addresses, signing policies, and handle names only, never raw values.
 
 ### AST06 — Insecure Skill Communication
 
@@ -79,7 +79,7 @@ This document maps the `aomi-transact` skill against [OWASP Agentic Skills Top 1
 
 - The skill makes no direct network calls. The CLI it drives talks to `api.aomi.dev` (the declared backend) and to user-supplied RPC endpoints passed through `--rpc-url` at sign time.
 - The skill **never echoes a credential value back to the user** after a setup command completes. Confirmation is by handle name or derived address only (see "Hard Rules" #2 in `SKILL.md`).
-- `aomi secret add` transmits the credential value to the aomi backend; the skill surfaces this trust-boundary explicitly to the user before running the command (see `references/session.md` and the SKILL.md "Secret Ingestion" subsection).
+- `aomi secret add` transmits the credential value to the aomi backend; the skill surfaces this trust-boundary explicitly to the user before running the command (see `references/thread.md` and the SKILL.md "Secret Ingestion" subsection).
 
 ### AST07 — Inadequate Logging / Auditability
 
@@ -87,8 +87,8 @@ This document maps the `aomi-transact` skill against [OWASP Agentic Skills Top 1
 
 **Controls in place:**
 
-- The CLI maintains a session log per session (`aomi session log`, `aomi session events`) that replays the full conversation, all tool calls, and all system events from the backend.
-- Local session JSON files (`~/.aomi/sessions/session-N.json`) mirror pending and signed transaction state with full calldata, gas estimates, and hashes — inspectable via `cat` + `jq` without a network round-trip.
+- The CLI maintains a log per thread (`aomi thread log`, `aomi thread events`) that replays the full conversation, all tool calls, and all system events from the backend.
+- Local thread JSON files (`~/.aomi/sessions/session-N.json`) mirror pending and signed transaction state with full calldata, gas estimates, and hashes — inspectable via `cat` + `jq` without a network round-trip.
 - The skill's own actions are limited to invoking `aomi <subcommand>`; every invocation is observable in the user's shell history.
 
 ### AST08 — Skill Supply-Chain Attacks
@@ -110,8 +110,9 @@ This document maps the `aomi-transact` skill against [OWASP Agentic Skills Top 1
 
 - Every state-changing CLI invocation requires explicit user consent in the same turn:
   - `aomi tx sign` — only after `aomi tx list` shows a pending `tx-N` the user requested.
-  - `aomi wallet set` / `aomi secret add` / `aomi config set-backend` — only when the user has explicitly asked for that setup and supplied the value.
+  - `aomi wallet dev-key` / `aomi secret add` / `aomi config set-backend` — only when the user has explicitly asked for that setup and supplied the value.
   - Multi-step batches (`approve` + `swap`) are reviewed by the user via `aomi tx simulate` before signing.
+- Signing is additionally gated by the per-wallet signing-mode policy (🟢 `autonomous` / 🟠 `human_sync` / 🔴 `denied`, inspectable via `aomi wallet ls`). Policy changes go through `aomi wallet set-mode`, a signed EIP-712 permit ceremony (challenge → sign → commit) — grants toward `autonomous` must be signed by that wallet's own key, and `autonomous` also requires a live delegated grant (`aomi login --provider privy`). The skill cannot silently escalate a wallet's signing mode.
 - Drain-vector annotations cannot be bypassed; the skill surfaces blocks rather than reformulating prompts.
 
 ### AST10 — Cross-Platform Reuse
@@ -137,7 +138,7 @@ All reports under [`.scanner-reports/`](../.scanner-reports/). Re-run any scanne
 
 **Notes on findings**:
 
-- The 4 pors WARN findings match documentation patterns (`access sensitive data`, `delete...` operations) that appear in `references/session.md` because the docs explain those CLI commands. They are documentation regex matches, not actual destructive code paths.
+- The 4 pors WARN findings match documentation patterns (`access sensitive data`, `delete...` operations) that appear in `references/thread.md` because the docs explain those CLI commands. They are documentation regex matches, not actual destructive code paths.
 - The SkillScan HIGH finding (`MCP_001: MCP server launched via npx without version pinning`) is a false positive caused by a buggy upstream regex. The rule's pattern `\bnpx\s+@[\w.-]+/[\w.-]+(?!@\d)` backtracks within the package name (matches `clien` not `client`), so the lookahead `(?!@\d)` always succeeds regardless of how the version is pinned. All `npx @aomi-labs/client@0.1.30` invocations in this skill are explicitly version-pinned to the minimum supported CLI version; the overall scan still passes because the risk score (2.0) is below the pass threshold (6.0). Worth filing upstream at [NMitchem/SkillScan](https://github.com/NMitchem/SkillScan/issues).
 - The 4 Snyk HIGH findings (W007, W009, W011, W012) are taxonomic characterizations of the skill's intentional risk surface, not bugs. Each is acknowledged below with the in-place mitigation. Snyk's own exit code is 0 (advisory output), and the skill's `risk_tier: L2` declaration in the OWASP manifest already states this risk class up front.
 
@@ -147,7 +148,7 @@ The Snyk Agent Scan rule pack characterizes a skill's risk surface, not just bug
 
 | Code | Title | Status | Mitigation in place |
 |------|-------|--------|---------------------|
-| **W007** | Insecure credential handling | Acknowledged — by design | Skill frontmatter description explicitly forbids the LLM from fabricating, guessing, echoing, or logging credential values. `aomi secret add NAME=<value>` and `aomi wallet set <signing-key>` use placeholder syntax in all docs; the user supplies the real value. The "Hard Rules" and "Security Model" sections of SKILL.md, plus AST05 (Side-Effects) and AST06 (Insecure Communication) above, codify the no-unsolicited-setup posture. |
+| **W007** | Insecure credential handling | Acknowledged — by design | Skill frontmatter description explicitly forbids the LLM from fabricating, guessing, echoing, or logging credential values. `aomi secret add NAME=<value>` and `aomi wallet dev-key <signing-key>` use placeholder syntax in all docs; the user supplies the real value. The "Hard Rules" and "Security Model" sections of SKILL.md, plus AST05 (Side-Effects) and AST06 (Insecure Communication) above, codify the no-unsolicited-setup posture. |
 | **W009** | Direct money access | Acknowledged — by design | The skill is explicitly classified `risk_tier: L2` in the OWASP manifest because it signs and broadcasts on-chain transactions. AST04 (Confused Deputy) and AST09 (Insufficient User Consent) above codify the "read-only by default, signing requires explicit user request" posture. `aomi tx sign` is only invoked after `aomi tx list` shows a pending `tx-N` the user asked for, and multi-step batches go through `aomi tx simulate` on a forked chain first. |
 | **W011** | Third-party content exposure | Acknowledged — by design | The agent uses 25+ apps (DefiLlama, 1inch, Khalani, Brave Search, X, Neynar, etc.) to fetch quotes, routes, and read-only data — that is the skill's purpose. Fund-moving calldata that the third-party content influences is gated by `aomi tx simulate` (drain-vector annotations block `recipient != msg.sender`) and an explicit user `aomi tx sign` step. AST04 above and [`references/drain-vectors.md`](references/drain-vectors.md) document the per-protocol guard rules. |
 | **W012** | Potentially malicious external URL (npx) | Acknowledged — pinned + documented | Every `npx` invocation is version-pinned to `@0.1.30` (minimum supported CLI). Users are explicitly directed to install globally with `npm install -g @aomi-labs/client` for repeated use; npx is the on-demand fallback. The OWASP `permissions.shell` array constrains the skill's actual operational scope to `aomi` and `npx @aomi-labs/client@0.1.30` only. AST08 (Supply-Chain Attacks) above acknowledges that npm package signing / sigstore attestation is open. |

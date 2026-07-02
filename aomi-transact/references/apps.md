@@ -90,7 +90,7 @@ Route Options:
      Gas:              0.108 POL (~$0.08)
 ```
 
-**Build and submit the order (write).** After the user picks a route, confirm in the same session:
+**Build and submit the order (write).** After the user picks a route, confirm in the same thread:
 
 ```bash
 aomi chat "proceed with Hyperstream using the TRANSFER method"

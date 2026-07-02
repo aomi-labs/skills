@@ -108,7 +108,7 @@ aomi chat "swap 100 USDC for WETH using CoW" --app cow --new-session
 aomi chat "what's the dydx ETH-USD orderbook?" --app dydx --new-session
 ```
 
-For a multi-command session on a non-default app, set the env var:
+For multiple consecutive commands on a non-default app, set the env var:
 
 ```bash
 export AOMI_APP=khalani
@@ -119,7 +119,7 @@ aomi tx sign tx-1
 
 ## Credentials
 
-Credentials are scoped to the active session. Inspect with `aomi secret list` (handle names only — no values are ever printed). To configure (only when the user explicitly asks and provides the value):
+Credentials are scoped to the active thread. Inspect with `aomi secret list` (handle names only — no values are ever printed). To configure (only when the user explicitly asks and provides the value):
 
 ```bash
 aomi secret add NEYNAR_API_KEY=neynar_...

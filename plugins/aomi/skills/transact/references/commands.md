@@ -26,20 +26,20 @@ aomi tx simulate <id> [<id> ...]                       # dry-run a batch on a fo
 aomi tx sign <id> [<id> ...]                           # sign and submit
 ```
 
-## Sessions
+## Threads
 
 ```bash
-aomi session list                                      # local sessions with topic + pending count
-aomi session new
-aomi session resume <id>                               # set active pointer
-aomi session delete <id>                               # remove (check no pending txs first)
-aomi session status                                    # current session summary
-aomi session log                                       # replay conversation + tool output
-aomi session events                                    # raw backend system events
-aomi session close                                     # clear active pointer; next chat starts fresh
+aomi thread list                                       # local threads with topic + pending count
+aomi thread new
+aomi thread resume <id>                                # set active pointer
+aomi thread delete <id>                                # remove (check no pending txs first)
+aomi thread status                                     # current thread summary
+aomi thread log                                        # replay conversation + tool output
+aomi thread events                                     # raw backend system events
+aomi thread close                                      # clear active pointer; next chat starts fresh
 ```
 
-Selectors accept the backend session id, `session-N`, or `N`.
+Selectors accept the backend thread id, `thread-N`, or `N`.
 
 ## Secrets
 
@@ -56,7 +56,7 @@ aomi app list
 aomi app current
 aomi model list
 aomi model current
-aomi model set <rig>                                   # persist model for current session
+aomi model set <rig>                                   # persist model for current thread
 ```
 
 `aomi chat --model <rig> "<message>"` applies a model for one turn without persisting it. Pick an app per turn with `--app <name>` or `AOMI_APP=<name>`. The installed set is dynamic — confirm with `aomi app list`. Full catalog and per-app credential requirements in [apps.md](apps.md).
@@ -69,16 +69,30 @@ aomi chain current
 aomi chain set <id>                                    # only when user asked to change default
 ```
 
+## Login and Account
+
+```bash
+aomi login                                             # BetterAuth device flow; stores bearer
+aomi login --provider privy [--evm|--solana]           # provider connect: link credential + mint 7-day delegated grant
+aomi logout                                            # drop stored bearer
+aomi logout --provider privy                           # provider disconnect (currently "not yet available"; backend endpoint pending)
+aomi account                                           # canonical user info + linked-providers table
+```
+
 ## Wallet and Config
 
 ```bash
-aomi wallet current                                    # configured address only, no credential
-aomi wallet set <signing-key>                          # user-directed; user supplies key
+aomi wallet ls                                         # linked wallets: address · chain · provider · signing mode · grant(expiry) · autonomous_ok · primary
+aomi wallet ls --provider privy                        # filter by provider
+aomi wallet dev-key <signing-key> [--solana]           # local dev signer; user-directed, user supplies key
+aomi wallet set-mode <address> <autonomous|human_sync|denied> [--local-key <hex>]
 aomi config current                                    # backend URL
 aomi config set-backend <url>                          # repoint CLI at a different backend
 ```
 
-`aomi wallet set` persists a signing key under `AOMI_STATE_DIR`. After running, confirm with the derived address — never repeat the key value back.
+`aomi wallet dev-key` persists a signing key under `AOMI_STATE_DIR`. After running, confirm with the derived address — never repeat the key value back.
+
+Every wallet carries a per-wallet signing policy: 🟢 `autonomous` (agent may sign without a human in the loop), 🟠 `human_sync` (each signature needs live user confirmation), 🔴 `denied` (signing blocked). `aomi wallet ls` is the one table for inspecting them. `aomi wallet set-mode` changes a key's policy via a signed EIP-712 permit (challenge → sign → commit); grants toward `autonomous` must be signed by that wallet's own key, and `autonomous` also requires a live delegated grant — if it is missing or expired, run `aomi login --provider privy` first.
 
 ## Flags and Env Vars
 
@@ -89,11 +103,11 @@ Flags override environment variables.
 | `--backend-url` | `https://api.aomi.dev` | Backend URL                                               |
 | `--api-key`     | none                   | API key for non-default apps (user-supplied)              |
 | `--app`         | `default`              | Backend app                                               |
-| `--model`       | backend default        | Session model                                             |
-| `--new-session` | off                    | Create a fresh active session for this command            |
-| `--public-key`  | none                   | Wallet address for chat/session context                   |
+| `--model`       | backend default        | Thread model                                              |
+| `--new-session` | off                    | Create a fresh active thread for this command             |
+| `--public-key`  | none                   | Wallet address for chat/thread context                    |
 | `--rpc-url`     | chain RPC default      | RPC override for signing                                  |
-| `--chain`       | none                   | Active wallet chain (inherits session chain if unset)     |
+| `--chain`       | none                   | Active wallet chain (inherits thread chain if unset)      |
 | `--eoa`         | off                    | Force plain EOA, skip AA (sign-only)                      |
 | `--aa`          | off                    | Force AA, error if provider not configured (sign-only)    |
 | `--aa-provider` | auto-detect            | `alchemy` \| `pimlico` (sign-only)                        |
@@ -101,7 +115,7 @@ Flags override environment variables.
 
 | Env Var           | Default   | Purpose                                |
 | ----------------- | --------- | -------------------------------------- |
-| `AOMI_STATE_DIR`  | `~/.aomi` | Root directory for local session state |
+| `AOMI_STATE_DIR`  | `~/.aomi` | Root directory for local thread state  |
 | `AOMI_CONFIG_DIR` | `~/.aomi` | Root directory for persistent config   |
 
 ## Config Rules

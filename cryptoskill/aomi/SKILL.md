@@ -34,7 +34,7 @@ Official docs: [aomi.dev](https://aomi.dev) · npm: [`@aomi-labs/client`](https:
 - **"Aomi is a wallet"** — Aomi is an agent + CLI. It composes calldata and queues a wallet request; the user signs. The CLI does not custody funds, never signs without an explicit `aomi tx sign`, and never broadcasts on its own initiative.
 - **"`aomi chat` always queues a transaction"** — Often the first response is a quote, route, or clarifying question. The agent only stages calldata when it has enough context. Always run `aomi tx list` after chat to see what's actually pending — never assume.
 - **"Approval and swap are one transaction"** — Most DeFi flows are two-step: `approve` then `supply`/`swap`/`deposit`. Aomi stages them as a batch and `aomi tx simulate tx-1 tx-2` runs them sequentially on a fork so the second step sees the first's state changes. Sign them as a batch, not individually.
-- **"Use `--rpc-url` to switch chains"** — `--chain` controls the wallet/session context (which chain the agent thinks you're on); `--rpc-url` controls where `aomi tx sign` estimates and submits. They are independent. For a cross-chain swap, the queued tx has its own `chain` field — pass `--rpc-url` matching *that* chain when signing.
+- **"Use `--rpc-url` to switch chains"** — `--chain` controls the wallet/thread context (which chain the agent thinks you're on); `--rpc-url` controls where `aomi tx sign` estimates and submits. They are independent. For a cross-chain swap, the queued tx has its own `chain` field — pass `--rpc-url` matching *that* chain when signing.
 - **"AA always sponsors gas on L2s"** — The zero-config proxy path on Base/Arbitrum/Optimism does **not** reliably sponsor in v0.1.30. If the EOA has 0 native gas on the destination chain, signing fails with `insufficient funds for transfer`. Either fund the EOA with a tiny amount of native gas, or configure a real BYOK Alchemy/Pimlico provider with a sponsorship policy. Do not retry with `--eoa` — that path also needs gas.
 - **"`--new-session` should always be passed"** — Pass it on the *first* command of a new task. Reusing it mid-task starts a fresh conversation and the agent loses context (e.g. the quote it just gave you). For follow-up confirmations like *"yes, proceed"*, omit `--new-session`.
 - **"Failed simulation txs disappear"** — They don't. `aomi tx list` shows orphaned `tx-N` from earlier failed attempts alongside the current passing batch. Check the `batch_status` line and only sign txs marked `Batch [...] passed`.
@@ -140,7 +140,7 @@ When the agent's first attempt fails simulation (e.g. tries a single-tx `supply`
 
 ### Cross-chain
 
-The agent stages txs that target a different chain than the session. Pass `--rpc-url` matching the *queued tx*'s chain, not the session chain. See [examples/cross-chain-swap/README.md](examples/cross-chain-swap/README.md) for CCTP Ethereum → Base.
+The agent stages txs that target a different chain than the thread. Pass `--rpc-url` matching the *queued tx*'s chain, not the thread chain. See [examples/cross-chain-swap/README.md](examples/cross-chain-swap/README.md) for CCTP Ethereum → Base.
 
 ### Self-healing deadlines
 
@@ -171,6 +171,8 @@ Default chain modes:
 **Mode fallback**: when AA is selected, the CLI tries the preferred mode, then the alternative, then errors with a `--eoa` suggestion. There is no silent EOA fallback.
 
 **L2 sponsorship caveat (verified v0.1.30)**: the zero-config proxy on Base does **not** reliably sponsor — `aomi tx sign` returns viem's `insufficient funds for transfer` if the EOA has 0 native gas. Either fund the EOA with ~0.0005 ETH-equivalent on the destination chain, or configure a real BYOK Alchemy/Pimlico provider on the user's side and pass `--aa-provider alchemy --aa-mode 4337`. Do not retry with `--eoa` blindly — `--eoa` also needs gas.
+
+**Signing modes**: independent of AA, every linked wallet carries a per-wallet signing policy — 🟢 `autonomous` (agent may sign without a human in the loop), 🟠 `human_sync` (each signature needs live user confirmation), 🔴 `denied` (signing blocked). `aomi wallet ls` shows the table (address · chain · provider · signing mode · grant expiry · autonomous_ok · primary). `aomi wallet set-mode <address> <autonomous|human_sync|denied> [--local-key <hex>]` changes a policy via a signed EIP-712 permit (challenge → sign → commit); grants toward `autonomous` must be signed by that wallet's own key, and `autonomous` also requires a live delegated grant — if missing or expired, run `aomi login --provider privy` first.
 
 ## Contract Addresses
 
@@ -224,21 +226,21 @@ Common categories: DEX (`uniswap`, `cow`, `oneinch`, `zerox`), lending (`aave`, 
 
 The full catalog with credential requirements is in [resources/supported-apps.md](resources/supported-apps.md).
 
-## Sessions
+## Threads
 
-A session is split across two stores. Knowing what lives where prevents wrong-place lookups.
+A thread is split across two stores. Knowing what lives where prevents wrong-place lookups.
 
-- **Backend** — full conversation transcript, tool calls, system events. Read via `aomi session log`, `aomi session events`, `aomi session status`.
-- **Local** (`$AOMI_STATE_DIR` or `~/.aomi/`) — `sessionId`, `clientId`, `pendingTxs[]`, `signedTxs[]`, `secretHandles{}`. Read via `aomi tx list`, `aomi wallet current`.
+- **Backend** — full conversation transcript, tool calls, system events. Read via `aomi thread log`, `aomi thread events`, `aomi thread status`.
+- **Local** (`$AOMI_STATE_DIR` or `~/.aomi/`) — `sessionId`, `clientId`, `pendingTxs[]`, `signedTxs[]`, `secretHandles{}`. Read via `aomi tx list`.
 
 ```bash
-aomi session list             # local sessions with topic + pending count
-aomi session resume <id>      # set active pointer to an existing session
-aomi session delete <id>      # remove a local session (check no pending txs first)
-aomi session close            # clear the active pointer; next chat starts fresh
+aomi thread list              # local threads with topic + pending count
+aomi thread resume <id>       # set active pointer to an existing thread
+aomi thread delete <id>       # remove a local thread (check no pending txs first)
+aomi thread close             # clear the active pointer; next chat starts fresh
 ```
 
-**The "No active session" recovery pattern**: if `aomi tx list` reports no active session, run `aomi session list` to find the right one by topic, then `aomi session resume <N> > /dev/null && aomi tx list` in the **same** shell call (the active-session pointer can be lost between subprocess invocations).
+**The "No active thread" recovery pattern**: if `aomi tx list` reports no active thread, run `aomi thread list` to find the right one by topic, then `aomi thread resume <N> > /dev/null && aomi tx list` in the **same** shell call (the active-thread pointer can be lost between subprocess invocations).
 
 See [examples/session-management/README.md](examples/session-management/README.md) for resume/recovery patterns.
 
@@ -246,8 +248,8 @@ See [examples/session-management/README.md](examples/session-management/README.m
 
 | Error / output | Cause | Fix |
 |----------------|-------|-----|
-| `(no response)` from `aomi chat` | Backend timeout or stale local session pointer | Wait briefly, run `aomi session status`. If session is gone, retry with `--new-session` |
-| `No active session` from `aomi tx list` | Active-session pointer lost between shell invocations | `aomi session list` to find session, then `aomi session resume <N> > /dev/null && aomi tx list` in same call |
+| `(no response)` from `aomi chat` | Backend timeout or stale local thread pointer | Wait briefly, run `aomi thread status`. If thread is gone, retry with `--new-session` |
+| `No active thread` from `aomi tx list` | Active-thread pointer lost between shell invocations | `aomi thread list` to find thread, then `aomi thread resume <N> > /dev/null && aomi tx list` in same call |
 | `Batch [N] failed: ERC20: transfer amount exceeds allowance` | First-attempt single-tx; agent will retry as approve+action batch | Wait for retry, sign the new pair (`tx-2 tx-3`), ignore the orphan `tx-1` |
 | `insufficient funds for transfer` (viem) on L2 sign | Zero-config AA proxy did not sponsor; EOA has 0 native gas on destination | Fund EOA with native gas on that chain, OR configure BYOK provider with sponsorship policy |
 | AA mode error suggesting `--eoa` | Both AA modes (preferred + alternative) failed | Read console output, address the underlying issue (provider creds, chain support), or use `--eoa` if user accepts EOA signing |
@@ -262,12 +264,12 @@ The full troubleshooting guide is in [docs/troubleshooting.md](docs/troubleshoot
 This skill drives an external CLI. It does not install software, read files outside `~/.aomi/`, or execute generated code. The hard rules below are non-negotiable.
 
 - **Credentials are opaque pass-through.** Never invent, guess, or derive a credential value. Values reach the CLI only when the user has handed them over for a specific command in this turn. Never echo a credential value back.
-- **No unsolicited setup.** Don't run `aomi wallet set`, `aomi secret add`, or `--api-key`/`--private-key` flags on your own initiative to "prepare" or "fix" something. Only run them when the user explicitly asked for that specific setup and provided the value.
+- **No unsolicited setup.** Don't run `aomi wallet dev-key`, `aomi secret add`, or `--api-key`/`--private-key` flags on your own initiative to "prepare" or "fix" something. Only run them when the user explicitly asked for that specific setup and provided the value.
 - **Trust-boundary warning before secret ingestion.** `aomi secret add NAME=value` transmits the credential to the aomi backend and stores a handle locally. Surface this to the user before running it so they can choose to export to their own shell environment instead.
 - **Always simulate multi-step batches.** Approve+swap, approve+supply, bridge+attestation — these are state-dependent. The second tx will revert if submitted independently. `aomi tx simulate tx-1 tx-2` runs them sequentially on a fork.
 - **Never sign past simulation failure.** If `aomi tx simulate` reports `Batch success: false` or any drain-vector annotation, **do not** attempt `aomi tx sign`. Surface the failure to the user — either rebuild (allowance retry pattern) or stop.
 - **Drain vectors are guard-blocked, not bypassed.** When the agent rejects `recipient != msg.sender` (or `onBehalfOf`, `mintRecipient`, `_to`), surface the block to the user. Do not try to construct calldata that bypasses the guard.
-- **Read-only by default.** Chat, simulation, session inspection, and app/model/chain introspection do not move funds. Signing is a separate, explicit step the user must request.
+- **Read-only by default.** Chat, simulation, thread inspection, and app/model/chain introspection do not move funds. Signing is a separate, explicit step the user must request.
 - **Match `--rpc-url` to the queued tx's chain.** A single `--rpc-url` cannot serve a mixed-chain multi-sign request. The pending tx already contains its target chain — pass an RPC for that chain.
 - **`--aa-provider` and `--aa-mode` cannot combine with `--eoa`.** They force AA. If the user wants EOA, pass only `--eoa`.
 
@@ -297,7 +299,7 @@ aomi/
 2. **Never sign before `aomi tx list` confirms a pending `tx-N`.** A chat response does not always queue a transaction immediately.
 3. **Always `aomi tx simulate` before signing a multi-step batch.** Single-tx flows are simulation-optional but never wrong to simulate.
 4. **Sign only `Batch [...] passed` txs.** Skip orphans from earlier failed attempts (`failed at step N: 0x...`).
-5. **Match `--rpc-url` to the queued tx's chain**, not the session chain (`--chain`). They are independent controls.
+5. **Match `--rpc-url` to the queued tx's chain**, not the thread chain (`--chain`). They are independent controls.
 6. **Don't retry `--eoa` on L2 `insufficient funds for transfer`** — that path also needs gas. Fix the root cause: fund the EOA, or configure BYOK sponsorship.
 7. **Surface drain-vector blocks to the user.** Do not attempt to bypass them by reformulating the prompt.
 8. **Never echo credential values back to the user** after a setup command. Confirm with handle name or derived address only.
