@@ -1,6 +1,6 @@
 # aomi-transact
 
-Drive the [Aomi CLI](https://www.npmjs.com/package/@aomi-labs/client) from natural-language prompts: chat → simulate → sign with account-abstraction-first execution. Wraps swaps, lending, bridges, staking, perps, and CEX read across 25+ apps on EVM mainnets and L2s.
+Drive the [Aomi CLI](https://www.npmjs.com/package/@aomi-labs/client) from natural-language prompts: chat → simulate → sign with account-abstraction-first execution. Wraps swaps, lending, bridges, staking, perps, and CEX read across integrated apps on EVM chains, with Solana sign-only support where the backend returns unsigned transactions.
 
 ## What is this?
 
@@ -10,17 +10,17 @@ A drop-in Agent Skill for Claude Code, Cursor, Gemini CLI, VS Code Copilot, Open
 
 The user types something like *"swap 1 ETH for USDC on Uniswap"*; the agent picks the right protocol and contract, stages the approve+swap as a batch, simulates it on a forked chain, and returns a queued wallet request. Signing is a separate, explicit step — the wallet only ever sees calldata that already passed simulation.
 
-The CLI is **account-abstraction-first**: by default it signs through a zero-config Alchemy proxy (no provider credentials needed), using EIP-7702 on Ethereum mainnet and ERC-4337 on L2s.
+The CLI is **account-abstraction-first** for EVM transactions: it tries the configured/default AA path first and can fall back to EOA unless `--aa` is explicit. Current displayed AA defaults use EIP-7702 on Ethereum, Polygon, Arbitrum, Base, and Optimism; ERC-4337 sponsorship depends on provider/paymaster configuration.
 
 ## Installation
 
 ### Prerequisites
 
 ```bash
-npm install -g @aomi-labs/client      # version 0.1.30 or newer
+npm install -g @aomi-labs/client@latest      # v0.1.42 or newer
 ```
 
-(or use `npx @aomi-labs/client@0.1.30 ...` for one-shot invocations.)
+(or use `npx @aomi-labs/client@latest ...` for one-shot invocations.)
 
 ### Drop into your agent's skills directory
 

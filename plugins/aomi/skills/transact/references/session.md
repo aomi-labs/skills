@@ -72,7 +72,7 @@ Three rules, in order:
 2. **Continuing a task you started earlier (same thread)**: don't pass `--new-session`. The active session persists across `aomi` invocations; the next `aomi chat "proceed"` lands in the same conversation.
 3. **Picking up a previous session by id**: `aomi session resume <N>` first, then issue commands. Useful when `aomi tx list` shows pending txs you need to sign from a session that was closed earlier (e.g. session-43 in our run had pending Across txs after the shell rotated).
 
-There's a v0.1.30 quirk worth knowing: `--new-session` + `--provider-key` on the same invocation does not register the BYOK key for that prompt — see [troubleshooting.md → Quirks](troubleshooting.md#quirks-observed-in-v0130). Workaround: register on a no-op call first, then issue the real prompt.
+Older CLI builds had provider-key registration quirks around `--new-session`; current workflows should prefer account bearer login (`aomi wallet login` / `aomi account login`) or explicit provider/key flags only when the user supplies them. If a provider key appears not to apply to the first prompt, register it on a no-op call first, then issue the real prompt.
 
 ## Cleanup hygiene
 

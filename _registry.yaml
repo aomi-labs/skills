@@ -37,7 +37,7 @@ platforms:
     - aomi-transact
     - aomi-build
     status: live
-    notes: SKILL.md pins v0.1.30; latest published is newer. Bump pin when CLI changes break compatibility.
+    notes: SKILL.md tracks @aomi-labs/client@latest and was last verified against v0.1.42. Refresh skill docs when the CLI command surface changes.
     health_check:
       method: npm-view
       package: '@aomi-labs/client'

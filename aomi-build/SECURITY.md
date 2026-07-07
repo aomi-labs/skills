@@ -2,11 +2,11 @@
 
 This document maps the `aomi-build` skill against [OWASP Agentic Skills Top 10 (v1.0, March 2026)](https://owasp.org/www-project-agentic-skills-top-10/) and records the controls in place for each risk. Reviewers can audit the per-control claims against the live SKILL.md frontmatter, the references, and the captured scanner reports under [`.scanner-reports/aomi-build/`](../.scanner-reports/aomi-build/).
 
-**Last reviewed:** 2026-05-07 against SKILL.md @ commit `HEAD`.
+**Last reviewed:** 2026-07-05 against `aomi-sdk` v3.0.1 and current `aomi-build` CLI source.
 
 ## Threat model
 
-`aomi-build` is a procedure for an AI agent to scaffold new Aomi app crates from API docs, OpenAPI/Swagger specs, SDK docs, repository examples, endpoint notes, runtime interfaces, or product requirements. The skill writes Rust source files (`lib.rs`, `client.rs`, `tool.rs`, `Cargo.toml`) inside an `aomi-apps`-shaped workspace and runs `cargo` + `git` commands to compile and track the new crate. It does not move funds, sign transactions, custody secrets, or make network calls of its own. It is correctly classified as **risk_tier: L1** (low) under the OWASP universal manifest schema.
+`aomi-build` is a procedure for an AI agent to scaffold new Aomi app crates from API docs, OpenAPI/Swagger specs, SDK docs, repository examples, endpoint notes, runtime interfaces, or product requirements. The skill writes Rust source files (`lib.rs`, `client.rs`, `tool.rs`, `Cargo.toml`) inside an `aomi-sdk`-shaped workspace and runs `cargo` + `git` commands to compile and track the new crate. It does not move funds, sign transactions, custody secrets, or make network calls of its own. It is correctly classified as **risk_tier: L1** (low) under the OWASP universal manifest schema.
 
 The principal harm path the skill must guard against is **scaffolding code that, when later compiled and run by the user, exfiltrates data or executes attacker-controlled logic**. The OWASP `permissions:` manifest, the explicit `build.rs` deny-write entry, the no-network policy, and the documented "do not embed credentials in scaffolded source" rule all target this path.
 
@@ -42,7 +42,7 @@ The principal harm path the skill must guard against is **scaffolding code that,
 **Controls in place:**
 
 - A complete OWASP-format `permissions:` manifest is declared in `SKILL.md` frontmatter:
-  - `files.read`: `./` and `../aomi-apps/` only — the project the user is working in plus the upstream SDK checkout for pattern reference. No reads under `~/.ssh/`, `~/.aws/`, `~/.config/`, or other credential paths.
+  - `files.read`: `./` and `../aomi-sdk/` only — the project the user is working in plus the upstream SDK checkout for pattern reference. No reads under `~/.ssh/`, `~/.aws/`, `~/.config/`, or other credential paths.
   - `files.write`: scoped to `apps/`, workspace `Cargo.toml`, `Cargo.lock`, and `target/` within the project root. The skill never writes outside the workspace.
   - `files.deny_write`: identity files (`SOUL.md`, `MEMORY.md`, `AGENTS.md`) plus `build.rs` (Rust build scripts run code at compile time and are not part of the canonical Aomi app shape).
   - `network.allow: []` and `network.deny: "*"` — the skill makes no network calls. Spec / docs URLs that the user references are fetched out-of-band by the user (or via the agent's `WebFetch` operating outside the skill's operational scope) and pasted into the conversation.
@@ -61,7 +61,7 @@ The principal harm path the skill must guard against is **scaffolding code that,
 
 **Controls in place:**
 
-- The skill is **scaffold-only by default**. It does not run scaffolded code automatically. The standard validation loop (`cargo build`, `cargo run -p xtask -- build-aomi`) is invoked **only** when the user has asked for it and reviewed the scaffolded files.
+- The skill is **scaffold-only by default**. It does not run scaffolded code automatically. The standard validation loop (`cargo build`, `aomi-build compile`, or `cargo run -p aomi-sdk --features cli --bin aomi-build -- compile`) is invoked **only** when the user has asked for it and reviewed the scaffolded files.
 - The skill explicitly forbids fabricating endpoints, auth flows, or contract addresses the source material does not document — surfaced in the SKILL.md description and in `references/spec-to-tools.md` ("Find The Real Integration Target", "Builder-oriented fallbacks").
 - For execution-oriented apps that hand off to the host wallet, the skill teaches `ToolReturn::with_routes` over prose-based `SYSTEM_NEXT_ACTION` hints. The runtime resolves routes mechanically; the skill cannot smuggle non-self recipients past simulation by reformulating prose. See [`references/host-routes.md`](references/host-routes.md).
 
@@ -72,9 +72,9 @@ The principal harm path the skill must guard against is **scaffolding code that,
 **Controls in place:**
 
 - File-system writes are scoped to the user's workspace (`./apps/`, workspace `Cargo.toml`/`Cargo.lock`, `target/`). The skill never writes to `~/.config/`, `~/.aomi/`, or other system locations.
-- The workspace `Cargo.toml` change is a single-line addition to the `exclude = [...]` list (so xtask discovery picks up the new crate). The change is observable via `git diff` before commit.
-- `cargo build` and `cargo run -p xtask` produce output under `target/`, which is conventionally gitignored. No persistent change escapes the project tree.
-- `git add apps/<name>/Cargo.toml` (run by `templates/quick-scaffold.sh` to ensure xtask discovery works) only stages, never commits. The user makes the actual commit.
+- Workspace `Cargo.toml` changes, when needed, are observable via `git diff` before commit.
+- `cargo build` and `aomi-build compile` produce output under `target/` and `plugins/`, which are normal build/plugin artifacts. No persistent change escapes the project tree.
+- `git add apps/<name>/Cargo.toml` (run by `templates/quick-scaffold.sh` only when the user opts into it) only stages, never commits. The user makes the actual commit.
 - Read-side tooling (`cargo metadata`, `git ls-files`, `git status`) is non-destructive.
 
 ### AST06 — Insecure Skill Communication
@@ -106,7 +106,7 @@ The principal harm path the skill must guard against is **scaffolding code that,
 **Controls in place:**
 
 - The skill itself has **no runtime dependencies** beyond the `cargo` / `git` binaries and the user's local Rust toolchain.
-- Scaffolded apps depend on `aomi-sdk = { workspace = true }`, which resolves through the user's `aomi-apps` checkout. The host enforces an exact-match SDK version gate at plugin load (see `docs/sdk-version-compatibility.md`); a tampered SDK that bumps the version stamp would not load against the user's host without coordinated action.
+- Scaffolded apps depend on `aomi-sdk = { workspace = true }`, which resolves through the user's `aomi-sdk` checkout. The host enforces an exact-match SDK version gate at plugin load (see `docs/sdk-version-compatibility.md`); a tampered SDK that bumps the version stamp would not load against the user's host without coordinated action.
 - Scaffolded apps' transitive dependencies (e.g. `reqwest`, `serde`, `schemars`) are managed by Cargo as usual; the skill itself does not pin or vendor anything.
 - `templates/quick-scaffold.sh` depends only on POSIX shell and `cargo` + `git`, both checked at startup.
 - **Open**: sigstore attestation for the skill itself is not yet wired up.

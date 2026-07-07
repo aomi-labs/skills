@@ -41,7 +41,7 @@ impl DynAomiTool for BuildMyOrder {
         Ok(ToolReturn::with_routes(
             json!({ "preview": preview, "wallet_request": typed_data.clone() }),
             [
-                RouteStep::on_return("commit_eip712", typed_data)
+                RouteStep::on_return("evm_commit_message", typed_data)
                     .bind_as("clob_l1_signature")
                     .prompt("Sign the typed data to authorize the order."),
                 RouteStep::on_bound_event(
@@ -81,8 +81,8 @@ Wallet tools publish their callbacks under predictable aliases:
 
 | Host tool | Callback artifact | Typical alias |
 |-----------|-------------------|---------------|
-| `commit_tx` | `transaction_hash` | `"transaction_hash"` (or domain-specific, e.g. `"approve_tx_hash"`) |
-| `commit_eip712` | `signature` | `"signature"` (or domain-specific, e.g. `"clob_l1_signature"`) |
+| `commit_txs` | `transaction_hash` / receipts | `"transaction_hash"` (or domain-specific, e.g. `"approve_tx_hash"`) |
+| `evm_commit_message` | `signature` | `"signature"` (or domain-specific, e.g. `"clob_l1_signature"`) |
 | `stage_tx` | `pending_tx_id` | `"pending_tx_id"` |
 
 Pick descriptive aliases when you have multiple of the same kind in flight (e.g. `"approve_signature"` vs `"swap_signature"`).
@@ -94,15 +94,15 @@ For host tools, prefer the typed `RouteTarget` markers in `aomi_sdk::builder::ho
 ```rust
 use aomi_sdk::builder::host;
 
-RouteStep::on_return_to::<host::CommitEip712>(typed_data)
+RouteStep::on_return_to::<host::EvmCommitMessage>(typed_data)
     .bind_as("signature")
     .prompt("Sign the typed data.");
 
-RouteStep::on_bound_to::<host::CommitTx>(submit_args, "pending_tx_id")
+RouteStep::on_bound_to::<host::CommitTxs>(submit_args, "pending_tx_id")
     .prompt("Broadcast the staged transaction.");
 ```
 
-Available `host::*` markers (non-exhaustive — confirm against `sdk/src/builder.rs`): `ViewState`, `RunTx`, `StageTx`, `SimulateBatch`, `CommitTx`, `CommitEip712`. Using the marker types means renames in the host contract show up as compile errors instead of silent string drift.
+Available `host::*` markers (non-exhaustive — confirm against `sdk/src/builder.rs` and `docs/host-interop.md`): `EncodeAndCall`, `StageTx`, `SimulateBatch`, `CommitTxs`, `EvmCommitMessage`, plus SVM targets such as `SvmStageIx`, `SvmStageTx`, `SvmCommitIx`, and `SvmCommitTx`. Using the marker types means renames in the host contract show up as compile errors instead of silent string drift.
 
 ## Fluent builder style
 
@@ -115,9 +115,9 @@ use aomi_sdk::builder::host;
 let mut route = RouteBuilder::new(value);
 
 route.next(|next| {
-    next.add::<host::ViewState>(allowance_args)
+    next.add::<host::EncodeAndCall>(allowance_args)
         .note("preflight allowance check; surface failures before continuing");
-    next.add::<host::CommitEip712>(typed_data)
+    next.add::<host::EvmCommitMessage>(typed_data)
         .note("sign the typed data to authorize the order");
 });
 
@@ -154,9 +154,10 @@ The rule of thumb: use routes when (a) the host wallet must take an action and (
 
 ## Worked examples in the repo
 
-- **`apps/khalani`** — quote → build → wallet sign → submit. Uses `RouteBuilder` with preflight allowance checks injected via `add::<host::ViewState>(...)`. Demonstrates `add_named` for app-local continuations and the `.after(...).awaits(...)` pattern for wallet callbacks.
+- **`apps/khalani`** — quote → build → wallet sign → submit. Uses `RouteBuilder` with preflight checks injected via typed host targets. Demonstrates `add_named` for app-local continuations and the `.after(...).awaits(...)` pattern for wallet callbacks.
 - **`apps/polymarket`** — order preview → CLOB L1 signature → CLOB L2 signature → submit. Shows `bind_as("clob_l1_signature")` chaining and the wallet-mode vs direct-SDK-mode split.
 - **`apps/polymarket-rewards`** — LP-position mutation flows with multiple bound aliases.
+- **`apps/svm-transfer`** — Solana lane examples for `svm_stage_ix`, `svm_stage_tx`, `svm_commit_ix`, and `svm_commit_tx`.
 
 For a tool that doesn't need routes at all, `apps/binance` and `apps/oneinch` (read paths) are the cleanest references — they return bare `Value`s and let the model decide what to call next.
 
@@ -174,7 +175,7 @@ fn build_order_emits_signature_route() {
     let result = run_tool::<BuildMyOrder>(&MyApp, json!({"market_id": "..."}), ctx).unwrap();
 
     assert_eq!(result.routes.len(), 2);
-    assert_eq!(result.routes[0].tool, "commit_eip712");
+    assert_eq!(result.routes[0].tool, "evm_commit_message");
     assert_eq!(result.routes[0].bind_as.as_deref(), Some("clob_l1_signature"));
     assert!(matches!(
         result.routes[1].trigger,

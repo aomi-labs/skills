@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 #
-# quick-scaffold.sh — End-to-end aomi-apps app scaffold helper.
+# quick-scaffold.sh — End-to-end aomi-sdk app scaffold helper.
 #
-# Wraps `cargo run -p xtask -- new-app` with the surrounding workflow:
-#   1. Verifies the aomi-apps checkout is reachable
-#   2. Creates a new app crate via xtask
-#   3. Tracks the new Cargo.toml so xtask discovery picks it up
+# Wraps `aomi-build init` with the surrounding workflow:
+#   1. Verifies the aomi-sdk checkout is reachable
+#   2. Creates a new app crate via aomi-build
+#   3. Tracks the new Cargo.toml for normal source control
 #   4. Runs an initial cargo build for an immediate compile signal
-#   5. Optionally runs the full xtask build-aomi after tracking
+#   5. Optionally runs the full aomi-build compile after tracking
 #
 # Usage:
-#   AOMI_APPS=/path/to/aomi-apps ./quick-scaffold.sh <app-name> [--build]
+#   AOMI_SDK=/path/to/aomi-sdk ./quick-scaffold.sh <app-name> [--build]
 #
-# Or from inside the aomi-apps repo:
+# Or from inside the aomi-sdk repo:
 #   ./aomi-build/templates/quick-scaffold.sh <app-name> [--build]
 
 set -euo pipefail
@@ -24,21 +24,21 @@ set -euo pipefail
 APP_NAME="${1:?usage: quick-scaffold.sh <app-name> [--build]}"
 shift || true
 
-# Detect aomi-apps location: AOMI_APPS env var, current dir, or ../aomi-apps
-if [ -n "${AOMI_APPS:-}" ]; then
-    REPO_ROOT="$AOMI_APPS"
+# Detect aomi-sdk location: AOMI_SDK env var, current dir, or ../aomi-sdk
+if [ -n "${AOMI_SDK:-}" ]; then
+    REPO_ROOT="$AOMI_SDK"
 elif [ -f Cargo.toml ] && grep -q 'aomi-sdk' Cargo.toml 2>/dev/null; then
     REPO_ROOT="$(pwd)"
-elif [ -d ../aomi-apps ] && [ -f ../aomi-apps/Cargo.toml ]; then
-    REPO_ROOT="$(cd ../aomi-apps && pwd)"
+elif [ -d ../aomi-sdk ] && [ -f ../aomi-sdk/Cargo.toml ]; then
+    REPO_ROOT="$(cd ../aomi-sdk && pwd)"
 else
-    echo "[quick-scaffold] cannot locate aomi-apps repo." >&2
-    echo "[quick-scaffold] set AOMI_APPS=/path/to/aomi-apps or run from inside the repo." >&2
+    echo "[quick-scaffold] cannot locate aomi-sdk repo." >&2
+    echo "[quick-scaffold] set AOMI_SDK=/path/to/aomi-sdk or run from inside the repo." >&2
     exit 2
 fi
 
 if [ ! -d "$REPO_ROOT/sdk" ] || [ ! -d "$REPO_ROOT/apps" ]; then
-    echo "[quick-scaffold] $REPO_ROOT does not look like an aomi-apps checkout (missing sdk/ or apps/)." >&2
+    echo "[quick-scaffold] $REPO_ROOT does not look like an aomi-sdk checkout (missing sdk/ or apps/)." >&2
     exit 2
 fi
 
@@ -60,29 +60,32 @@ fi
 # ============================================================================
 
 SDK_VERSION=$(grep -E '^version\s*=' "$REPO_ROOT/sdk/Cargo.toml" | head -1 | sed -E 's/.*"(.*)".*/\1/')
-echo "[quick-scaffold] aomi-apps:    $REPO_ROOT"
+echo "[quick-scaffold] aomi-sdk:     $REPO_ROOT"
 echo "[quick-scaffold] aomi-sdk:     $SDK_VERSION"
 echo "[quick-scaffold] new app:      $APP_NAME"
 echo
 
 if ! git -C "$REPO_ROOT" rev-parse --git-dir >/dev/null 2>&1; then
-    echo "[quick-scaffold] WARNING: $REPO_ROOT is not a git repo. xtask discovery uses 'git ls-files'" >&2
-    echo "[quick-scaffold]          and may not find your new app even after tracking." >&2
+    echo "[quick-scaffold] WARNING: $REPO_ROOT is not a git repo." >&2
 fi
 
 # ============================================================================
-# Step 1: scaffold via xtask
+# Step 1: scaffold via aomi-build
 # ============================================================================
 
-echo "[quick-scaffold] step 1/4: scaffolding via xtask new-app..."
+echo "[quick-scaffold] step 1/4: scaffolding via aomi-build init..."
 (
     cd "$REPO_ROOT"
-    cargo run -p xtask -- new-app "$APP_NAME"
+    cargo run -p aomi-sdk --features cli --bin aomi-build -- init "$APP_NAME"
 )
+if grep -q 'namespaces = \["common"\]' "$REPO_ROOT/apps/$APP_NAME/src/lib.rs" 2>/dev/null; then
+    echo "[quick-scaffold] WARNING: generated src/lib.rs uses legacy namespace \"common\"." >&2
+    echo "[quick-scaffold]          Replace it with \"evm-core\" or the required SVM namespace set before shipping." >&2
+fi
 echo
 
 # ============================================================================
-# Step 2: track Cargo.toml so build-aomi discovers it
+# Step 2: track Cargo.toml
 # ============================================================================
 
 echo "[quick-scaffold] step 2/4: staging the new app's Cargo.toml..."
@@ -104,7 +107,7 @@ echo "[quick-scaffold] step 3/4: running cargo build for compile signal..."
 echo
 
 # ============================================================================
-# Step 4: optional full xtask build
+# Step 4: optional full aomi-build compile
 # ============================================================================
 
 DO_BUILD=0
@@ -115,13 +118,13 @@ for arg in "$@"; do
 done
 
 if [ "$DO_BUILD" = "1" ]; then
-    echo "[quick-scaffold] step 4/4: running xtask build-aomi --app $APP_NAME..."
+    echo "[quick-scaffold] step 4/4: running aomi-build compile --app $APP_NAME..."
     (
         cd "$REPO_ROOT"
-        cargo run -p xtask -- build-aomi --app "$APP_NAME"
+        cargo run -p aomi-sdk --features cli --bin aomi-build -- compile --app "$APP_NAME"
     )
 else
-    echo "[quick-scaffold] step 4/4: skipping xtask build-aomi (pass --build to run it)."
+    echo "[quick-scaffold] step 4/4: skipping aomi-build compile (pass --build to run it)."
 fi
 echo
 
@@ -139,14 +142,14 @@ Next steps:
 
 Reference docs:
   - sdk/examples/app-template-http  — canonical HTTP-API shape
-  - sdk/examples/hello-app           — async tools and cancellation
   - apps/binance, apps/oneinch       — real-world references
+  - apps/svm-transfer                — SVM route patterns
   - docs/host-interop.md             — host tool contract for execution apps
   - docs/sdk-version-compatibility.md — exact-match SDK version gate
 
 Build loop:
   cargo build --manifest-path apps/$APP_NAME/Cargo.toml          # quick compile check
-  cargo run -p xtask -- build-aomi --app $APP_NAME               # full plugin build
+  cargo run -p aomi-sdk --features cli --bin aomi-build -- compile --app $APP_NAME
 
 Test loop:
   cargo test -p $APP_NAME
