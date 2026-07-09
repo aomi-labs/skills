@@ -2,23 +2,21 @@
 
 Read this when a build fails or behaves differently than the workflow predicts. Each section lists symptoms, likely cause, and a concrete fix.
 
-## Build / xtask
+## Build / aomi-build
 
-### `cargo run -p xtask -- build-aomi --app <name>` reports "0 plugins built"
+### `aomi-build compile --app <name>` reports "0 plugins built"
 
 **Symptoms:**
 - The build completes with no errors but produces no plugin file.
 - The expected `target/release/lib<name>.dylib` (or `.so` / `.dll`) is missing.
 
 **Cause:**
-- The new app's `Cargo.toml` is untracked. xtask discovers apps via `git ls-files apps/*/Cargo.toml`. A brand-new crate that hasn't been `git add`-ed is invisible to discovery.
+- The app path, package metadata, or skip marker prevented discovery. Current `aomi-build compile` scans tracked manifests and the apps directory, but apps with `[package.metadata.aomi.skip]` are still skipped intentionally.
 
 **Fix:**
 
 ```bash
-# Track the new app's manifest
-git add apps/<name>/Cargo.toml
-cargo run -p xtask -- build-aomi --app <name>
+cargo run -p aomi-sdk --features cli --bin aomi-build -- compile --app <name>
 ```
 
 For an immediate compile signal without staging anything:
@@ -27,13 +25,13 @@ For an immediate compile signal without staging anything:
 cargo build --manifest-path apps/<name>/Cargo.toml
 ```
 
-You don't have to commit, just `git add` is enough to make it visible to `git ls-files`.
+If the app is intentionally hidden behind package metadata, remove the skip only when it is ready.
 
 ### App is intentionally skipped
 
 **Symptoms:**
-- App is tracked but `build-aomi` skips it.
-- xtask logs something like `skipping <name>: package metadata aomi.skip = true`.
+- App exists but `compile` skips it.
+- The build logs mention `package metadata aomi.skip = true`.
 
 **Cause:**
 - The app's `Cargo.toml` has `[package.metadata.aomi.skip]` set, usually for in-progress crates that don't yet build.
@@ -42,11 +40,11 @@ You don't have to commit, just `git add` is enough to make it visible to `git ls
 
 If the app is ready, remove the skip block from `apps/<name>/Cargo.toml`. If it's still in-progress, leave it alone — the skip is intentional.
 
-### `cargo build` succeeds but `xtask build-aomi` errors with manifest validation
+### `cargo build` succeeds but `aomi-build compile` errors with manifest validation
 
 **Symptoms:**
 - The crate compiles fine.
-- xtask rejects with errors like "manifest does not export `aomi_create`" or "missing `aomi_sdk_version` symbol".
+- `aomi-build compile` rejects with errors like "manifest does not export `aomi_create`" or "missing `aomi_sdk_version` symbol".
 
 **Cause:**
 - `lib.rs` is missing the `dyn_aomi_app!` macro invocation, OR the macro arguments are malformed (e.g. typo in `tools = [...]`, missing `namespaces` field).
@@ -62,22 +60,22 @@ dyn_aomi_app!(
     version = "0.1.0",           // app version, not SDK version
     preamble = PREAMBLE,         // const &str
     tools = [client::Tool1, client::Tool2],
-    namespaces = []              // required field; [] or ["common"]
+    namespaces = []              // required field; [], ["evm-core"], or SVM namespace sets
 );
 ```
 
 Common mistakes:
 - Trailing comma after `namespaces = []` — fine, but make sure it's there if you copy-paste.
 - `preamble = "..."` inline string instead of `preamble = PREAMBLE` const reference. Both work; const is preferred for long preambles.
-- Forgetting the `namespaces` field entirely — required since SDK v0.1.14+.
+- Forgetting the `namespaces` field entirely — required by the current SDK.
 
 ### macOS codesigning failure
 
 **Symptoms:**
-- xtask error like `codesign failed: errSecInternalComponent` or `unable to sign cdylib`.
+- Build error like `codesign failed: errSecInternalComponent` or `unable to sign cdylib`.
 
 **Cause:**
-- macOS requires cdylibs to be signed before they can be loaded. xtask runs `codesign` automatically; this can fail if Xcode CLI tools are missing or the keychain is locked.
+- macOS requires cdylibs to be signed before they can be loaded. `aomi-build compile` runs `codesign` automatically; this can fail if Xcode CLI tools are missing or the keychain is locked.
 
 **Fix:**
 
@@ -107,11 +105,11 @@ Then retry the build. For CI, ensure the runner has codesigning capability or us
 **Fix:**
 
 ```bash
-# Pull the latest aomi-apps
-git -C ../aomi-apps pull
+# Pull the latest aomi-sdk
+git -C ../aomi-sdk pull
 
 # Rebuild ALL apps — the version gate is repo-wide
-cargo run -p xtask -- build-aomi --release
+cargo run -p aomi-sdk --features cli --bin aomi-build -- compile --release
 ```
 
 A single app rebuild is not enough if other apps in the runtime also need to load. The hosted runtime treats SDK drift as a coordinated rebuild event — see `docs/sdk-version-compatibility.md`.
@@ -234,12 +232,12 @@ Several:
 Several:
 - The route's `tool` field references a tool name that doesn't exist (typo, or the tool isn't registered).
 - For `OnBoundEvent` routes: the alias never resolves because no upstream step published it via `bind_as`.
-- The app's `namespaces = []` doesn't include `"common"`, so host tool references in routes are not authorized.
+- The app's `namespaces = []` doesn't include `"evm-core"`, so host tool references in routes are not authorized.
 
 **Fix:**
 
-1. Confirm `namespaces = ["common"]` in the manifest.
-2. For `OnSyncReturn` routes: confirm the `tool` field matches an exported tool name exactly. For host tools, prefer the typed marker `RouteStep::on_return_to::<host::CommitEip712>(args)` to catch typos at compile time.
+1. Confirm `namespaces = ["evm-core"]` in the manifest.
+2. For `OnSyncReturn` routes: confirm the `tool` field matches an exported tool name exactly. For host tools, prefer typed markers such as `RouteStep::on_return_to::<host::EvmCommitMessage>(args)` or `host::CommitTxs` to catch typos at compile time.
 3. For `OnBoundEvent` routes: trace the alias chain. The earlier step that publishes via `bind_as("foo")` must execute and complete before a later step bound to `"foo"` can fire. Check the order of routes in the `with_routes([...])` array.
 4. Inspect the host's event log: it logs every `OnBoundEvent` resolution and any unresolved aliases at session end.
 
@@ -285,17 +283,17 @@ For tools that should always emit at least one progress update, audit the implem
 
 ## Manifest / Workspace
 
-### "package not found in workspace" when running xtask
+### "package not found in workspace" when compiling an app
 
 **Symptoms:**
-- `cargo run -p xtask -- build-aomi --app <name>` errors with `package <name> not found in workspace`.
+- `cargo build --manifest-path apps/<name>/Cargo.toml` or `aomi-build compile --app <name>` errors with `package <name> not found in workspace`.
 
 **Cause:**
-- The app is not in the workspace's `exclude = [...]` list, or `xtask new-app` was never run.
+- The app is not in the workspace's expected app layout, or it was copied by hand without matching the current app manifest conventions.
 
 **Fix:**
 
-The aomi-apps workspace excludes app crates by default (they build as cdylibs which xtask handles separately). Add the new app to `exclude`:
+The `aomi-sdk` workspace excludes app crates by default because they build as cdylibs separately. Add the new app to `exclude` if your current checkout still requires it:
 
 ```toml
 # Cargo.toml (workspace root)
@@ -306,7 +304,7 @@ exclude = [
 ]
 ```
 
-`xtask new-app <name>` does this automatically. If you scaffolded by copying instead, you need to add it manually.
+`aomi-build init <name>` handles the current scaffold shape. If you scaffolded by copying instead, compare against a freshly generated app.
 
 ### Two apps with the same `name = "..."` in `dyn_aomi_app!`
 
@@ -335,14 +333,14 @@ The crate name (`Cargo.toml` `[package].name`) and the app name don't have to ma
 
 When something doesn't work, run through these in order:
 
-- [ ] `aomi-apps` repo is on the latest commit (`git -C ../aomi-apps log -1`)?
+- [ ] `aomi-sdk` repo is on the latest commit (`git -C ../aomi-sdk log -1`)?
 - [ ] SDK version in `sdk/Cargo.toml` matches the host's `AOMI_SDK_VERSION`?
-- [ ] App's `Cargo.toml` is git-tracked (`git ls-files apps/<name>/Cargo.toml` returns the path)?
-- [ ] App is in the workspace `exclude = [...]` list?
+- [ ] `aomi-build compile --app <name>` sees the app?
+- [ ] App package metadata does not set `[package.metadata.aomi.skip]` unless intentionally skipped?
 - [ ] `dyn_aomi_app!` has all required fields including `namespaces`?
 - [ ] Every `Args` struct derives `Deserialize + JsonSchema`?
 - [ ] Async tools set `const IS_ASYNC: bool = true` AND implement `run_async` (not `run`)?
 - [ ] Every async tool path either calls `complete()` or returns `Err(...)`?
 - [ ] HTTP clients have explicit timeouts?
-- [ ] For wallet-handoff tools: `namespaces = ["common"]` and routes use typed `host::*` markers?
+- [ ] For wallet-handoff tools: `namespaces = ["evm-core"]` and routes use typed `host::*` markers?
 - [ ] For deprecated patterns: no remaining `SYSTEM_NEXT_ACTION` strings, no prose-only "next_step" hints?

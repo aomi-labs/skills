@@ -10,7 +10,7 @@
 #   4. Use the functions below. Each handles a complete flow with safety checks.
 #
 # Dependencies:
-#   - @aomi-labs/client v0.1.30+ (`aomi --version` or `npx @aomi-labs/client@0.1.30 --version`)
+#   - @aomi-labs/client v0.1.42+ (`aomi --version` or `npx @aomi-labs/client@latest --version`)
 #   - jq (for tx-list parsing)
 #
 # Conventions:
@@ -27,17 +27,17 @@ set -euo pipefail
 
 : "${USER_ADDR:?USER_ADDR must be set to your wallet address (0x...)}"
 : "${AOMI_CHAIN_ID:=1}"             # Default to Ethereum mainnet
-: "${AOMI_CMD:=aomi}"               # Override to "npx @aomi-labs/client@0.1.30" if not installed globally
+: "${AOMI_CMD:=aomi}"               # Override to "npx @aomi-labs/client@latest" if not installed globally
 
 # ============================================================================
-# Detection: aomi vs npx @aomi-labs/client@0.1.30
+# Detection: aomi vs npx @aomi-labs/client@latest
 # ============================================================================
 
 aomi_detect() {
     if command -v aomi >/dev/null 2>&1; then
         AOMI_CMD="aomi"
     else
-        AOMI_CMD="npx @aomi-labs/client@0.1.30"
+        AOMI_CMD="npx @aomi-labs/client@latest"
         echo "[aomi-workflow] aomi not found on PATH — using: $AOMI_CMD" >&2
     fi
     echo "[aomi-workflow] using: $AOMI_CMD" >&2
@@ -49,10 +49,10 @@ aomi_check_version() {
     echo "[aomi-workflow] CLI version: $version" >&2
 
     case "$version" in
-        0.1.3[0-9]*|0.1.[4-9][0-9]*|0.[2-9].*|[1-9].*)
+        0.1.4[2-9]*|0.1.[5-9][0-9]*|0.[2-9].*|[1-9].*)
             ;;
         *)
-            echo "[aomi-workflow] WARNING: version is $version, this script assumes 0.1.30+" >&2
+            echo "[aomi-workflow] WARNING: version is $version, this script assumes 0.1.42+" >&2
             echo "[aomi-workflow] upgrade with: npm install -g @aomi-labs/client@latest" >&2
             ;;
     esac
