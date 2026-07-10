@@ -489,7 +489,7 @@ aomi tx sign tx-1
 - **Gas is unusually high (~600k+).** The L1 portion is cheap, but the OP-stack `depositETHTo` includes creating the L2 deposit ticket — the gas estimate accounts for that. Don't be alarmed.
 - **`_to = address(0)` is a hard block, not just a warning.** OP-stack bridges to `0x0` permanently lock funds (no recovery on L2). The agent fails simulation with the message *"Bridge recipient is address(0). L2 funds will be permanently unrecoverable."* If the user typo'd a zero address, do **not** retry — surface the block.
 - **Optimism is identical** with target `0x99c9fc46f92e8a1c0dec1b1747d010903e884be1` (OP L1StandardBridge). zkSync uses `requestL2Transaction` on the Mailbox `0x32400084c286cf3e17e7b677ea9583e60a000324` with both `_contractL2` (L2 target) and `_refundRecipient` (L2 gas refund) as drain vectors.
-- **Returning from Base/OP back to mainnet has a known limitation as of CLI `v0.1.30`** — if the EOA has 0 ETH on the L2, the AA 4337 path falls through to a direct EOA send and fails with `insufficient funds for transfer`. See [account-abstraction.md → Sponsorship in practice](account-abstraction.md#sponsorship-in-practice-verified-against-v0130).
+- **Returning from Base/OP back to mainnet requires native gas unless sponsorship is actually configured** — if the EOA has 0 ETH on the L2, auto mode may still fail with `insufficient funds for transfer` after AA attempts. See [account-abstraction.md → Sponsorship in practice](account-abstraction.md#sponsorship-in-practice-verified-against-v0142-source-behavior).
 
 ---
 

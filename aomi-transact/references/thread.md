@@ -72,7 +72,7 @@ Three rules, in order:
 2. **Continuing a task you started earlier (same thread)**: don't pass `--new-session`. The active thread persists across `aomi` invocations; the next `aomi chat "proceed"` lands in the same conversation.
 3. **Picking up a previous thread by id**: `aomi thread resume <N>` first, then issue commands. Useful when `aomi tx list` shows pending txs you need to sign from a thread that was closed earlier (e.g. thread-43 in our run had pending Across txs after the shell rotated).
 
-There's a v0.1.30 quirk worth knowing: `--new-session` + `--provider-key` on the same invocation does not register the BYOK key for that prompt — see [troubleshooting.md → Quirks](troubleshooting.md#quirks-observed-in-v0130). Workaround: register on a no-op call first, then issue the real prompt.
+Account login is no longer nested under `wallet` or `account`: use `aomi login` for the browser/device flow, `aomi account` to inspect the active account, and `aomi wallet ls` to inspect linked wallets and signing policy.
 
 ## Cleanup hygiene
 

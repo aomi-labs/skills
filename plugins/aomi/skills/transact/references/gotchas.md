@@ -2,7 +2,7 @@
 
 ## What You Probably Got Wrong
 
-LLM training data on aomi is stale. These are the most common mistakes the skill is shaped to prevent. Each correction is anchored to live v0.1.30 behavior.
+LLM training data on aomi is stale. These are the most common mistakes the skill is shaped to prevent. Each correction is anchored to current `@aomi-labs/client` v0.1.42 behavior and local TypeScript source.
 
 - **"Aomi is a wallet"** → Aomi is an agent + CLI. It composes calldata and queues a wallet request; the user signs. The CLI does not custody funds, never signs without an explicit `aomi tx sign`, and never broadcasts on its own initiative.
 
@@ -12,13 +12,17 @@ LLM training data on aomi is stale. These are the most common mistakes the skill
 
 - **"Use `--rpc-url` to switch chains"** → `--chain` controls the wallet/thread context (which chain the agent thinks you are on); `--rpc-url` controls where `aomi tx sign` estimates and submits. They are independent. For a cross-chain flow, the queued tx has its own `chain` field — pass `--rpc-url` matching *that* chain when signing.
 
-- **"AA always sponsors gas on L2s"** → The zero-config proxy path on Base/Arbitrum/Optimism does **not** reliably sponsor in v0.1.30. If the EOA has 0 native gas on the destination chain, signing fails with `insufficient funds for transfer`. Either fund the EOA with a tiny amount of native gas, or configure a real BYOK Alchemy/Pimlico provider with a sponsorship policy. Do not retry with `--eoa` — that path also needs gas. See [account-abstraction.md → Sponsorship in practice](account-abstraction.md#sponsorship-in-practice-verified-against-v0130).
+- **"AA always sponsors gas on L2s"** → The currently displayed AA defaults are 7702 on Ethereum, Polygon, Arbitrum, Base, and Optimism. 7702 spends native gas from the EOA. 4337 can be sponsored only when the selected provider/paymaster policy supports it. If the EOA has 0 native gas on the destination chain, auto mode may still fail after AA attempts because the fallback path is EOA. See [account-abstraction.md → Sponsorship in practice](account-abstraction.md#sponsorship-in-practice-verified-against-v0142-source-behavior).
 
 - **"`--new-session` should always be passed"** → Pass it on the *first* command of a new task. Reusing it mid-task starts a fresh conversation and the agent loses context (e.g. the quote it just gave you). For follow-up confirmations like *"yes, proceed"*, omit `--new-session`.
 
-- **"Failed simulation txs disappear"** → They do not. `aomi tx list` shows orphaned `tx-N` from earlier failed attempts alongside the current passing batch. Check the `batch_status` line and only sign txs marked `Batch [...] passed`. See [troubleshooting.md → Quirks](troubleshooting.md#quirks-observed-in-v0130).
+- **"Failed simulation txs disappear"** → They do not. `aomi tx list` can show older `tx-N` entries from earlier failed attempts alongside the current passing batch. Check the `batch_status` line and only sign txs marked as passing.
 
-- **"7702 and 4337 are interchangeable"** → They are not. 7702 is a native EIP-7702 type-4 transaction with EOA delegation; the EOA pays gas. 4337 is a bundler+paymaster UserOperation; the paymaster can sponsor. Default chain modes: 7702 on Ethereum, 4337 on Polygon/Arbitrum/Base/Optimism. Use 4337 for gasless execution.
+- **"7702 and 4337 are interchangeable"** → They are not. 7702 is a native EIP-7702 type-4 transaction with EOA delegation; the EOA pays gas. 4337 is a bundler+paymaster UserOperation; the paymaster can sponsor. Current displayed defaults: 7702 on Ethereum, Polygon, Arbitrum, Base, and Optimism. Use 4337 only when a supported paymaster path is actually configured.
+
+- **"Local key setup still uses the old wallet command"** → The current surface uses `aomi wallet dev-key` for local test keys and `aomi wallet ls` for linked wallet/account policy inspection. Solana local keys use `aomi wallet dev-key --solana <base58-or-json-keypair>` or `--solana-private-key` / `SOLANA_PRIVATE_KEY` for one invocation.
+
+- **"`aomi app list` and `aomi model list` are required preflights"** → These introspection routes are backend-dependent and may return 404 on the public backend. Do not block chat, tx list, simulation, or signing flows just because app/model listing is unavailable.
 
 - **"Drain vectors are aomi-specific"** → They are protocol-specific calldata fields where a malicious prompt could redirect funds (`recipient` in Uniswap, `onBehalfOf` in Aave, `mintRecipient` in CCTP, `_to` in OP-stack bridges). The agent blocks these at simulation time when they do not equal `msg.sender`. The skill's job is to surface the block, not bypass it. Full table in [drain-vectors.md](drain-vectors.md).
 

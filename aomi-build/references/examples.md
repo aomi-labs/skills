@@ -6,7 +6,7 @@ Read this when:
 - You want to see the SKILL.md guidance applied end-to-end.
 - You're deciding what kind of app to build and want to pattern-match against a real one in `apps/`.
 
-Each example is anchored to a real app crate in `aomi-apps`. Code excerpts come directly from those crates; the **"What you'd type"** blocks show how you'd brief the skill to reproduce them.
+Each example is anchored to a real app crate in `aomi-sdk/apps`. Code excerpts come directly from those crates; the **"What you'd type"** blocks show how you'd brief the skill to reproduce them.
 
 The build lifecycle is consistent across every example:
 
@@ -87,11 +87,11 @@ dyn_aomi_app!(
         client::GetAccount,
         client::GetTrades,
     ],
-    namespaces = ["common"]
+    namespaces = ["evm-core"]
 );
 ```
 
-`namespaces = ["common"]` because the app exposes signed-order tools — even though Binance handles signing internally (HMAC), the app is execution-oriented and may grow to use host wallet tools later. For purely-read apps you'd use `namespaces = []`.
+`namespaces = ["evm-core"]` because the app is execution-oriented and may need current wallet/EVM host context even when some signing is venue-side HMAC. Use `namespaces = []` only for apps that should receive no host namespace at all.
 
 ### Client (`client.rs`) — auth and helpers
 
@@ -168,8 +168,8 @@ The `ok(...)` helper at the top of `tool.rs` adds a stable `"source": "binance"`
 ### Validation
 
 ```bash
-cargo run -p xtask -- new-app binance      # if scaffolding from scratch
-cargo run -p xtask -- build-aomi --app binance
+cargo run -p aomi-sdk --features cli --bin aomi-build -- init binance      # if scaffolding from scratch
+cargo run -p aomi-sdk --features cli --bin aomi-build -- compile --app binance
 ```
 
 Add a unit test for the args-encoding logic (the HMAC query-string canonicalization is the kind of thing that breaks silently):
@@ -327,7 +327,7 @@ impl DynAomiTool for BuildPolymarketOrder {
                         "wallet_request": typed_data.clone(),
                     }),
                     [
-                        RouteStep::on_return_to::<host::CommitEip712>(typed_data)
+                        RouteStep::on_return_to::<host::EvmCommitMessage>(typed_data)
                             .bind_as("clob_l1_signature")
                             .prompt("Sign the CLOB L1 authorization."),
                         RouteStep::on_bound_to::<SubmitPolymarketOrder>(
@@ -349,14 +349,14 @@ impl DynAomiTool for BuildPolymarketOrder {
 |--------|-------|
 | `fn run(...) -> Result<Value, String>` | `fn run_with_routes(...) -> Result<ToolReturn, String>` |
 | Returned `json!({...})` | Returns `ToolReturn::value(...)` or `ToolReturn::with_routes(...)` |
-| Prose `"next_step"` field | Structured `RouteStep` with typed `host::CommitEip712` target |
+| Prose `"next_step"` field | Structured `RouteStep` with typed `host::EvmCommitMessage` target |
 | Runtime couldn't act on next-step hint | Runtime mechanically chains: sign → bind alias → submit |
 
 Tools that don't need routes need **no changes** — the default `run_with_routes()` impl wraps `run()` into `ToolReturn::value(...)` automatically.
 
 ### Manifest update
 
-Add `"common"` to `namespaces` if it wasn't already there:
+Add `"evm-core"` to `namespaces` if it wasn't already there:
 
 ```rust
 dyn_aomi_app!(
@@ -365,14 +365,14 @@ dyn_aomi_app!(
     version = "0.1.0",
     preamble = PREAMBLE,
     tools = [...],
-    namespaces = ["common"]   // required because routes reference host::CommitEip712
+    namespaces = ["evm-core"]   // required because routes reference host wallet targets
 );
 ```
 
 ### Pattern notes
 
 - **Don't convert tools that don't need it.** `get_polymarket_details`, `search_polymarket` are pure reads — leave them as `run`. Only the build/submit tools get the routes treatment.
-- **Match the `bind_as` alias to the wallet artifact.** `commit_eip712` callbacks publish a `signature`; bind it under a domain-specific name like `"clob_l1_signature"` so multi-sign flows don't collide.
+- **Match the `bind_as` alias to the wallet artifact.** `evm_commit_message` callbacks publish a `signature`; bind it under a domain-specific name like `"clob_l1_signature"` so multi-sign flows don't collide.
 - **The prompt field is a hint.** The runtime renders it into the next system prompt for the LLM, but doesn't force the call. Keep prompts short and action-oriented (*"Sign the typed data"*, *"Submit the order"*).
 - See `references/host-routes.md` for the full route contract.
 
@@ -509,12 +509,12 @@ fn poll_emits_progress_then_completes() {
    ```rust
    dyn_aomi_app!(
        ...
-       namespaces = ["common"]   // was []
+       namespaces = ["evm-core"]   // was []
    );
    ```
 5. **Rebuild + test:**
    ```bash
-   cargo run -p xtask -- build-aomi --app <name>
+   cargo run -p aomi-sdk --features cli --bin aomi-build -- compile --app <name>
    cargo test -p <name>
    ```
 6. **Confirm the host accepts the new plugin.** Load it in your local runtime; the host logs the SDK version match check on plugin load.
@@ -532,9 +532,9 @@ fn poll_emits_progress_then_completes() {
 - **Decide the app type before naming tools.** Product client (real API), execution assistant (build/submit/sign), or builder assistant (SDK + docs only). The wrong call here cascades into wrong tool names and wrong preamble.
 - **Tool surface is shaped by user intent, not by endpoint count.** 30 endpoints rarely need 30 tools. 3-8 intent-shaped tools (`search_*`, `get_*`, `build_*`, `submit_*`) usually beat raw endpoint mirroring.
 - **Auth resolution lives in tool boundary code**, not the app struct. Read explicit args first, fall back to env vars, never embed credentials in preambles or tool descriptions.
-- **`namespaces = ["common"]`** for any app that uses host tools (`stage_tx`, `commit_tx`, `commit_eip712`, etc.) or returns `ToolReturn::with_routes` envelopes. Read-only apps use `namespaces = []`.
+- **`namespaces = ["evm-core"]`** for most EVM or generated API apps, and for any app that uses EVM host tools (`stage_tx`, `commit_txs`, `evm_commit_message`, etc.) or returns `ToolReturn::with_routes` envelopes. Use SVM namespaces for Solana tools. Use `namespaces = []` only when no host namespace should be injected.
 - **Prefer typed JSON shapes.** Args are `JsonSchema + Deserialize` structs; client responses are typed deserializations from `client.rs`; tool outputs add a stable `"source"` field for cross-app deduplication.
-- **The build loop is `cargo run -p xtask -- build-aomi --app <name>` after the manifest is tracked.** For untracked apps, use `cargo build --manifest-path apps/<name>/Cargo.toml` until you've added the crate to git.
+- **The build loop is `cargo run -p aomi-sdk --features cli --bin aomi-build -- compile --app <name>`.** For crate-level debugging, use `cargo build --manifest-path apps/<name>/Cargo.toml`.
 - **Validate against a real target when one is available.** A passing compile is necessary but not sufficient — call the real API for at least one read flow before declaring the app done.
 
 For deeper coverage of specific patterns:

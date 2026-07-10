@@ -2,13 +2,13 @@
 
 The `aomi` plugin bundle ships two skills with materially different risk profiles. This document maps each against the [OWASP Agentic Skills Top 10 (v1.0, March 2026)](https://owasp.org/www-project-agentic-skills-top-10/), records the controls in place, and points reviewers at the captured scanner reports.
 
-**Last reviewed:** 2026-05-07.
+**Last reviewed:** 2026-07-05.
 
 ## Bundle-level summary
 
 | Skill | Risk tier | Sandbox | Network surface | Shell surface |
 |-------|-----------|---------|-----------------|---------------|
-| [`aomi-transact`](skills/transact/SKILL.md) | **L2** (signs/broadcasts) | Forked-chain simulation gate before every signing | `api.aomi.dev` only (allowlist) | `aomi`, `npx @aomi-labs/client@0.1.30` |
+| [`aomi-transact`](skills/transact/SKILL.md) | **L2** (signs/broadcasts) | Forked-chain simulation gate before every signing | `api.aomi.dev` only (allowlist) | `aomi`, `npx @aomi-labs/client@latest` |
 | [`aomi-build`](skills/build/SKILL.md) | **L1** (low — scaffolds code, no runtime side effects) | n/a (no execution; output is source code for the user to review) | none (offline) | `cargo`, `git` |
 
 Both skills have full per-control walkthroughs against AST01–AST10 in their respective SECURITY.md files in this repo:

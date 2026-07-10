@@ -30,17 +30,23 @@ npx skills add aomi-labs/skills
 
 Works with Claude Code, Cursor, Gemini CLI, VS Code Copilot, and any [Agent Skills](https://agentskills.io)-compatible tool.
 
+### OpenAI Codex
+
+Add this repo as a Codex plugin marketplace, then install the `aomi` bundle:
+
+```bash
+codex plugin marketplace add aomi-labs/skills
+```
+
+The `aomi` plugin (skills: `aomi-transact`, `aomi-build`) is defined by [`.codex-plugin/plugin.json`](plugins/aomi/.codex-plugin/plugin.json) and exposed through [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json).
+
 ## Prerequisites
 
 ```bash
 npm install -g @aomi-labs/client
 ```
 
-For transaction signing, also install [viem](https://viem.sh):
-
-```bash
-npm install -g viem
-```
+The published CLI bundles its EVM and Solana signing dependencies.
 
 ## Usage
 
@@ -73,7 +79,7 @@ Agent Skills are lightweight instructions and tool references that live inside y
 Yes. `aomi-transact` has a read-only mode — `aomi chat "what's the price of ETH?"`, `aomi tx list`, `aomi tx simulate`, balance and portfolio queries all work without any signing key. A signing key is only needed when you want to broadcast a transaction on-chain.
 
 **Which chains does `aomi-transact` support?**
-Ethereum, Polygon, Arbitrum, Base, Optimism, and Sepolia (testnet). Set the active chain with `--chain <id>` or the `AOMI_CHAIN_ID` env var. Each signing invocation needs an RPC URL that matches the target chain.
+Ethereum, Polygon, Arbitrum, Base, Optimism, Sepolia, Linea, Monad, Monad Testnet, and local Anvil are present in the current chain metadata. Set the active chain with `--chain <id>` or the `AOMI_CHAIN_ID` env var. Each signing invocation needs an RPC URL that matches the target chain.
 
 **How do I update to the latest version of the skills?**
 Re-run `npx skills add aomi-labs/skills`. Re-running pulls the latest skill definitions and overwrites the local copies.
