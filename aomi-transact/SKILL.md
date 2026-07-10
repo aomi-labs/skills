@@ -13,13 +13,13 @@ description: >
   or echo credentials; values reach the CLI only when the user explicitly supplied them.
 compatibility: 'Verified against @aomi-labs/client v0.1.42 and the current aomi-widget/packages/client TypeScript CLI. Install globally via npm install -g @aomi-labs/client@latest, or run on demand via npx @aomi-labs/client@latest. The CLI defaults to https://api.aomi.dev; pass --backend-url https://api-staging.aomi.dev when explicitly targeting staging. viem and Solana signing dependencies are bundled by the package. Designed for claude-code; also works with Cursor, Codex CLI, Gemini, and any agent runtime that supports the Anthropic skill spec.'
 license: MIT
-version: "0.10.0"
+version: "0.10.1"
 author: 'aomi-labs <hello@aomi.dev>'
 tags: [crypto, defi, web3, evm, ethereum, wallet, account-abstraction, trading, mcp, agent]
 allowed-tools: 'Bash(aomi:*), Bash(npx:*)'
 metadata:
   author: 'aomi-labs <hello@aomi.dev>'
-  version: "0.10.0"
+  version: "0.10.1"
   repository: aomi-labs/skills
   homepage: https://github.com/aomi-labs/skills/tree/main/aomi-transact
 permissions:
@@ -43,25 +43,25 @@ requires:
 
 ## Overview
 
-Aomi Transact drives the `aomi` TypeScript CLI to build natural-language crypto agents and web3 assistants. It composes calldata, fork-simulates transactions as a batch, and stages wallet requests for explicit user signing — non-custodial throughout. Current chain metadata includes Ethereum, Polygon, Arbitrum, Base, Optimism, Sepolia, Linea, Monad, Monad Testnet, and local Anvil. The npm CLI is the production/end-user surface; the Rust `aomi-cli` in `product-mono` is an in-process dev/test CLI with different signing gates. For deep references, see [commands.md](references/commands.md), [workflows.md](references/workflows.md), [gotchas.md](references/gotchas.md), [account-abstraction.md](references/account-abstraction.md), [apps.md](references/apps.md), [examples.md](references/examples.md), [session.md](references/session.md), [drain-vectors.md](references/drain-vectors.md), [troubleshooting.md](references/troubleshooting.md).
+Aomi Transact drives the `aomi` TypeScript CLI to build natural-language crypto agents and web3 assistants. It composes calldata, fork-simulates transactions as a batch, and stages wallet requests for explicit user signing — non-custodial throughout. Current chain metadata includes Ethereum, Polygon, Arbitrum, Base, Optimism, Sepolia, Linea, Monad, Monad Testnet, and local Anvil. The npm CLI is the production/end-user surface; the Rust `aomi-cli` in `product-mono` is an in-process dev/test CLI with different signing gates. For deep references, see [commands.md](references/commands.md), [workflows.md](references/workflows.md), [gotchas.md](references/gotchas.md), [account-abstraction.md](references/account-abstraction.md), [apps.md](references/apps.md), [examples.md](references/examples.md), [thread.md](references/thread.md), [drain-vectors.md](references/drain-vectors.md), [troubleshooting.md](references/troubleshooting.md).
 
 ## Prerequisites
 
 - Node.js 18+ with npm or npx
 - `@aomi-labs/client` v0.1.42 or newer: `npm install -g @aomi-labs/client@latest`
-- For EVM signing: a 0x-prefixed private key via `aomi wallet set`, `--private-key`, or `PRIVATE_KEY`
-- For Solana sign-only flows: a base58 or JSON keypair via `aomi wallet set --solana`, `--solana-private-key`, or `SOLANA_PRIVATE_KEY`
+- For EVM signing: a 0x-prefixed private key via `aomi wallet dev-key`, `--private-key`, or `PRIVATE_KEY`
+- For Solana sign-only flows: a base58 or JSON keypair via `aomi wallet dev-key --solana`, `--solana-private-key`, or `SOLANA_PRIVATE_KEY`
 - Optional: `AOMI_ACCOUNT_BEARER` / `--account-bearer` for authenticated account-bound requests
 - Optional: Alchemy or Pimlico credentials for direct account-abstraction providers; otherwise the CLI tries the backend Alchemy proxy path
 
 ## Instructions
 
 1. Detect or install the CLI: `aomi --version 2>/dev/null || npx @aomi-labs/client@latest --version`
-2. Start a new session: `aomi chat "<task>" --new-session`
+2. Start a new thread: `aomi chat "<task>" --new-session`
 3. Inspect queue: `aomi tx list`
 4. For multi-step flows, simulate first: `aomi tx simulate tx-1 tx-2`
 5. Sign: `aomi tx sign tx-1`
-6. Verify: `aomi session status` or `aomi session log`
+6. Verify: `aomi thread status` or `aomi thread log`
 
 For the full procedure (read-only requests, building wallet requests, signing policy, batch simulation, secret ingestion), see [workflows.md](references/workflows.md).
 
@@ -112,9 +112,9 @@ This skill is `risk_tier: L2` because it can sign and broadcast on-chain transac
 - The user wants to chat with the Aomi agent from the terminal.
 - The user wants balances, prices, routes, quotes, or transaction status.
 - The user wants to build, simulate, confirm, sign, or broadcast wallet requests.
-- The user wants to inspect or switch apps, models, chains, or sessions.
+- The user wants to inspect or switch apps, models, chains, or threads.
 - The user wants to inspect or change Account Abstraction settings.
-- The user wants to authenticate a CLI session with `wallet login` / `account login`, or inspect it with `whoami`.
+- The user wants to authenticate a CLI account with `aomi login`, inspect it with `aomi account`, or inspect linked wallets with `aomi wallet ls`.
 - The user wants to build a new app from an API spec or SDK — use the companion skill **aomi-build**.
 
 ## Command Surface
@@ -123,12 +123,14 @@ This skill is `risk_tier: L2` because it can sign and broadcast on-chain transac
 aomi --prompt "<message>"          Send one prompt and exit
 aomi chat <message>                 Send a message
 aomi tx list|simulate|sign
-aomi session list|new|resume|delete|status|log|events|close
+aomi thread list|new|resume|delete|status|log|events|close
 aomi model list|current|set
 aomi app list|current
 aomi chain list|current|set
-aomi wallet current|set|login|whoami
-aomi account login|whoami
+aomi wallet ls|dev-key|set-mode
+aomi login|logout
+aomi account
+aomi cron ls|show|cancel
 aomi config current|set-backend
 aomi secret list|clear|add
 aomi deploy

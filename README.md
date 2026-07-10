@@ -70,7 +70,7 @@ The skill is scanned by four independent tools — [Cisco AI Defense skill-scann
 Any Agent Skills–compatible tool: Claude Code, Cursor, Gemini CLI, VS Code Copilot, and others. Install once with `npx skills add aomi-labs/skills` and the skills become available in whichever tool you're using.
 
 **Do I need an Aomi account or API key?**
-For the default app and most public data queries, no. For non-default apps and private flows, you'll need an `AOMI_API_KEY` — pass it with `--api-key` or set it as an environment variable. Provider-specific credentials (e.g., exchange keys, bundler keys) can be injected per-session via `aomi secret add`.
+For the default app and most public data queries, no. For non-default apps and private flows, you'll need an `AOMI_API_KEY` — pass it with `--api-key` or set it as an environment variable. Provider-specific credentials (e.g., exchange keys, bundler keys) can be injected per-thread via `aomi secret add`.
 
 **How is this different from an MCP server?**
 Agent Skills are lightweight instructions and tool references that live inside your AI tool's context. MCP servers are long-running external processes exposing a protocol. The `aomi-transact` skill drives the `aomi` CLI — each command starts, runs, and exits — so there's no server to manage. You can use Aomi Skills alongside MCP servers; they don't conflict.

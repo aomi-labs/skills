@@ -22,7 +22,7 @@ aomi chat "Bridge 50 USDC from Ethereum mainnet to Base via CCTP. Recipient is m
   --new-session
 ```
 
-The agent runs the most paranoid pre-stage verification of any flow — balance, allowance, ABI fetch, EIP-1967 proxy unwrap, selector check — before staging anything (`--verbose` or `aomi session log`):
+The agent runs the most paranoid pre-stage verification of any flow — balance, allowance, ABI fetch, EIP-1967 proxy unwrap, selector check — before staging anything (`--verbose` or `aomi thread log`):
 
 ```
 activate_skills        → cctp
@@ -139,13 +139,13 @@ The agent queries Circle's attestation API and reports either *"still pending"* 
 
 ## Cross-chain RPC handling
 
-The session is on chain 1 (`--chain 1`), and so are the queued txs in this example. For a flow where the agent queues a tx on a different chain than the session (e.g. user starts on Ethereum, agent stages a destination-side claim on Base), pass `--rpc-url` matching the **queued tx's** chain when signing:
+The thread is on chain 1 (`--chain 1`), and so are the queued txs in this example. For a flow where the agent queues a tx on a different chain than the thread (e.g. user starts on Ethereum, agent stages a destination-side claim on Base), pass `--rpc-url` matching the **queued tx's** chain when signing:
 
 ```bash
 aomi tx sign tx-3 --rpc-url https://base.publicnode.com
 ```
 
-`--chain` (session context) and `--rpc-url` (signing transport) are independent controls — keep them aligned with the transaction you're signing.
+`--chain` (thread context) and `--rpc-url` (signing transport) are independent controls — keep them aligned with the transaction you're signing.
 
 ## Complete Script
 

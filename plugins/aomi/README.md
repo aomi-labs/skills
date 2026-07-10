@@ -85,7 +85,7 @@ aomi/
     │   │   ├── apps.md
     │   │   ├── drain-vectors.md
     │   │   ├── examples.md
-    │   │   ├── session.md
+    │   │   ├── thread.md
     │   │   └── troubleshooting.md
     │   └── templates/
     │       └── aomi-workflow.sh

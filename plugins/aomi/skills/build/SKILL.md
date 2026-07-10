@@ -18,7 +18,7 @@ description: >
 tags: [crypto, web3, evm, rust, sdk-scaffolding, openapi, swagger, agent-tools, defi, builder-tools]
 compatibility: 'Best when a local aomi-sdk checkout is available, often at ../aomi-sdk. Falls back to bundled references when the SDK repo is not present. Verified against aomi-sdk v3.0.1 (Rust 2024 edition) and the current aomi-build Rust CLI. Install the current CLI with cargo install --git https://github.com/aomi-labs/aomi-sdk --features cli aomi-sdk, or run from source with cargo run -p aomi-sdk --features cli --bin aomi-build -- <command>. Designed for claude-code; also works with Cursor, Codex CLI, Gemini, and any agent runtime that supports the Anthropic skill spec.'
 license: MIT
-version: "0.1.0"
+version: "0.1.1"
 author: 'aomi-labs <hello@aomi.dev>'
 # Claude Code allowed-tools. The skill scaffolds Rust source files (Write/Edit),
 # inspects existing apps and SDK examples (Read/Grep), and runs cargo + git
@@ -27,7 +27,7 @@ author: 'aomi-labs <hello@aomi.dev>'
 allowed-tools: 'Bash(cargo:*), Bash(git:*), Read, Write, Edit, Grep'
 metadata:
   author: 'aomi-labs <hello@aomi.dev>'
-  version: "0.1.0"
+  version: "0.1.1"
   # Provenance — author-declared upstream coordinates.
   # `gh skill install` will add/overwrite `ref`, `tree_sha`, `installed_via`,
   # and `installed_at` at install time. Do not pre-populate those fields.

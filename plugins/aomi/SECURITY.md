@@ -35,7 +35,7 @@ The CI workflow at [`.github/workflows/skill-audit.yml`](https://github.com/aomi
 
 These apply across every skill in the bundle:
 
-- **No unsolicited credential setup.** The skills never run `aomi wallet set`, `aomi secret add`, `--api-key`, `--private-key`, or any other credential-persisting command on their own initiative — only when the user has explicitly asked for that specific setup *in the current turn* and supplied the value themselves.
+- **No unsolicited credential setup.** The skills never run `aomi wallet dev-key`, `aomi secret add`, `--api-key`, `--private-key`, or any other credential-persisting command on their own initiative — only when the user has explicitly asked for that specific setup *in the current turn* and supplied the value themselves.
 - **No echoing credential values.** Confirmation is by handle name or derived address only, never by repeating the value.
 - **No system-prompt manipulation.** The bundle does not attempt to override agent behavior or inject instructions into the agent's identity files (`SOUL.md`, `MEMORY.md`, `AGENTS.md` are in every skill's `permissions.files.deny_write`).
 - **No drain-vector bypass.** When the agent rejects calldata where `recipient`/`onBehalfOf`/`mintRecipient` ≠ `msg.sender`, `aomi-transact` surfaces the block to the user rather than reformulating the prompt. See [`skills/transact/references/drain-vectors.md`](skills/transact/references/drain-vectors.md).

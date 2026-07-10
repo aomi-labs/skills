@@ -8,7 +8,7 @@ For full diagnostic walkthroughs and the recovery patterns, see [docs/troublesho
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| `(no response)` | Backend timeout or stale local session pointer | Wait briefly, run `aomi session status`. If session is gone, retry with `--new-session` |
+| `(no response)` | Backend timeout or stale local thread pointer | Wait briefly, run `aomi thread status`. If thread is gone, retry with `--new-session` |
 | `[session] Backend user_state mismatch (non-fatal)` log spam | Known v0.1.30 cosmetic noise (state-sync diagnostic) | Ignore. Look past the JSON for the actual response and `⚡ Wallet request queued` line |
 | Credit limit error after `--new-session --provider-key` | v0.1.30 quirk: BYOK key registers but prompt still routes through Aomi credits | Workaround: register on a no-op call first (`aomi --provider-key x:y --new-session --prompt "ack"`), then issue the real prompt without `--new-session` |
 | `BYOK key set for anthropic: sk-ant-...` echo | By design — provider identification, not authentication. First ~7 chars of the key are echoed | Not a credential leak. Do not try to scrub |
@@ -17,7 +17,7 @@ For full diagnostic walkthroughs and the recovery patterns, see [docs/troublesho
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| `No active session` | Active-session pointer (`~/.aomi/active-session.txt`) lost between subprocess invocations | `aomi session list` to find session, then `aomi session resume <N> > /dev/null && aomi tx list` in same shell call |
+| `No active thread` | Active-thread pointer (`~/.aomi/active-session.txt`) lost between subprocess invocations | `aomi thread list` to find thread, then `aomi thread resume <N> > /dev/null && aomi tx list` in same shell call |
 | Pending entries with `failed at step N: 0x...` status | Stale orphans from earlier failed simulation attempts | Match against `batch_status`. Sign only `Batch [...] passed` txs. Skip orphans |
 
 ## `aomi tx simulate` errors
@@ -38,11 +38,11 @@ For full diagnostic walkthroughs and the recovery patterns, see [docs/troublesho
 |-------|-------|-----|
 | AA mode error suggesting `--eoa` | Both AA modes (preferred + alternative) failed | Read console output. Address root cause: provider creds, chain support, sponsorship policy. Use `--eoa` only if user accepts EOA signing |
 | `insufficient funds for transfer` (viem) on L2 | Zero-config AA proxy did not sponsor; fell through to direct EOA `eth_sendTransaction` with 0 native gas | Either fund EOA with native gas on destination chain (~0.0005 ETH equivalent), OR configure BYOK Alchemy/Pimlico provider with sponsorship policy and pass `--aa-provider --aa-mode 4337`. **Do not retry with `--eoa`** — that path also needs gas |
-| `Signer 0x... does not match stored session public key 0x... — updating session` | User's local wallet differs from session's stored public key | Expected behavior. CLI updates session and continues. Confirm with user that the new address is intended |
+| `Signer 0x... does not match stored thread public key 0x... — updating thread` | User's local wallet differs from thread's stored public key | Expected behavior. CLI updates thread and continues. Confirm with user that the new address is intended |
 | HTTP 401 from RPC | RPC auth failed | Pass `--rpc-url <reliable-public-rpc>` for the queued tx's chain |
 | HTTP 429 from RPC | RPC rate-limited | Pass `--rpc-url <different-public-rpc>`. **Do not rotate through random endpoints** — ask user for a reliable URL |
 | Generic parameter error during sign | Usually an RPC problem, not transaction-construction | Pass a chain-matching public RPC via `--rpc-url` |
-| `--rpc-url` mismatch with queued tx chain | Cross-chain flow — session is on chain X but queued tx is on chain Y | Pass `--rpc-url` matching the **queued tx's** chain (visible in `aomi tx list`), not the session chain |
+| `--rpc-url` mismatch with queued tx chain | Cross-chain flow — thread is on chain X but queued tx is on chain Y | Pass `--rpc-url` matching the **queued tx's** chain (visible in `aomi tx list`), not the thread chain |
 | Mixed-chain multi-sign request fails | A single `--rpc-url` cannot serve txs on different chains | Sign per-chain in separate calls |
 
 ## AA-specific errors
@@ -59,7 +59,7 @@ For full diagnostic walkthroughs and the recovery patterns, see [docs/troublesho
 | Error | Cause | Fix |
 |-------|-------|-----|
 | Apps require credentials user hasn't configured | App-specific (e.g. `binance`, `polymarket`, `dune` require provider tokens) | Surface to user; ask them to configure. Run `aomi secret add` only if they explicitly asked and supplied the value (see SKILL.md "Security") |
-| Skill attempted credential setup user didn't ask for | Hard rule violation | Stop. Never run `aomi wallet set`, `aomi secret add`, `--api-key`, or `--private-key` on the skill's initiative |
+| Skill attempted credential setup user didn't ask for | Hard rule violation | Stop. Never run `aomi wallet dev-key`, `aomi secret add`, `--api-key`, or `--private-key` on the skill's initiative |
 
 ## Drain Vector Reference
 

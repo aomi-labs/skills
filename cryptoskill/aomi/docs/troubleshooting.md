@@ -2,7 +2,7 @@
 
 Read this when a command fails unexpectedly or behaves differently than the canonical workflow predicts. Each section lists symptoms, the most likely cause, and a concrete fix.
 
-## Chat / Session
+## Chat / Thread
 
 ### `(no response)` from `aomi chat`
 
@@ -11,15 +11,15 @@ Read this when a command fails unexpectedly or behaves differently than the cano
 - No `⚡ Wallet request queued` line.
 
 **Cause:**
-- Backend timeout, or the local active-session pointer is stale.
+- Backend timeout, or the local active-thread pointer is stale.
 
 **Fix:**
 
 ```bash
-# 1. Check session status
-aomi session status
+# 1. Check thread status
+aomi thread status
 
-# 2. If session is gone or unreachable, retry with --new-session
+# 2. If thread is gone or unreachable, retry with --new-session
 aomi chat "<original message>" --new-session
 ```
 
@@ -38,22 +38,22 @@ Ignore. Look past the JSON for the actual response and `⚡ Wallet request queue
 
 ## Pending TX
 
-### `Error: No active session` from `aomi tx list`
+### `Error: No active thread` from `aomi tx list`
 
 **Symptoms:**
 - `aomi tx list` errors out even after a successful chat.
 
 **Cause:**
-- The active-session pointer (`~/.aomi/active-session.txt`) was lost between subprocess invocations. Known v0.1.30 quirk.
+- The active-thread pointer (`~/.aomi/active-session.txt`) was lost between subprocess invocations. Known v0.1.30 quirk.
 
 **Fix:**
 
 ```bash
-# 1. Find the right session
-aomi session list
+# 1. Find the right thread
+aomi thread list
 
 # 2. Resume + read in the SAME shell call (pointer survives)
-aomi session resume 43 > /dev/null && aomi tx list
+aomi thread resume 43 > /dev/null && aomi tx list
 ```
 
 ### Stale failed-simulation txs in `aomi tx list`
@@ -114,17 +114,17 @@ Do **not** retry with `--eoa` blindly — `--eoa` also requires gas. Two options
 
 The skill does not configure these credentials itself.
 
-### Signer address differs from session public key
+### Signer address differs from thread public key
 
 **Symptoms:**
-- Console message like *"Signer 0xabc... does not match stored session public key 0xdef... — updating session."*
+- Console message like *"Signer 0xabc... does not match stored thread public key 0xdef... — updating thread."*
 
 **Cause:**
-- The user's local wallet is set to a different address than the session was created with.
+- The user's local wallet is set to a different address than the thread was created with.
 
 **Fix:**
 
-Expected behavior. The CLI updates the session to the signer address and continues. Not an error — confirm with the user that the new address is the one they want to sign from.
+Expected behavior. The CLI updates the thread to the signer address and continues. Not an error — confirm with the user that the new address is the one they want to sign from.
 
 ## RPC
 
@@ -150,11 +150,11 @@ If one or two public RPCs fail, **stop rotating through random endpoints**. Ask 
 ### Cross-chain RPC mismatch
 
 **Symptoms:**
-- The chat session is on chain X, but the queued tx targets chain Y.
+- The chat thread is on chain X, but the queued tx targets chain Y.
 - `aomi tx sign` errors or signs with wrong gas estimates.
 
 **Cause:**
-- `--chain` (session context) and `--rpc-url` (signing transport) are independent. The default RPC matches the session, not the queued tx.
+- `--chain` (thread context) and `--rpc-url` (signing transport) are independent. The default RPC matches the thread, not the queued tx.
 
 **Fix:**
 
@@ -162,7 +162,7 @@ The pending transaction already contains its target chain. Override with `--rpc-
 
 ```bash
 aomi tx list
-# tx-1 is on chain 8453 (Base), session was on chain 1 (Ethereum)
+# tx-1 is on chain 8453 (Base), thread was on chain 1 (Ethereum)
 aomi tx sign tx-1 --rpc-url https://base.publicnode.com
 ```
 
@@ -213,17 +213,17 @@ aomi tx simulate tx-1 tx-2
 
 ## Cross-chain
 
-### Session chain differs from queued tx chain
+### Thread chain differs from queued tx chain
 
 **Symptoms:**
 - `--chain` was set to one chain, but `aomi tx list` shows a tx on a different chain.
 
 **Cause:**
-- Normal — the user asked for a cross-chain operation. The session chain is the **starting context**; the agent may stage txs on multiple chains in a single flow (e.g. bridge source + destination).
+- Normal — the user asked for a cross-chain operation. The thread chain is the **starting context**; the agent may stage txs on multiple chains in a single flow (e.g. bridge source + destination).
 
 **Fix:**
 
-This is not an error. Sign with `--rpc-url` matching the queued tx's chain, not the session chain:
+This is not an error. Sign with `--rpc-url` matching the queued tx's chain, not the thread chain:
 
 ```bash
 aomi tx sign tx-3 --rpc-url <queued-tx-chain-rpc>
@@ -292,7 +292,7 @@ These are not bugs the skill should try to fix — they are CLI behaviors to rec
   aomi chat "swap 1 USDC for WETH on Uniswap"
   ```
 
-- **Active session pointer disappears between shell invocations.** Recovery: `aomi session list` → `aomi session resume <N> > /dev/null && aomi tx list` in one shell call.
+- **Active thread pointer disappears between shell invocations.** Recovery: `aomi thread list` → `aomi thread resume <N> > /dev/null && aomi tx list` in one shell call.
 
 - **`BYOK key set for anthropic: sk-ant-...` echoes the first ~7 characters of the provider key.** This is by design (provider identification, not authentication). Do not try to scrub it from output — it is not a credential leak.
 
@@ -303,10 +303,10 @@ These are not bugs the skill should try to fix — they are CLI behaviors to rec
 When in doubt, run through this list:
 
 - [ ] `aomi --version` reports 0.1.30 or newer?
-- [ ] `aomi session status` shows an active session matching the expected topic?
+- [ ] `aomi thread status` shows an active thread matching the expected topic?
 - [ ] `aomi tx list` shows the expected `tx-N` entries?
 - [ ] For multi-step: `aomi tx simulate tx-1 tx-2` reports `Batch success: true` and `Stateful: true`?
 - [ ] If sponsorship was expected on L2, has the user confirmed BYOK provider configuration?
 - [ ] Does the EOA have at least a tiny amount of native gas on the **destination** chain?
-- [ ] Is `--rpc-url` (signing transport) matched to the queued tx's chain, not the session chain?
+- [ ] Is `--rpc-url` (signing transport) matched to the queued tx's chain, not the thread chain?
 - [ ] Are you signing only `Batch [...] passed` txs, ignoring orphans from earlier failed attempts?
