@@ -1,9 +1,0 @@
-{
-  "skill_name": "aomi-build",
-  "skill_path": "aomi-build/SKILL.md",
-  "risk_score": 0,
-  "threshold": 6.0,
-  "passed": true,
-  "finding_count": 0,
-  "findings": []
-}

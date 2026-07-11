@@ -1,12 +1,12 @@
 # Aomi Skills
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE) ![Works with Claude Code · Cursor · Gemini · Copilot](https://img.shields.io/badge/Works%20with-Claude%20Code%20%C2%B7%20Cursor%20%C2%B7%20Gemini%20%C2%B7%20Copilot-6E56CF)
+Agent skills for interacting with the [Aomi](https://aomi.dev) on-chain AI transaction builder.
 
-> Agent Skills for Aomi — open-source AI infrastructure for automating crypto. Works with Claude Code, Cursor, Gemini CLI, VS Code Copilot, and other Agent Skills–compatible tools.
+## Paste-ready prompt
 
-## What are Aomi Skills?
-
-Aomi Skills are drop-in Agent Skills that let any Agent Skills–compatible AI tool — Claude Code, Cursor, Gemini CLI, VS Code Copilot, and others — interact with Aomi, open-source AI infrastructure for automating crypto. The `aomi-build` skill scaffolds new Aomi apps and plugins from API specs and SDK docs. The `aomi-transact` skill drives the Aomi CLI through natural language — querying prices and balances, simulating transactions, and signing and broadcasting on-chain swaps and transfers.
+```text
+Install Aomi Skills with `npx skills add aomi-labs/skills`, install the CLI with `npm install -g @aomi-labs/client`, then use Aomi to read prices, simulate a transaction, or scaffold an Aomi app from an API spec.
+```
 
 ## Skills
 
@@ -14,13 +14,6 @@ Aomi Skills are drop-in Agent Skills that let any Agent Skills–compatible AI t
 |-------|-------------|
 | [aomi-build](aomi-build/SKILL.md) | Build Aomi apps and plugins from APIs, specs, SDK docs, runtime interfaces, and product requirements |
 | [aomi-transact](aomi-transact/SKILL.md) | Build and execute EVM transactions through a conversational AI agent via the `aomi` CLI |
-
-## Use Cases
-
-- **Automate transactions from your AI coding assistant** — ask Claude Code, Cursor, or Gemini CLI to swap, send, stake, or sign EIP-712 payloads via the `aomi` CLI.
-- **Scaffold new Aomi plugins from an API spec** — point `aomi-build` at an OpenAPI spec, REST endpoint, or SDK docs and it generates a working Aomi SDK crate (`lib.rs`, `client.rs`, `tool.rs`).
-- **Explore on-chain state without a dashboard** — query balances, prices, routes, and quotes right from your AI assistant.
-- **Orchestrate multi-step DeFi flows with batch simulation** — simulate approve → swap or bridge → settle sequences before signing, catching reverts before they cost gas.
 
 ## Installation
 
@@ -30,23 +23,17 @@ npx skills add aomi-labs/skills
 
 Works with Claude Code, Cursor, Gemini CLI, VS Code Copilot, and any [Agent Skills](https://agentskills.io)-compatible tool.
 
-### OpenAI Codex
-
-Add this repo as a Codex plugin marketplace, then install the `aomi` bundle:
-
-```bash
-codex plugin marketplace add aomi-labs/skills
-```
-
-The `aomi` plugin (skills: `aomi-transact`, `aomi-build`) is defined by [`.codex-plugin/plugin.json`](plugins/aomi/.codex-plugin/plugin.json) and exposed through [`.agents/plugins/marketplace.json`](.agents/plugins/marketplace.json).
-
 ## Prerequisites
 
 ```bash
 npm install -g @aomi-labs/client
 ```
 
-The published CLI bundles its EVM and Solana signing dependencies.
+For transaction signing, also install [viem](https://viem.sh):
+
+```bash
+npm install -g viem
+```
 
 ## Usage
 
@@ -58,47 +45,8 @@ Once installed, ask your agent:
 
 The agent handles the full flow: chat with the backend, review pending transactions, sign and broadcast on-chain.
 
-## Security
-
-`aomi-transact` is mapped against the [OWASP Agentic Skills Top 10](https://owasp.org/www-project-agentic-skills-top-10/) and ships with a complete OWASP-format `permissions:` manifest in its frontmatter. Per-control analysis lives in [`aomi-transact/SECURITY.md`](aomi-transact/SECURITY.md).
-
-The skill is scanned by four independent tools — [Cisco AI Defense skill-scanner](https://github.com/cisco-ai-defense/skill-scanner), [pors/skill-audit](https://github.com/pors/skill-audit), [NMitchem/SkillScan](https://github.com/NMitchem/SkillScan), and (when token is available) [Snyk agent-scan](https://github.com/snyk/agent-scan). Captured reports and reproducer commands live in [`.scanner-reports/`](.scanner-reports/). The CI workflow at [`.github/workflows/skill-audit.yml`](.github/workflows/skill-audit.yml) runs the offline scanners on every PR and uploads SARIF to the GitHub Security tab.
-
-## FAQ
-
-**Which AI coding tools support Aomi Skills?**
-Any Agent Skills–compatible tool: Claude Code, Cursor, Gemini CLI, VS Code Copilot, and others. Install once with `npx skills add aomi-labs/skills` and the skills become available in whichever tool you're using.
-
-**Do I need an Aomi account or API key?**
-For the default app and most public data queries, no. For non-default apps and private flows, you'll need an `AOMI_API_KEY` — pass it with `--api-key` or set it as an environment variable. Provider-specific credentials (e.g., exchange keys, bundler keys) can be injected per-thread via `aomi secret add`.
-
-**How is this different from an MCP server?**
-Agent Skills are lightweight instructions and tool references that live inside your AI tool's context. MCP servers are long-running external processes exposing a protocol. The `aomi-transact` skill drives the `aomi` CLI — each command starts, runs, and exits — so there's no server to manage. You can use Aomi Skills alongside MCP servers; they don't conflict.
-
-**Can I use these skills without signing transactions?**
-Yes. `aomi-transact` has a read-only mode — `aomi chat "what's the price of ETH?"`, `aomi tx list`, `aomi tx simulate`, balance and portfolio queries all work without any signing key. A signing key is only needed when you want to broadcast a transaction on-chain.
-
-**Which chains does `aomi-transact` support?**
-Ethereum, Polygon, Arbitrum, Base, Optimism, Sepolia, Linea, Monad, Monad Testnet, and local Anvil are present in the current chain metadata. Set the active chain with `--chain <id>` or the `AOMI_CHAIN_ID` env var. Each signing invocation needs an RPC URL that matches the target chain.
-
-**How do I update to the latest version of the skills?**
-Re-run `npx skills add aomi-labs/skills`. Re-running pulls the latest skill definitions and overwrites the local copies.
-
 ## Resources
 
 - [@aomi-labs/client on npm](https://www.npmjs.com/package/@aomi-labs/client)
-- [Aomi](https://github.com/aomi-labs/aomi)
+- [Aomi Widget](https://github.com/aomi-labs/aomi-widget)
 - [Agent Skills Spec](https://agentskills.io)
-
-## About Aomi
-
-Aomi Labs builds native harness around blockchains functioning like Claude Code on-chain. We specialize in executions against arbitrary protocol with non-custodial workflow, account abstraction, and full security with simulations. Aomi also host agentic applications deployed and owned by developers, companies, and agents. Aomi provides E2E integration with UI, Skills and SDKs.
-
-**Links:**
-- 🌐 Website: [aomi.dev](https://aomi.dev)
-- 🤖 Agents: [aomi.dev/agents](https://aomi.dev/agents)
-- 𝕏 Twitter: [x.com/aomi_labs](https://x.com/aomi_labs)
-- 💻 GitHub: [github.com/aomi-labs](https://github.com/aomi-labs)
-- 📦 Packages:
-  - [@aomi-labs/react](https://www.npmjs.com/package/@aomi-labs/react)
-  - [aomi-sdk](https://crates.io/crates/aomi-sdk)
