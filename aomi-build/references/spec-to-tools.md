@@ -121,22 +121,7 @@ Good result shapes often include:
 - concise summaries
 - arrays of candidate objects
 - `requires_selection`, `selection_reason`, or `next_step_hint` when ambiguity remains
-
-When the host must take over (sign a transaction, sign typed data, simulate a batch), return a structured `ToolReturn` envelope rather than a prose `SYSTEM_NEXT_ACTION` field. The runtime resolves the route, splices wallet-callback artifacts into the next tool's args, and injects the continuation prompt — see [host-routes.md](host-routes.md) for the full shape.
-
-```rust
-use aomi_sdk::{RouteStep, ToolReturn};
-
-ToolReturn::with_routes(value, [
-    RouteStep::on_return("evm_commit_message", typed_data)
-        .bind_as("signature")
-        .prompt("Suggested next step: sign the typed data."),
-    RouteStep::on_bound_event("submit_my_order", submit_template, "signature")
-        .prompt("Wallet signed — submit the order now."),
-])
-```
-
-The route's structured fields are the contract; the runtime never parses prose.
+- `SYSTEM_NEXT_ACTION` when the host must take over
 
 Avoid:
 
@@ -161,34 +146,4 @@ Avoid:
    - post-write verification
 9. Update docs or examples if the repo includes them.
 
-## Current OpenAPI Pipeline
-
-The current `aomi-build` Rust CLI has a staged OpenAPI path. Use it when the input is a public OpenAPI/Swagger spec:
-
-```bash
-aomi-build gen-specs <platform> --from-url <url>     # or --source all|well-known|apis-guru|github
-aomi-build gen-client <platform> --force             # progenitor client
-aomi-build gen-tool <platform> --all --force         # mechanical tool stubs
-aomi-build compile --app <platform>
-```
-
-`aomi-build new-app <platform> --from-url <url>` is the one-shot orchestrator for the same stages plus a cargo build.
-
-Default mode is **app-local**:
-
-- editable source spec: `apps/<platform>/openapi.yaml`
-- generated debug spec: `apps/<platform>/openapi.preprocessed.yaml`
-- generated Rust client: `apps/<platform>/src/client/`
-- curated app layer: `apps/<platform>/src/lib.rs` and `apps/<platform>/src/tool.rs`
-
-Use `--shared` only when the same generated client will be reused by multiple apps. Shared mode moves specs to `ext/specs/<platform>.yaml` and clients to `ext/src/<platform>/`.
-
-Important rules:
-
-- Edit `openapi.yaml`, not `openapi.preprocessed.yaml`; the preprocessed file is overwritten by `gen-client` and exists to debug progenitor failures.
-- `gen-tool` names tools from `operationId` and can produce endpoint-shaped stubs. Treat those stubs as scaffolding, not final UX.
-- `progenitor-client` and the generated client's dependency markers belong in `Cargo.toml`; match the generated client's `reqwest` version.
-- Use `aomi-build test-schema <platform>` for live schema conformance. It is GET-only by default; pass `--write` only against safe sandbox/testnet APIs.
-- Use `aomi-build tighten-spec <platform> --in-place` when loose `additionalProperties: true` schemas make generated responses too untyped.
-
-If the app is brand new in `aomi-sdk`, validate it with `cargo run -p aomi-sdk --features cli --bin aomi-build -- compile --app <name>`. A direct `cargo build --manifest-path apps/<name>/Cargo.toml` is still the fastest crate-level compile check when debugging package errors. After bumping `sdk/Cargo.toml` `package.version`, all apps must be rebuilt because the host enforces an exact-match SDK version gate.
+If the app is brand new in `aomi-sdk`, remember that `cargo run -p xtask -- build-aomi --app <name>` may skip an untracked app. A direct `cargo build --manifest-path apps/<name>/Cargo.toml` is the fastest compile check until the manifest is tracked.
