@@ -16,7 +16,7 @@ description: >
   (ToolReturn/RouteStep), EVM and SVM host handoffs, and multi-step
   quote→approval→swap flows. Same runtime that aomi-transact drives.
 tags: [crypto, web3, evm, rust, sdk-scaffolding, openapi, swagger, agent-tools, defi, builder-tools]
-compatibility: 'Best when a local aomi-sdk checkout is available, often at ../aomi-sdk. Falls back to bundled references when the SDK repo is not present. Verified against aomi-sdk v3.0.1 (Rust 2024 edition) and the current aomi-build Rust CLI. Install the current CLI with cargo install --git https://github.com/aomi-labs/aomi-sdk --features cli aomi-sdk, or run from source with cargo run -p aomi-sdk --features cli --bin aomi-build -- <command>. Designed for claude-code; also works with Cursor, Codex CLI, Gemini, and any agent runtime that supports the Anthropic skill spec.'
+compatibility: 'Best when a local aomi-sdk checkout is available, often at ../aomi-sdk. Falls back to bundled references when the SDK repo is not present. Last verified against aomi-sdk v3.0.1 (Rust 2024 edition) and the aomi-build Rust CLI at that time; re-verification is recommended for newer SDK releases (current aomi-sdk: v3.0.3). Install the current CLI with cargo install --git https://github.com/aomi-labs/aomi-sdk --features cli aomi-sdk, or run from source with cargo run -p aomi-sdk --features cli --bin aomi-build -- <command>. Designed for claude-code; also works with Cursor, Codex CLI, Gemini, and any agent runtime that supports the Anthropic skill spec.'
 license: MIT
 version: "0.1.1"
 author: 'aomi-labs <hello@aomi.dev>'
