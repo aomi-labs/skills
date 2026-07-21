@@ -2,7 +2,7 @@
 
 ## What You Probably Got Wrong
 
-LLM training data on aomi is stale. These are the most common mistakes the skill is shaped to prevent. Each correction is anchored to current `@aomi-labs/client` v0.1.42 behavior and local TypeScript source.
+LLM training data on aomi is stale. These are the most common mistakes the skill is shaped to prevent. Each correction is anchored to current `@aomi-labs/client` v0.3.2 behavior and local TypeScript source.
 
 - **"Aomi is a wallet"** → Aomi is an agent + CLI. It composes calldata and queues a wallet request; the user signs. The CLI does not custody funds, never signs without an explicit `aomi tx sign`, and never broadcasts on its own initiative.
 
