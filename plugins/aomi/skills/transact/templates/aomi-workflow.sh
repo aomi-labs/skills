@@ -10,7 +10,7 @@
 #   4. Use the functions below. Each handles a complete flow with safety checks.
 #
 # Dependencies:
-#   - @aomi-labs/client v0.3.2+ (`aomi --version` or `npx @aomi-labs/client@latest --version`)
+#   - @aomi-labs/client v0.3.6+ (`aomi --version` or `npx @aomi-labs/client@latest --version`)
 #   - jq (for tx-list parsing)
 #
 # Conventions:
