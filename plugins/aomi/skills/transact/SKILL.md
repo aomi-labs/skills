@@ -11,7 +11,7 @@ description: >
   staking, perps, prediction markets, or any DeFi/CEX action needing a wallet
   signature. Account-abstraction first with EIP-7702/4337 and EOA fallback. MUST NOT fabricate
   or echo credentials; values reach the CLI only when the user explicitly supplied them.
-compatibility: 'Verified against @aomi-labs/client v0.3.2 and the current aomi-widget/packages/client TypeScript CLI. Install globally via npm install -g @aomi-labs/client@latest, or run on demand via npx @aomi-labs/client@latest. The CLI defaults to https://api.aomi.dev; pass --backend-url https://api-staging.aomi.dev when explicitly targeting staging. viem and Solana signing dependencies are bundled by the package. Designed for claude-code; also works with Cursor, Codex CLI, Gemini, and any agent runtime that supports the Anthropic skill spec.'
+compatibility: 'Verified against @aomi-labs/client v0.3.7 and the current aomi-widget/packages/client TypeScript CLI. Install globally via npm install -g @aomi-labs/client@latest, or run on demand via npx @aomi-labs/client@latest. The CLI defaults to https://api.aomi.dev; pass --backend-url https://api-staging.aomi.dev when explicitly targeting staging. viem and Solana signing dependencies are bundled by the package. Designed for claude-code; also works with Cursor, Codex CLI, Gemini, and any agent runtime that supports the Anthropic skill spec.'
 license: MIT
 version: "0.10.1"
 author: 'aomi-labs <hello@aomi.dev>'
@@ -48,7 +48,7 @@ Aomi Transact drives the `aomi` TypeScript CLI to build natural-language crypto 
 ## Prerequisites
 
 - Node.js 18+ with npm or npx
-- `@aomi-labs/client` v0.3.2 or newer: `npm install -g @aomi-labs/client@latest`
+- `@aomi-labs/client` v0.3.7 or newer: `npm install -g @aomi-labs/client@latest`
 - For EVM signing: a 0x-prefixed private key via `aomi wallet dev-key`, `--private-key`, or `PRIVATE_KEY`
 - For Solana sign-only flows: a base58 or JSON keypair via `aomi wallet dev-key --solana`, `--solana-private-key`, or `SOLANA_PRIVATE_KEY`
 - Optional: `AOMI_ACCOUNT_BEARER` / `--account-bearer` for authenticated account-bound requests
