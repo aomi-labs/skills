@@ -1,6 +1,6 @@
 # Command Reference
 
-Full command surface for the TypeScript `aomi` CLI (or `npx @aomi-labs/client@latest` equivalent), verified against `@aomi-labs/client` v0.3.2. The skill invokes read forms freely; `set`/mutating forms only when the user explicitly asks.
+Full command surface for the TypeScript `aomi` CLI (or `npx @aomi-labs/client@latest` equivalent), verified against `@aomi-labs/client` v0.3.9. The skill invokes read forms freely; `set`/mutating forms only when the user explicitly asks.
 
 ## Chat
 
