@@ -1,6 +1,6 @@
 # aomi-build Security Posture
 
-This document maps the `aomi-build` skill against [OWASP Agentic Skills Top 10 (v1.0, March 2026)](https://owasp.org/www-project-agentic-skills-top-10/) and records the controls in place for each risk. Reviewers can audit the per-control claims against the live SKILL.md frontmatter, the references, and the captured scanner reports under [`.scanner-reports/aomi-build/`](../.scanner-reports/aomi-build/).
+This document maps the `aomi-build` skill against [OWASP Agentic Skills Top 10 (v1.0, March 2026)](https://owasp.org/www-project-agentic-skills-top-10/) and records the controls in place for each risk. Reviewers can audit the per-control claims against the live SKILL.md frontmatter, the references, and the captured scanner reports under [`.scanner-reports/aomi-build/`](https://github.com/aomi-labs/skills/tree/main/.scanner-reports/aomi-build).
 
 **Last reviewed:** 2026-07-05 against `aomi-sdk` v3.0.1 and current `aomi-build` CLI source.
 
@@ -138,13 +138,13 @@ The principal harm path the skill must guard against is **scaffolding code that,
 
 ## Captured scanner reports
 
-All reports under [`.scanner-reports/aomi-build/`](../.scanner-reports/aomi-build/). Re-run any scanner with the local commands documented in [`docs/todo`](../docs/todo) and `.scanner-reports/README.md` (substituting `./aomi-build/` for the target).
+All reports under [`.scanner-reports/aomi-build/`](https://github.com/aomi-labs/skills/tree/main/.scanner-reports/aomi-build). Re-run any scanner with the local commands documented in [`docs/todo`](https://github.com/aomi-labs/skills/tree/main/docs/todo) and `.scanner-reports/README.md` (substituting `./aomi-build/` for the target).
 
 | Scanner | Status | Findings | Report |
 |---------|--------|----------|--------|
-| Cisco AI Defense skill-scanner | **PASS** | 0 critical / 0 high / 0 medium / 0 low | [`cisco-ai-defense.md`](../.scanner-reports/aomi-build/cisco-ai-defense.md) |
-| pors/skill-audit | **PASS** | 0 errors / 2 doc-regex warns | [`pors-skill-audit.txt`](../.scanner-reports/aomi-build/pors-skill-audit.txt) |
-| NMitchem/SkillScan | **PASS** | Risk 0.0/10, 0 findings | [`skillscan.txt`](../.scanner-reports/aomi-build/skillscan.txt) |
+| Cisco AI Defense skill-scanner | **PASS** | 0 critical / 0 high / 0 medium / 0 low | [`cisco-ai-defense.md`](https://github.com/aomi-labs/skills/blob/main/.scanner-reports/aomi-build/cisco-ai-defense.md) |
+| pors/skill-audit | **PASS** | 0 errors / 2 doc-regex warns | [`pors-skill-audit.txt`](https://github.com/aomi-labs/skills/blob/main/.scanner-reports/aomi-build/pors-skill-audit.txt) |
+| NMitchem/SkillScan | **PASS** | Risk 0.0/10, 0 findings | [`skillscan.txt`](https://github.com/aomi-labs/skills/blob/main/.scanner-reports/aomi-build/skillscan.txt) |
 | Snyk agent-scan | **Pending** | Requires `SNYK_TOKEN`; report to be captured by maintainer | — |
 
 **Notes on findings**:
@@ -152,8 +152,8 @@ All reports under [`.scanner-reports/aomi-build/`](../.scanner-reports/aomi-buil
 - The 2 pors WARN findings match documentation patterns:
   - `prompt/(delete|remove|rm)...` matches a row in `references/examples.md` table where one of the example tools is `binance_cancel_order` mapped to a `DELETE /order` HTTP endpoint. The match is on the literal string `DELETE` inside the reference table, not on a destructive instruction — the skill itself never deletes files.
   - `prompt/(read|access|get|ext...)` matches `references/spec-to-tools.md` describing the canonical tool naming pattern (`get_*`, `read_*`, `list_*`). Documentation about the convention, not an instruction to access sensitive data.
-- Snyk requires an API token for the SaaS-backed analysis. Token-gated runs are tracked as a maintainer task; the W-code analysis approach used for `aomi-transact` (see [`aomi-transact/SECURITY.md`](../aomi-transact/SECURITY.md) Snyk W-code table) will apply if any HIGH-class characterizations come back. For `aomi-build` specifically, the only Snyk W-codes that could plausibly apply are W007 (insecure credential handling) — already mitigated by the no-credential-embedding rule and the auth resolution pattern documented in `references/examples.md`. The skill does not move funds (no W009), does not depend on third-party content (no W011), and does not invoke `npx` or other unpinned external URLs (no W012).
+- Snyk requires an API token for the SaaS-backed analysis. Token-gated runs are tracked as a maintainer task; the W-code analysis approach used for `aomi-transact` (see [`aomi-transact/SECURITY.md`](https://github.com/aomi-labs/skills/blob/main/aomi-transact/SECURITY.md) Snyk W-code table) will apply if any HIGH-class characterizations come back. For `aomi-build` specifically, the only Snyk W-codes that could plausibly apply are W007 (insecure credential handling) — already mitigated by the no-credential-embedding rule and the auth resolution pattern documented in `references/examples.md`. The skill does not move funds (no W009), does not depend on third-party content (no W011), and does not invoke `npx` or other unpinned external URLs (no W012).
 
 ## Reporting issues
 
-Security issues should be reported privately. See the top-level [`SECURITY.md`](../SECURITY.md) in `aomi-labs/skills` for the disclosure process, or open a private security advisory on the GitHub repo.
+Security issues should be reported privately. Open a private security advisory at [https://github.com/aomi-labs/skills/security/advisories/new](https://github.com/aomi-labs/skills/security/advisories/new).

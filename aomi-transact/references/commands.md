@@ -186,5 +186,5 @@ Removed or never shipped on this CLI — do not emit these:
 - `aomi wallet ls` / `dev-key` / `set-mode` → `aomi wallet set` / `current` / `whoami`; there is no CLI signing-policy mutation command
 - `aomi login` → `aomi account login` (bare `aomi logout` does still exist; on v0.1.x this lived at `aomi wallet login`)
 - `aomi cron ls|show|cancel` → no cron surface on this CLI
-- `aomi deploy` → advertised in `aomi --help` but not registered as a subcommand in v0.4.2; running it drops into the REPL
+- `aomi deploy` → advertised in `aomi --help` but not registered as a subcommand in v0.4.2; `aomi deploy` exits with `Unknown command deploy` (fix pending in aomi-labs/aomi#467)
 - `AOMI_CONFIG_DIR` → not read; local state is rooted at `AOMI_STATE_DIR`

@@ -1,6 +1,6 @@
 # aomi-transact Security Posture
 
-This document maps the `aomi-transact` skill against [OWASP Agentic Skills Top 10 (v1.0, March 2026)](https://owasp.org/www-project-agentic-skills-top-10/) and records the controls in place for each risk. Reviewers can audit the per-control claims against the live SKILL.md frontmatter, the references, and the captured scanner reports under [`.scanner-reports/`](../.scanner-reports/).
+This document maps the `aomi-transact` skill against [OWASP Agentic Skills Top 10 (v1.0, March 2026)](https://owasp.org/www-project-agentic-skills-top-10/) and records the controls in place for each risk. Reviewers can audit the per-control claims against the live SKILL.md frontmatter, the references, and the captured scanner reports under [`.scanner-reports/`](https://github.com/aomi-labs/skills/tree/main/.scanner-reports).
 
 **Last reviewed:** 2026-08-07 against `@aomi-labs/client` v0.4.2 (published CLI bundle).
 
@@ -126,14 +126,14 @@ This document maps the `aomi-transact` skill against [OWASP Agentic Skills Top 1
 
 ## Captured scanner reports
 
-All reports under [`.scanner-reports/`](../.scanner-reports/). Re-run any scanner with the local commands documented in [`docs/todo`](../docs/todo).
+All reports under [`.scanner-reports/`](https://github.com/aomi-labs/skills/tree/main/.scanner-reports). Re-run any scanner with the local commands documented in [`docs/todo`](https://github.com/aomi-labs/skills/tree/main/docs/todo).
 
 | Scanner | Status | Findings | Report |
 |---------|--------|----------|--------|
-| Cisco AI Defense skill-scanner | **PASS** | 0 critical / 0 high / 0 medium / 0 low | [`cisco-ai-defense.md`](../.scanner-reports/cisco-ai-defense.md) |
-| pors/skill-audit | **PASS** | 0 errors / 4 warns (documentation regex matches) | [`pors-skill-audit.txt`](../.scanner-reports/pors-skill-audit.txt) |
-| NMitchem/SkillScan | **PASS** | Risk 2.0/10 (threshold 6.0), 1 HIGH = upstream regex bug | [`skillscan.txt`](../.scanner-reports/skillscan.txt) |
-| Snyk agent-scan | **PASS (advisory)** | 4 HIGH characterizations of risk class — see analysis below | [`snyk-agent-scan.txt`](../.scanner-reports/snyk-agent-scan.txt), [`snyk-agent-scan.json`](../.scanner-reports/snyk-agent-scan.json) |
+| Cisco AI Defense skill-scanner | **PASS** | 0 critical / 0 high / 0 medium / 0 low | [`cisco-ai-defense.md`](https://github.com/aomi-labs/skills/blob/main/.scanner-reports/cisco-ai-defense.md) |
+| pors/skill-audit | **PASS** | 0 errors / 4 warns (documentation regex matches) | [`pors-skill-audit.txt`](https://github.com/aomi-labs/skills/blob/main/.scanner-reports/pors-skill-audit.txt) |
+| NMitchem/SkillScan | **PASS** | Risk 2.0/10 (threshold 6.0), 1 HIGH = upstream regex bug | [`skillscan.txt`](https://github.com/aomi-labs/skills/blob/main/.scanner-reports/skillscan.txt) |
+| Snyk agent-scan | **PASS (advisory)** | 4 HIGH characterizations of risk class — see analysis below | [`snyk-agent-scan.txt`](https://github.com/aomi-labs/skills/blob/main/.scanner-reports/snyk-agent-scan.txt), [`snyk-agent-scan.json`](https://github.com/aomi-labs/skills/blob/main/.scanner-reports/snyk-agent-scan.json) |
 
 **Notes on findings**:
 
@@ -156,4 +156,4 @@ These four findings are inherent to **any** AI agent skill that signs on-chain t
 
 ## Reporting issues
 
-Security issues should be reported privately. See the top-level [`SECURITY.md`](../SECURITY.md) in `aomi-labs/skills` for the disclosure process, or open a private security advisory on the GitHub repo.
+Security issues should be reported privately. Open a private security advisory at [https://github.com/aomi-labs/skills/security/advisories/new](https://github.com/aomi-labs/skills/security/advisories/new).

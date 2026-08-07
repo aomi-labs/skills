@@ -136,7 +136,7 @@ aomi config set-backend|current
 aomi secret list|clear|add
 ```
 
-There is **no** `aomi thread`, `aomi cron`, `aomi login`, `aomi wallet ls|dev-key|set-mode`, or working `aomi deploy` on this CLI — those belong to the separate Rust `aomi-cli`. Full command reference, flags, and env vars in [commands.md](references/commands.md).
+There is **no** `aomi thread`, `aomi cron`, `aomi login`, or `aomi wallet ls|dev-key|set-mode` on this CLI — those belong to the separate Rust `aomi-cli`. `aomi deploy` is advertised in `--help` but unreachable in v0.4.2 (fix pending in aomi-labs/aomi#467). Full command reference, flags, and env vars in [commands.md](references/commands.md).
 
 ## Resources
 
