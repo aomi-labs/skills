@@ -8,16 +8,16 @@ For full diagnostic walkthroughs and the recovery patterns, see [docs/troublesho
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| `(no response)` | Backend timeout or stale local thread pointer | Wait briefly, run `aomi thread status`. If thread is gone, retry with `--new-session` |
-| `[session] Backend user_state mismatch (non-fatal)` log spam | Known v0.1.30 cosmetic noise (state-sync diagnostic) | Ignore. Look past the JSON for the actual response and `⚡ Wallet request queued` line |
-| Credit limit error after `--new-session --provider-key` | v0.1.30 quirk: BYOK key registers but prompt still routes through Aomi credits | Workaround: register on a no-op call first (`aomi --provider-key x:y --new-session --prompt "ack"`), then issue the real prompt without `--new-session` |
+| `(no response)` | Backend timeout or stale local thread pointer | Wait briefly, run `aomi session status`. If thread is gone, retry with `--new-session` |
+| `[session] Backend user_state mismatch (non-fatal)` log spam | Known cosmetic noise (state-sync diagnostic) | Ignore. Look past the JSON for the actual response and `⚡ Wallet request queued` line |
+| Credit limit error after `--new-session --provider-key` | Quirk: BYOK key registers but prompt still routes through Aomi credits | Workaround: register on a no-op call first (`aomi --provider-key x:y --new-session --prompt "ack"`), then issue the real prompt without `--new-session` |
 | `BYOK key set for anthropic: sk-ant-...` echo | By design — provider identification, not authentication. First ~7 chars of the key are echoed | Not a credential leak. Do not try to scrub |
 
 ## `aomi tx list` errors
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| `No active thread` | Active-thread pointer (`~/.aomi/active-session.txt`) lost between subprocess invocations | `aomi thread list` to find thread, then `aomi thread resume <N> > /dev/null && aomi tx list` in same shell call |
+| `No active session` | Active-session pointer (`~/.aomi/active-session.txt`) lost between subprocess invocations | `aomi session list` to find thread, then `aomi session resume <N> > /dev/null && aomi tx list` in same shell call |
 | Pending entries with `failed at step N: 0x...` status | Stale orphans from earlier failed simulation attempts | Match against `batch_status`. Sign only `Batch [...] passed` txs. Skip orphans |
 
 ## `aomi tx simulate` errors
@@ -59,7 +59,7 @@ For full diagnostic walkthroughs and the recovery patterns, see [docs/troublesho
 | Error | Cause | Fix |
 |-------|-------|-----|
 | Apps require credentials user hasn't configured | App-specific (e.g. `binance`, `polymarket`, `dune` require provider tokens) | Surface to user; ask them to configure. Run `aomi secret add` only if they explicitly asked and supplied the value (see SKILL.md "Security") |
-| Skill attempted credential setup user didn't ask for | Hard rule violation | Stop. Never run `aomi wallet dev-key`, `aomi secret add`, `--api-key`, or `--private-key` on the skill's initiative |
+| Skill attempted credential setup user didn't ask for | Hard rule violation | Stop. Never run `aomi wallet set`, `aomi secret add`, `--api-key`, or `--private-key` on the skill's initiative |
 
 ## Drain Vector Reference
 

@@ -46,7 +46,7 @@ The `aomi` plugin (skills: `aomi-transact`, `aomi-build`) is defined by [`.codex
 npm install -g @aomi-labs/client
 ```
 
-The published CLI bundles its EVM and Solana signing dependencies.
+The published CLI bundles its EVM and Solana signing dependencies. The skills are verified against **v0.4.2** — if you already have `aomi` installed, note that reinstalling the skills does not upgrade it; run `npm install -g @aomi-labs/client@latest` to move an existing install forward.
 
 ## Usage
 
@@ -70,7 +70,7 @@ The skill is scanned by four independent tools — [Cisco AI Defense skill-scann
 Any Agent Skills–compatible tool: Claude Code, Cursor, Gemini CLI, VS Code Copilot, and others. Install once with `npx skills add aomi-labs/skills` and the skills become available in whichever tool you're using.
 
 **Do I need an Aomi account or API key?**
-For the default app and most public data queries, no. For non-default apps and private flows, you'll need an `AOMI_API_KEY` — pass it with `--api-key` or set it as an environment variable. Provider-specific credentials (e.g., exchange keys, bundler keys) can be injected per-thread via `aomi secret add`.
+For the default app and most public data queries, no. For non-default apps and private flows, you'll need an `AOMI_API_KEY` — pass it with `--api-key` or set it as an environment variable. Provider-specific credentials (e.g., exchange keys, bundler keys) can be injected per-session via `aomi secret add`.
 
 **How is this different from an MCP server?**
 Agent Skills are lightweight instructions and tool references that live inside your AI tool's context. MCP servers are long-running external processes exposing a protocol. The `aomi-transact` skill drives the `aomi` CLI — each command starts, runs, and exits — so there's no server to manage. You can use Aomi Skills alongside MCP servers; they don't conflict.
@@ -79,10 +79,13 @@ Agent Skills are lightweight instructions and tool references that live inside y
 Yes. `aomi-transact` has a read-only mode — `aomi chat "what's the price of ETH?"`, `aomi tx list`, `aomi tx simulate`, balance and portfolio queries all work without any signing key. A signing key is only needed when you want to broadcast a transaction on-chain.
 
 **Which chains does `aomi-transact` support?**
-Ethereum, Polygon, Arbitrum, Base, Optimism, Sepolia, Linea, Monad, Monad Testnet, and local Anvil are present in the current chain metadata. Set the active chain with `--chain <id>` or the `AOMI_CHAIN_ID` env var. Each signing invocation needs an RPC URL that matches the target chain.
+Ethereum, Polygon, Arbitrum, Base, Base Sepolia, Optimism, Sepolia, Linea Mainnet, Linea Sepolia, Monad, Monad Testnet, Robinhood Chain, MegaETH, and local Anvil are present in the current chain metadata (verified against `@aomi-labs/client` v0.4.2). Solana is supported for sign-only flows via `--solana-private-key` and `--cluster`. Set the active chain with `--chain <id>` or the `AOMI_CHAIN_ID` env var. Each signing invocation needs an RPC URL that matches the target chain.
 
 **How do I update to the latest version of the skills?**
-Re-run `npx skills add aomi-labs/skills`. Re-running pulls the latest skill definitions and overwrites the local copies.
+Re-run `npx skills add aomi-labs/skills`. Re-running pulls the latest skill definitions from `main` and overwrites the local copies.
+
+**Does that also update the `aomi` CLI?**
+No — they update independently. `npx skills add` only refreshes the skill markdown; a globally installed `aomi` binary stays at whatever version you installed. Upgrade it separately with `npm install -g @aomi-labs/client@latest`, or skip the global install and let the skill invoke `npx @aomi-labs/client@latest`, which resolves the newest published version on each run. The skills check `aomi --version` on first use and tell you when the installed CLI is older than the surface they document.
 
 ## Resources
 

@@ -12,14 +12,14 @@ The user types something like *"swap 1 ETH for USDC on Uniswap"*; the agent pick
 
 The CLI is **account-abstraction-first** for EVM transactions: it tries the configured/default AA path first and can fall back to EOA unless `--aa` is explicit. Current displayed AA defaults use EIP-7702 on Ethereum, Polygon, Arbitrum, Base, and Optimism; ERC-4337 sponsorship depends on provider/paymaster configuration.
 
-On top of that, every linked wallet carries a per-wallet signing policy — 🟢 `autonomous`, 🟠 `human_sync`, or 🔴 `denied`. `aomi wallet ls` shows the policy table; `aomi wallet set-mode` changes a policy through a signed EIP-712 permit ceremony (challenge → sign → commit). Autonomous signing requires both the policy and a live delegated grant (minted by `aomi login --provider privy`).
+On top of that, linked wallets and login methods are account-scoped: `aomi account links` lists them, `aomi account link` / `unlink` / `rename` manage them, and `aomi account login --provider privy` mints the account bearer. Per-wallet signing policy is enforced backend-side; the npm CLI has no policy-mutation command.
 
 ## Installation
 
 ### Prerequisites
 
 ```bash
-npm install -g @aomi-labs/client@latest      # v0.1.42 or newer
+npm install -g @aomi-labs/client@latest      # v0.4.2 or newer
 ```
 
 (or use `npx @aomi-labs/client@latest ...` for one-shot invocations.)
@@ -72,7 +72,7 @@ aomi-transact/
 │   ├── apps.md                  # 25+ app catalog
 │   ├── drain-vectors.md         # Per-protocol drain-vector reference
 │   ├── examples.md              # End-to-end flow examples (real captures)
-│   ├── thread.md                # Two-tier storage, lifecycle
+│   ├── session.md               # Two-tier storage, lifecycle
 │   └── troubleshooting.md       # Chat, signing, RPC, simulation, AA
 └── templates/
     └── aomi-workflow.sh         # Reusable bash function library
@@ -89,7 +89,7 @@ Per-control analysis lives in [`SECURITY.md`](SECURITY.md). Captured scanner rep
 The skill explicitly forbids:
 
 - **Inventing or echoing credential values.** Credentials only reach the CLI when the user supplies them for a specific command; they are never echoed back.
-- **Unsolicited credential setup.** `aomi wallet dev-key`, `aomi secret add`, `--api-key`, `--private-key` are run only when the user explicitly asks and supplies the value.
+- **Unsolicited credential setup.** `aomi wallet set`, `aomi secret add`, `--api-key`, `--private-key` are run only when the user explicitly asks and supplies the value.
 - **Blind signing.** Multi-step batches go through `aomi tx simulate` on a forked chain before `aomi tx sign`.
 - **Drain-vector bypass.** When the agent rejects calldata where `recipient`/`onBehalfOf`/`mintRecipient` ≠ `msg.sender`, the skill surfaces the block to the user rather than reformulating the prompt.
 

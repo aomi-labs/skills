@@ -11,13 +11,13 @@ Read this when a command fails unexpectedly or behaves differently than the cano
 - No `⚡ Wallet request queued` line.
 
 **Cause:**
-- Backend timeout, or the local active-thread pointer is stale.
+- Backend timeout, or the local active-session pointer is stale.
 
 **Fix:**
 
 ```bash
 # 1. Check thread status
-aomi thread status
+aomi session status
 
 # 2. If thread is gone or unreachable, retry with --new-session
 aomi chat "<original message>" --new-session
@@ -30,7 +30,7 @@ aomi chat "<original message>" --new-session
 - Looks alarming but the chat actually completes.
 
 **Cause:**
-- Known v0.1.30 cosmetic noise — the backend sends a state-sync diagnostic that gets logged verbatim.
+- Known cosmetic noise — the backend sends a state-sync diagnostic that gets logged verbatim.
 
 **Fix:**
 
@@ -38,22 +38,22 @@ Ignore. Look past the JSON for the actual response and `⚡ Wallet request queue
 
 ## Pending TX
 
-### `Error: No active thread` from `aomi tx list`
+### `Error: No active session` from `aomi tx list`
 
 **Symptoms:**
 - `aomi tx list` errors out even after a successful chat.
 
 **Cause:**
-- The active-thread pointer (`~/.aomi/active-session.txt`) was lost between subprocess invocations. Known v0.1.30 quirk.
+- The active-session pointer (`~/.aomi/active-session.txt`) was lost between subprocess invocations. Observed on 0.1.x; not re-verified on v0.4.2.
 
 **Fix:**
 
 ```bash
 # 1. Find the right thread
-aomi thread list
+aomi session list
 
 # 2. Resume + read in the SAME shell call (pointer survives)
-aomi thread resume 43 > /dev/null && aomi tx list
+aomi session resume 43 > /dev/null && aomi tx list
 ```
 
 ### Stale failed-simulation txs in `aomi tx list`
@@ -99,7 +99,7 @@ Read the console output for the specific error:
 - Followed by `Use --eoa to sign without account abstraction`.
 
 **Cause:**
-- The zero-config Alchemy proxy did **not** sponsor the call (verified behavior on Base in v0.1.30). The CLI fell through to a direct EOA `eth_sendTransaction`, which fails because the EOA has 0 native gas on the destination chain.
+- Local signing is EOA-only in v0.4.2 (AA moved to the backend lane), so the CLI submits a direct EOA `eth_sendTransaction`, which fails when the EOA has 0 native gas on the destination chain. There is no sponsorship path to fall back on.
 
 **Fix:**
 
@@ -271,7 +271,7 @@ npm install -g @aomi-labs/client
 - Flags like `--aa`, `--aa-provider`, `--aa-mode` not recognized.
 
 **Cause:**
-- This skill assumes flags introduced in v0.1.30.
+- This skill documents the v0.4.2 command surface.
 
 **Fix:**
 
@@ -281,7 +281,7 @@ npm install -g @aomi-labs/client@latest
 npx @aomi-labs/client@latest <command>
 ```
 
-## Quirks observed in v0.1.30
+## Quirks observed in v0.4.2
 
 These are not bugs the skill should try to fix — they are CLI behaviors to recognize and route around.
 
@@ -292,7 +292,7 @@ These are not bugs the skill should try to fix — they are CLI behaviors to rec
   aomi chat "swap 1 USDC for WETH on Uniswap"
   ```
 
-- **Active thread pointer disappears between shell invocations.** Recovery: `aomi thread list` → `aomi thread resume <N> > /dev/null && aomi tx list` in one shell call.
+- **Active session pointer disappears between shell invocations.** Recovery: `aomi session list` → `aomi session resume <N> > /dev/null && aomi tx list` in one shell call.
 
 - **`BYOK key set for anthropic: sk-ant-...` echoes the first ~7 characters of the provider key.** This is by design (provider identification, not authentication). Do not try to scrub it from output — it is not a credential leak.
 
@@ -303,7 +303,7 @@ These are not bugs the skill should try to fix — they are CLI behaviors to rec
 When in doubt, run through this list:
 
 - [ ] `aomi --version` reports 0.1.30 or newer?
-- [ ] `aomi thread status` shows an active thread matching the expected topic?
+- [ ] `aomi session status` shows an active thread matching the expected topic?
 - [ ] `aomi tx list` shows the expected `tx-N` entries?
 - [ ] For multi-step: `aomi tx simulate tx-1 tx-2` reports `Batch success: true` and `Stateful: true`?
 - [ ] If sponsorship was expected on L2, has the user confirmed BYOK provider configuration?

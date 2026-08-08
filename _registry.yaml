@@ -2,7 +2,7 @@ schema_version: '1.1'
 skills:
   aomi-transact:
     canonical: aomi-transact/SKILL.md
-    version: 0.10.1
+    version: 0.11.0
     risk_tier: L2
   aomi-build:
     canonical: aomi-build/SKILL.md
@@ -10,7 +10,7 @@ skills:
     risk_tier: L1
   plugin-aomi:
     canonical: plugins/aomi/.claude-plugin/plugin.json
-    version: '0.10'
+    version: '0.11'
 platforms:
   self-hosted:
     type: self-hosted
@@ -21,7 +21,7 @@ platforms:
     skills:
     - plugin-aomi
     status: live
-    last_checked: '2026-07-10'
+    last_checked: '2026-07-11'
     health_check:
       method: http-200
       url: https://github.com/aomi-labs/skills
@@ -37,12 +37,14 @@ platforms:
     - aomi-transact
     - aomi-build
     status: live
-    notes: SKILL.md tracks @aomi-labs/client@latest and was last verified against v0.1.42. Refresh skill docs when the CLI
-      command surface changes.
+    notes: SKILL.md tracks @aomi-labs/client@latest and was last verified against v0.4.2 (2026-08-07) by running the published
+      CLI and reading its bundle. Refresh skill docs when the CLI command surface changes. Note that `npx skills add` never
+      upgrades a user's existing global `aomi` binary, so SKILL.md must carry an explicit version check rather than assuming
+      the documented surface is present.
     health_check:
       method: npm-view
       package: '@aomi-labs/client'
-    last_checked: '2026-07-10'
+    last_checked: '2026-07-11'
   anthropic-community:
     type: artifact
     tier: 1
@@ -64,7 +66,7 @@ platforms:
       method: marketplace-search
       url: https://raw.githubusercontent.com/anthropics/claude-plugins-community/main/.claude-plugin/marketplace.json
       needle: aomi-labs
-    last_checked: '2026-07-10'
+    last_checked: '2026-07-11'
   antigravity:
     type: git-pr
     tier: 1
@@ -80,7 +82,7 @@ platforms:
     health_check:
       method: gh-pr
       pr: https://github.com/sickn33/antigravity-awesome-skills/pull/575
-    last_checked: '2026-07-10'
+    last_checked: '2026-07-11'
   codex-official:
     type: artifact
     tier: 1
@@ -96,7 +98,7 @@ platforms:
     health_check:
       method: manual
       reason: self-serve not yet open; monitor developers.openai.com/codex/changelog
-    last_checked: '2026-07-10'
+    last_checked: '2026-07-11'
   ccpi:
     type: git-pr
     tier: 2
@@ -118,7 +120,7 @@ platforms:
     health_check:
       method: gh-pr
       pr: https://github.com/jeremylongshore/claude-code-plugins-plus-skills/pull/727
-    last_checked: '2026-07-10'
+    last_checked: '2026-07-11'
   cryptoskills:
     type: git-pr
     tier: 2
@@ -134,9 +136,11 @@ platforms:
     health_check:
       method: gh-pr
       pr: https://github.com/0xinit/cryptoskills/pull/21
-    last_checked: '2026-07-10'
+    last_checked: '2026-07-11'
     notes: '[2026-07-10] Health check now fails because GitHub cannot resolve 0xinit/cryptoskills for PR #21; needs manual
-      follow-up or registry target update.'
+      follow-up or registry target update. [2026-08-07] cryptoskill/aomi/ synced to @aomi-labs/client v0.4.2 alongside the
+      other two copies — it had the same nonexistent `aomi thread` / `wallet ls` / `wallet set-mode` surface. Resubmit or
+      refresh the PR once the upstream repo target is resolved.'
   cryptoskill-jia:
     type: git-pr
     tier: 2
@@ -152,7 +156,7 @@ platforms:
     health_check:
       method: gh-issue
       issue: https://github.com/jiayaoqijia/cryptoskill/issues/36
-    last_checked: '2026-07-10'
+    last_checked: '2026-07-11'
   lobehub:
     type: auto-index
     tier: 2
@@ -165,7 +169,7 @@ platforms:
     - aomi-build
     status: live
     last_synced: '2026-05-14'
-    last_checked: '2026-07-10'
+    last_checked: '2026-07-11'
     notes: Auto-syncs from GitHub. Earlier "403" was WebFetch UA blocking, not a real outage; browser-UA curl returns 200.
     health_check:
       method: http-200
@@ -183,7 +187,7 @@ platforms:
     - aomi-build
     status: not-indexed
     notes: Topics set. Not scraped as of 2026-05-11.
-    last_checked: '2026-07-10'
+    last_checked: '2026-07-11'
     health_check:
       method: http-200
       url: https://skillsmp.com/?q=aomi-transact
@@ -199,7 +203,7 @@ platforms:
     - aomi-transact
     status: live
     install_count: 1
-    last_checked: '2026-07-10'
+    last_checked: '2026-07-11'
     notes: aomi-build not yet submitted (tracked under agensi-build)
     health_check:
       method: http-200
@@ -239,7 +243,7 @@ platforms:
         aomi-build: https://www.codex-marketplace.com/plugins/aomi-build
       needle: aomi-labs
       needle_optional: false
-    last_checked: '2026-07-10'
+    last_checked: '2026-07-11'
   clawhub:
     type: cli-publish
     tier: 2
@@ -254,7 +258,7 @@ platforms:
     - aomi-transact
     - aomi-build
     status: live
-    last_checked: '2026-07-10'
+    last_checked: '2026-07-11'
     published:
       aomi-transact: 0.10.1
       aomi-build: 0.1.1
@@ -279,7 +283,7 @@ platforms:
     health_check:
       method: manual
       reason: deferred; pursue after community listing lands and install volume grows
-    last_checked: '2026-07-10'
+    last_checked: '2026-07-11'
   claudemarketplaces:
     type: auto-index
     tier: 3
@@ -287,7 +291,7 @@ platforms:
     url: https://claudemarketplaces.com
     status: deferred
     notes: Revisit when installs cross 500
-    last_checked: '2026-07-10'
+    last_checked: '2026-07-11'
     health_check:
       method: manual
       reason: deferred; gated on 500 installs
@@ -308,7 +312,7 @@ platforms:
     health_check:
       method: gh-pr
       pr: https://github.com/ComposioHQ/awesome-claude-skills/pull/856
-    last_checked: '2026-07-10'
+    last_checked: '2026-07-11'
   awesome-behisecc:
     type: git-pr
     tier: 2
@@ -322,7 +326,7 @@ platforms:
     health_check:
       method: gh-pr
       pr: https://github.com/BehiSecc/awesome-claude-skills/pull/309
-    last_checked: '2026-07-10'
+    last_checked: '2026-07-11'
   awesome-onchain-agents:
     type: git-pr
     tier: 2
@@ -336,7 +340,7 @@ platforms:
     health_check:
       method: gh-pr
       pr: https://github.com/sodofi/awesome-onchain-agents/pull/40
-    last_checked: '2026-07-10'
+    last_checked: '2026-07-11'
   agensi-build:
     type: artifact
     tier: 2
@@ -349,4 +353,4 @@ platforms:
     health_check:
       method: manual
       reason: zip ready at /tmp/aomi-build-agensi.zip; upload via agensi.io web UI
-    last_checked: '2026-07-10'
+    last_checked: '2026-07-11'

@@ -11,7 +11,7 @@ Aomi threads are split across two stores. Knowing what lives where is the differ
 - System events (BYOK key changes, sponsorship decisions).
 - Indexed by a `sessionId` UUID.
 
-`aomi thread log`, `aomi thread events`, and `aomi thread status` hit the backend with the local `sessionId`. If the backend is unreachable or the sessionId is wrong, these silently return empty.
+`aomi session log`, `aomi session events`, and `aomi session status` hit the backend with the local `sessionId`. If the backend is unreachable or the sessionId is wrong, these silently return empty.
 
 **Local on disk** (`$AOMI_STATE_DIR` if set, else `~/.aomi/`) holds the lookup keys and wallet-flow state:
 
@@ -69,7 +69,7 @@ aomi tx sign tx-1 tx-2
 Useful when `aomi tx list` shows pending txs from a thread that was closed earlier — for example, a deadline-bearing Across bridge that needs signing after a shell rotation.
 
 ```bash
-aomi thread list
+aomi session list
 ```
 
 ```
@@ -81,28 +81,28 @@ thread-43   topic: "bridge 50 USDC to Base"     pending: 2  signed: 0
 Pick the right thread by topic and pending count, then resume:
 
 ```bash
-aomi thread resume 43
+aomi session resume 43
 aomi tx list
 aomi tx sign tx-1 tx-2
 ```
 
 Selectors accept the backend thread ID, `thread-N`, or just `N`.
 
-## Pattern 3: Recover from "No active thread"
+## Pattern 3: Recover from "No active session"
 
-The active-thread pointer is a single line in `~/.aomi/active-session.txt`. It can be lost between subprocess invocations (a known v0.1.30 quirk). If `aomi tx list` returns:
+The active-session pointer is a single line in `~/.aomi/active-session.txt`. It can be lost between subprocess invocations (observed on 0.1.x; not re-verified on v0.4.2). If `aomi tx list` returns:
 
 ```
-Error: No active thread
+Error: No active session
 ```
 
 But you know you just had a successful chat — recover in a single shell call so the pointer survives:
 
 ```bash
-aomi thread list
+aomi session list
 # ... locate the right thread by topic ...
 
-aomi thread resume 43 > /dev/null && aomi tx list
+aomi session resume 43 > /dev/null && aomi tx list
 ```
 
 The `&&` chaining matters: separate shell invocations may lose the pointer again. Keep the resume and the read in one call.
@@ -112,16 +112,16 @@ The `&&` chaining matters: separate shell invocations may lose the pointer again
 After a few weeks of use, `~/.aomi/sessions/` can hold 50–100+ files. Cleanup is safe but check for pending txs first.
 
 ```bash
-aomi thread list
+aomi session list
 ```
 
 For each thread you want to delete, check it has no pending wallet requests:
 
 ```bash
-aomi thread resume <id>
+aomi session resume <id>
 aomi tx list
 # If "pending: 0", safe to delete
-aomi thread delete <id>
+aomi session delete <id>
 ```
 
 Deleting a thread with pending txs **orphans them** — the backend may still know about them, but the local CLI loses the calldata and ids needed to sign.
@@ -129,7 +129,7 @@ Deleting a thread with pending txs **orphans them** — the backend may still kn
 The active pointer can be cleared without touching thread state files:
 
 ```bash
-aomi thread close
+aomi session close
 # next chat starts fresh; old threads still in ~/.aomi/sessions/
 ```
 
@@ -163,18 +163,18 @@ for f in ~/.aomi/sessions/session-*.json; do
 done
 
 # Replay a thread's conversation (backend-sourced)
-aomi thread resume 43 > /dev/null
-aomi thread log
+aomi session resume 43 > /dev/null
+aomi session log
 
 # Raw backend system events for the active thread
-aomi thread events
+aomi session events
 ```
 
 ## Notes
 
-- **Local and backend can diverge.** If a chat succeeded but `aomi tx list` is empty, the local mirror may be stale — try `aomi thread resume <id>` to refresh, or `aomi thread log` to confirm the backend received the prompt.
+- **Local and backend can diverge.** If a chat succeeded but `aomi tx list` is empty, the local mirror may be stale — try `aomi session resume <id>` to refresh, or `aomi session log` to confirm the backend received the prompt.
 - **`secretHandles{}` are scoped to the thread's `clientId`.** The values are stored on the backend, not locally. `aomi secret clear` removes them from the backend; deleting the thread locally does not.
-- **The `--new-session` + `--provider-key` v0.1.30 quirk.** Registering a BYOK key on the same call as `--new-session` does not register the key for that prompt. Workaround: register first with a no-op prompt, then issue the real prompt as a second call without `--new-session`.
+- **The `--new-session` + `--provider-key` quirk** (observed on 0.1.x; not re-verified on v0.4.2). Registering a BYOK key on the same call as `--new-session` does not register the key for that prompt. Workaround: register first with a no-op prompt, then issue the real prompt as a second call without `--new-session`.
 
 ```bash
 # Register provider key
@@ -193,7 +193,7 @@ set -euo pipefail
 # Find the right thread by topic
 TOPIC="bridge 50 USDC to Base"
 
-THREAD_ID=$(aomi thread list \
+THREAD_ID=$(aomi session list \
   | awk -v topic="$TOPIC" '$0 ~ topic {print $1}' \
   | head -1 \
   | sed 's/thread-//')
@@ -204,7 +204,7 @@ if [ -z "$THREAD_ID" ]; then
 fi
 
 # Resume + list + sign in one shell call (pointer survives)
-aomi thread resume "$THREAD_ID" > /dev/null && {
+aomi session resume "$THREAD_ID" > /dev/null && {
   aomi tx list
   echo "---"
   read -p "Sign all pending? [y/N] " yn
