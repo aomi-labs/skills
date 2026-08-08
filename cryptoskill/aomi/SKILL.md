@@ -34,8 +34,8 @@ Official docs: [aomi.dev](https://aomi.dev) · npm: [`@aomi-labs/client`](https:
 - **"Aomi is a wallet"** — Aomi is an agent + CLI. It composes calldata and queues a wallet request; the user signs. The CLI does not custody funds, never signs without an explicit `aomi tx sign`, and never broadcasts on its own initiative.
 - **"`aomi chat` always queues a transaction"** — Often the first response is a quote, route, or clarifying question. The agent only stages calldata when it has enough context. Always run `aomi tx list` after chat to see what's actually pending — never assume.
 - **"Approval and swap are one transaction"** — Most DeFi flows are two-step: `approve` then `supply`/`swap`/`deposit`. Aomi stages them as a batch and `aomi tx simulate tx-1 tx-2` runs them sequentially on a fork so the second step sees the first's state changes. Sign them as a batch, not individually.
-- **"Use `--rpc-url` to switch chains"** — `--chain` controls the wallet/thread context (which chain the agent thinks you're on); `--rpc-url` controls where `aomi tx sign` estimates and submits. They are independent. For a cross-chain swap, the queued tx has its own `chain` field — pass `--rpc-url` matching *that* chain when signing.
-- **"AA always sponsors gas on L2s"** — The zero-config proxy path on Base/Arbitrum/Optimism does **not** reliably sponsor in v0.1.30. If the EOA has 0 native gas on the destination chain, signing fails with `insufficient funds for transfer`. Either fund the EOA with a tiny amount of native gas, or configure a real BYOK Alchemy/Pimlico provider with a sponsorship policy. Do not retry with `--eoa` — that path also needs gas.
+- **"Use `--rpc-url` to switch chains"** — `--chain` controls the wallet/session context (which chain the agent thinks you're on); `--rpc-url` controls where `aomi tx sign` estimates and submits. They are independent. For a cross-chain swap, the queued tx has its own `chain` field — pass `--rpc-url` matching *that* chain when signing.
+- **"AA sponsors gas for me"** — Not on the local signing path. In v0.4.2 `aomi tx sign` is EOA-only; AA execution moved to the backend lane. If the EOA has 0 native gas on the destination chain, signing fails with `insufficient funds for transfer` and there is no sponsorship fallback. Fund the EOA with a tiny amount of native gas on that chain. Passing `--aa` / `--aa-provider` / `--aa-mode` does not help — it makes `aomi tx sign` fail outright.
 - **"`--new-session` should always be passed"** — Pass it on the *first* command of a new task. Reusing it mid-task starts a fresh conversation and the agent loses context (e.g. the quote it just gave you). For follow-up confirmations like *"yes, proceed"*, omit `--new-session`.
 - **"Failed simulation txs disappear"** — They don't. `aomi tx list` shows orphaned `tx-N` from earlier failed attempts alongside the current passing batch. Check the `batch_status` line and only sign txs marked `Batch [...] passed`.
 - **"7702 and 4337 are interchangeable"** — They're not. 7702 is a native EIP-7702 type-4 transaction with EOA delegation; the EOA pays gas. 4337 is a bundler+paymaster UserOperation; the paymaster can sponsor. Use 4337 if you need gasless execution. Default chain modes: 7702 on Ethereum, 4337 on Polygon/Arbitrum/Base/Optimism.
@@ -59,7 +59,7 @@ Throughout the rest of this skill, commands are written as `aomi <command>` for 
 
 ### Verify version
 
-The skill assumes v0.1.30 or newer (older versions lack `--aa-provider`/`--aa-mode` and the simulation gate):
+The skill documents v0.4.2. Older CLIs differ materially — on 0.1.x, account auth lived at `aomi wallet login` and `aomi tx sign` still attempted AA locally. A globally installed `aomi` is **not** upgraded by installing this skill, so check it:
 
 ```bash
 aomi --version 2>/dev/null || npx @aomi-labs/client --version
@@ -99,7 +99,7 @@ Every flow follows the same five steps:
 aomi chat "<intent>" --public-key 0xUserAddress --chain 1 --new-session
 aomi tx list                      # confirm tx-N exists
 aomi tx simulate tx-1 tx-2        # only for multi-step batches
-aomi tx sign tx-1 tx-2            # AA-first; falls through to EOA if user has BYOK
+aomi tx sign tx-1 tx-2            # EOA-only in v0.4.2 (AA runs in the backend lane)
 aomi tx list                      # confirm signed/broadcast hash
 ```
 
@@ -170,13 +170,13 @@ Default chain modes:
 
 **Mode fallback**: when AA is selected, the CLI tries the preferred mode, then the alternative, then errors with a `--eoa` suggestion. There is no silent EOA fallback.
 
-**L2 sponsorship caveat (verified v0.1.30)**: the zero-config proxy on Base does **not** reliably sponsor — `aomi tx sign` returns viem's `insufficient funds for transfer` if the EOA has 0 native gas. Either fund the EOA with ~0.0005 ETH-equivalent on the destination chain, or configure a real BYOK Alchemy/Pimlico provider on the user's side and pass `--aa-provider alchemy --aa-mode 4337`. Do not retry with `--eoa` blindly — `--eoa` also needs gas.
+**L2 gas caveat (verified v0.4.2)**: local `aomi tx sign` is EOA-only — AA execution moved to the backend lane — so there is no sponsorship path to fall back on. `aomi tx sign` returns viem's `insufficient funds for transfer` if the EOA has 0 native gas on the destination chain. Fund the EOA with ~0.0005 ETH-equivalent there. Do not retry with AA flags: `--aa`, `--aa-provider`, and `--aa-mode` all make `aomi tx sign` fail with `AA execution now runs in the backend lane (rolling out); use --eoa for local execution.` The same failure fires with no flags at all if `AOMI_AA_PROVIDER` or `AOMI_AA_MODE` is exported.
 
-**Signing modes**: independent of AA, every linked wallet carries a per-wallet signing policy — 🟢 `autonomous` (agent may sign without a human in the loop), 🟠 `human_sync` (each signature needs live user confirmation), 🔴 `denied` (signing blocked). `aomi wallet ls` shows the table (address · chain · provider · signing mode · grant expiry · autonomous_ok · primary). `aomi wallet set-mode <address> <autonomous|human_sync|denied> [--local-key <hex>]` changes a policy via a signed EIP-712 permit (challenge → sign → commit); grants toward `autonomous` must be signed by that wallet's own key, and `autonomous` also requires a live delegated grant — if missing or expired, run `aomi login --provider privy` first.
+**Accounts and linked wallets**: `aomi account links` lists login methods and linked wallets; `aomi account link` / `unlink` / `rename` manage them; `aomi account login --provider privy` mints the account bearer. Per-wallet signing policy is enforced backend-side — the npm CLI has no policy-mutation command (there is no `aomi wallet ls` or `aomi wallet set-mode`). Local signing keys are separate: `aomi wallet set <evm-hex-key>` (or `--solana <base58-key>`), inspected with `aomi wallet current`.
 
 ## Contract Addresses
 
-> **Last verified:** April 2026 (v0.1.30 captures, mainnet + L2)
+> **Last verified:** August 2026 against @aomi-labs/client v0.4.2. Contract addresses below come from April 2026 mainnet + L2 captures.
 
 These are the AA-stack and protocol delegation contracts the CLI signs through. The skill itself does not deploy contracts — these are the well-known endpoints the AA path delegates to.
 
@@ -230,17 +230,17 @@ The full catalog with credential requirements is in [resources/supported-apps.md
 
 A thread is split across two stores. Knowing what lives where prevents wrong-place lookups.
 
-- **Backend** — full conversation transcript, tool calls, system events. Read via `aomi thread log`, `aomi thread events`, `aomi thread status`.
+- **Backend** — full conversation transcript, tool calls, system events. Read via `aomi session log`, `aomi session events`, `aomi session status`.
 - **Local** (`$AOMI_STATE_DIR` or `~/.aomi/`) — `sessionId`, `clientId`, `pendingTxs[]`, `signedTxs[]`, `secretHandles{}`. Read via `aomi tx list`.
 
 ```bash
-aomi thread list              # local threads with topic + pending count
-aomi thread resume <id>       # set active pointer to an existing thread
-aomi thread delete <id>       # remove a local thread (check no pending txs first)
-aomi thread close             # clear the active pointer; next chat starts fresh
+aomi session list              # local threads with topic + pending count
+aomi session resume <id>       # set active pointer to an existing thread
+aomi session delete <id>       # remove a local thread (check no pending txs first)
+aomi session close             # clear the active pointer; next chat starts fresh
 ```
 
-**The "No active thread" recovery pattern**: if `aomi tx list` reports no active thread, run `aomi thread list` to find the right one by topic, then `aomi thread resume <N> > /dev/null && aomi tx list` in the **same** shell call (the active-thread pointer can be lost between subprocess invocations).
+**The "No active session" recovery pattern**: if `aomi tx list` reports no active thread, run `aomi session list` to find the right one by topic, then `aomi session resume <N> > /dev/null && aomi tx list` in the **same** shell call (the active-session pointer can be lost between subprocess invocations).
 
 See [examples/session-management/README.md](examples/session-management/README.md) for resume/recovery patterns.
 
@@ -248,14 +248,14 @@ See [examples/session-management/README.md](examples/session-management/README.m
 
 | Error / output | Cause | Fix |
 |----------------|-------|-----|
-| `(no response)` from `aomi chat` | Backend timeout or stale local thread pointer | Wait briefly, run `aomi thread status`. If thread is gone, retry with `--new-session` |
-| `No active thread` from `aomi tx list` | Active-thread pointer lost between shell invocations | `aomi thread list` to find thread, then `aomi thread resume <N> > /dev/null && aomi tx list` in same call |
+| `(no response)` from `aomi chat` | Backend timeout or stale local thread pointer | Wait briefly, run `aomi session status`. If thread is gone, retry with `--new-session` |
+| `No active session` from `aomi tx list` | Active-session pointer lost between shell invocations | `aomi session list` to find thread, then `aomi session resume <N> > /dev/null && aomi tx list` in same call |
 | `Batch [N] failed: ERC20: transfer amount exceeds allowance` | First-attempt single-tx; agent will retry as approve+action batch | Wait for retry, sign the new pair (`tx-2 tx-3`), ignore the orphan `tx-1` |
 | `insufficient funds for transfer` (viem) on L2 sign | Zero-config AA proxy did not sponsor; EOA has 0 native gas on destination | Fund EOA with native gas on that chain, OR configure BYOK provider with sponsorship policy |
 | AA mode error suggesting `--eoa` | Both AA modes (preferred + alternative) failed | Read console output, address the underlying issue (provider creds, chain support), or use `--eoa` if user accepts EOA signing |
 | `401` / `429` on `aomi tx sign` | RPC rate-limited or auth-failed | Pass `--rpc-url <chain-matching-public-rpc>`. Don't rotate through random RPCs — ask user for a reliable one |
 | `stateful: false` in simulation result | Backend could not fork chain; ran each tx via `eth_call` | Retry; check backend Anvil status. Multi-step batches may show false negatives |
-| `[session] Backend user_state mismatch (non-fatal)` log spam | Known v0.1.30 cosmetic noise | Ignore. Look past the JSON dump for the actual response and `⚡ Wallet request queued` line |
+| `[session] Backend user_state mismatch (non-fatal)` log spam | Known cosmetic noise | Ignore. Look past the JSON dump for the actual response and `⚡ Wallet request queued` line |
 
 The full troubleshooting guide is in [docs/troubleshooting.md](docs/troubleshooting.md).
 
@@ -264,7 +264,7 @@ The full troubleshooting guide is in [docs/troubleshooting.md](docs/troubleshoot
 This skill drives an external CLI. It does not install software, read files outside `~/.aomi/`, or execute generated code. The hard rules below are non-negotiable.
 
 - **Credentials are opaque pass-through.** Never invent, guess, or derive a credential value. Values reach the CLI only when the user has handed them over for a specific command in this turn. Never echo a credential value back.
-- **No unsolicited setup.** Don't run `aomi wallet dev-key`, `aomi secret add`, or `--api-key`/`--private-key` flags on your own initiative to "prepare" or "fix" something. Only run them when the user explicitly asked for that specific setup and provided the value.
+- **No unsolicited setup.** Don't run `aomi wallet set`, `aomi secret add`, or `--api-key`/`--private-key` flags on your own initiative to "prepare" or "fix" something. Only run them when the user explicitly asked for that specific setup and provided the value.
 - **Trust-boundary warning before secret ingestion.** `aomi secret add NAME=value` transmits the credential to the aomi backend and stores a handle locally. Surface this to the user before running it so they can choose to export to their own shell environment instead.
 - **Always simulate multi-step batches.** Approve+swap, approve+supply, bridge+attestation — these are state-dependent. The second tx will revert if submitted independently. `aomi tx simulate tx-1 tx-2` runs them sequentially on a fork.
 - **Never sign past simulation failure.** If `aomi tx simulate` reports `Batch success: false` or any drain-vector annotation, **do not** attempt `aomi tx sign`. Surface the failure to the user — either rebuild (allowance retry pattern) or stop.

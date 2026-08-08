@@ -10,13 +10,13 @@
 #   4. Use the functions below. Each handles a complete flow with safety checks.
 #
 # Dependencies:
-#   - @aomi-labs/client v0.3.2+ (`aomi --version` or `npx @aomi-labs/client --version`)
+#   - @aomi-labs/client v0.4.2+ (`aomi --version` or `npx @aomi-labs/client --version`)
 #   - jq (for tx-list parsing)
 #
 # Conventions:
 #   - All functions return non-zero on failure.
 #   - Functions never auto-sign without confirmation.
-#   - Credential setup is NOT automated — `aomi wallet dev-key`, `aomi secret add`,
+#   - Credential setup is NOT automated — `aomi wallet set`, `aomi secret add`,
 #     `--api-key`, `--private-key` must be run by the user, never by this script.
 
 set -euo pipefail
@@ -157,7 +157,7 @@ aomi_threads() {
     $AOMI_CMD thread list
 }
 
-# Resume + read pending in one shell call (active-thread pointer survives).
+# Resume + read pending in one shell call (active-session pointer survives).
 #
 # Usage: aomi_resume 43
 aomi_resume() {
@@ -185,7 +185,7 @@ aomi_resume_by_topic() {
     aomi_resume "$tid"
 }
 
-# Clear the active thread pointer (next chat starts fresh).
+# Clear the active session pointer (next chat starts fresh).
 aomi_close() {
     $AOMI_CMD thread close
 }

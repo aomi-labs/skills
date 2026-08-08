@@ -22,7 +22,7 @@ aomi chat "Bridge 50 USDC from Ethereum mainnet to Base via CCTP. Recipient is m
   --new-session
 ```
 
-The agent runs the most paranoid pre-stage verification of any flow — balance, allowance, ABI fetch, EIP-1967 proxy unwrap, selector check — before staging anything (`--verbose` or `aomi thread log`):
+The agent runs the most paranoid pre-stage verification of any flow — balance, allowance, ABI fetch, EIP-1967 proxy unwrap, selector check — before staging anything (`--verbose` or `aomi session log`):
 
 ```
 activate_skills        → cctp

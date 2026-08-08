@@ -8,7 +8,7 @@ End-to-end example: stake 0.01 ETH with Lido to mint stETH. The simplest aomi sh
 # Install the CLI globally (or use `npx @aomi-labs/client` everywhere below)
 npm install -g @aomi-labs/client
 
-# Verify v0.1.30+
+# Verify v0.4.2+
 aomi --version
 ```
 
