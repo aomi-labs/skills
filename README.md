@@ -79,7 +79,7 @@ Agent Skills are lightweight instructions and tool references that live inside y
 Yes. `aomi-transact` has a read-only mode — `aomi chat "what's the price of ETH?"`, `aomi tx list`, `aomi tx simulate`, balance and portfolio queries all work without any signing key. A signing key is only needed when you want to broadcast a transaction on-chain.
 
 **Which chains does `aomi-transact` support?**
-Ethereum, Polygon, Arbitrum, Base, Base Sepolia, Optimism, Sepolia, Linea Mainnet, Linea Sepolia, Monad, Monad Testnet, Robinhood Chain, MegaETH, and local Anvil are present in the current chain metadata (verified against `@aomi-labs/client` v0.4.2). Solana is supported for sign-only flows via `--solana-private-key` and `--cluster`. Set the active chain with `--chain <id>` or the `AOMI_CHAIN_ID` env var. Each signing invocation needs an RPC URL that matches the target chain.
+Ethereum, Polygon, Arbitrum, Base, Base Sepolia, Optimism, Sepolia, Linea Mainnet, Linea Sepolia, Monad, Monad Testnet, Robinhood Chain, MegaETH, and local Anvil are present in the current chain metadata (verified against `@aomi-labs/client` v0.4.4). Solana is supported for sign-only flows via `--solana-private-key` and `--cluster`. Set the active chain with `--chain <id>` or the `AOMI_CHAIN_ID` env var. Each signing invocation needs an RPC URL that matches the target chain.
 
 **How do I update to the latest version of the skills?**
 Re-run `npx skills add aomi-labs/skills`. Re-running pulls the latest skill definitions from `main` and overwrites the local copies.

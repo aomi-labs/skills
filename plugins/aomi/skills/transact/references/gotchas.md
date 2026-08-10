@@ -2,7 +2,7 @@
 
 ## What You Probably Got Wrong
 
-LLM training data on aomi is stale. These are the most common mistakes the skill is shaped to prevent. Each correction is anchored to `@aomi-labs/client` v0.4.2 behavior.
+LLM training data on aomi is stale. These are the most common mistakes the skill is shaped to prevent. Each correction is anchored to `@aomi-labs/client` v0.4.4 behavior.
 
 - **"The CLI has `thread`, `cron`, `login`, or `wallet ls` commands"** → It does not, and never did. The npm client groups conversations under `aomi session ...`, account auth under `aomi account ...`, and local keys under `aomi wallet set|current|whoami`. There is no cron surface and no `aomi login`. Those forms belong to the Rust `aomi-cli` in `product-mono`, which is a separate dev/test CLI. Never emit them for the npm CLI.
 
