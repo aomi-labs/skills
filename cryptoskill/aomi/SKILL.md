@@ -176,7 +176,7 @@ Default chain modes:
 
 ## Contract Addresses
 
-> **Last verified:** August 2026 against @aomi-labs/client v0.4.2. Contract addresses below come from April 2026 mainnet + L2 captures.
+> **Last verified:** August 2026 against @aomi-labs/client v0.4.4. Contract addresses below come from April 2026 mainnet + L2 captures.
 
 These are the AA-stack and protocol delegation contracts the CLI signs through. The skill itself does not deploy contracts — these are the well-known endpoints the AA path delegates to.
 
