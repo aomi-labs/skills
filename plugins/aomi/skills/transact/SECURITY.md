@@ -2,7 +2,7 @@
 
 This document maps the `aomi-transact` skill against [OWASP Agentic Skills Top 10 (v1.0, March 2026)](https://owasp.org/www-project-agentic-skills-top-10/) and records the controls in place for each risk. Reviewers can audit the per-control claims against the live SKILL.md frontmatter, the references, and the captured scanner reports under [`.scanner-reports/`](https://github.com/aomi-labs/skills/tree/main/.scanner-reports).
 
-**Last reviewed:** 2026-08-07 against `@aomi-labs/client` v0.4.2 (published CLI bundle).
+**Last reviewed:** 2026-08-07 against `@aomi-labs/client` v0.4.5 (published CLI bundle).
 
 ## Threat model
 
