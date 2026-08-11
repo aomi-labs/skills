@@ -138,7 +138,7 @@ platforms:
       pr: https://github.com/0xinit/cryptoskills/pull/21
     last_checked: '2026-07-11'
     notes: '[2026-07-10] Health check now fails because GitHub cannot resolve 0xinit/cryptoskills for PR #21; needs manual
-      follow-up or registry target update. [2026-08-07] cryptoskill/aomi/ synced to @aomi-labs/client v0.4.2 alongside the
+      follow-up or registry target update. [2026-08-07] cryptoskill/aomi/ synced to @aomi-labs/client v0.4.5 alongside the
       other two copies — it had the same nonexistent `aomi thread` / `wallet ls` / `wallet set-mode` surface. Resubmit or
       refresh the PR once the upstream repo target is resolved.'
   cryptoskill-jia:
