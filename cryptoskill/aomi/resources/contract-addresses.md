@@ -1,6 +1,6 @@
 # Contract Addresses
 
-> **Last verified:** August 2026 against @aomi-labs/client v0.4.2. Addresses below come from April 2026 mainnet + L2 captures.
+> **Last verified:** August 2026 against @aomi-labs/client v0.5.0. Addresses below come from April 2026 mainnet + L2 captures.
 > **Verification:** `cast code <address> --rpc-url $RPC_URL` for AA stack contracts; protocol contracts cross-checked against [resources/supported-apps.md](supported-apps.md) entries staged by the agent.
 
 The aomi CLI does not deploy its own contracts. The addresses below are the AA-stack and protocol contracts the CLI signs through or commonly stages calls to. They are listed here for grep-ability and to help operators debug a queued transaction's `to:` field.
