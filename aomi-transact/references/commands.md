@@ -1,8 +1,8 @@
 # Command Reference
 
-Full command surface for the TypeScript `aomi` CLI (or `npx @aomi-labs/client@latest` equivalent), verified against `@aomi-labs/client` v0.4.2. The skill invokes read forms freely; `set`/mutating forms only when the user explicitly asks.
+Full command surface for the TypeScript `aomi` CLI (or `npx @aomi-labs/client@latest` equivalent), verified against `@aomi-labs/client` v0.5.1. The skill invokes read forms freely; `set`/mutating forms only when the user explicitly asks.
 
-Top-level commands in v0.4.2: `chat`, `tx`, `session`, `model`, `app`, `chain`, `wallet`, `account`, `logout`, `config`, `secret`.
+Top-level commands in v0.5.1: `chat`, `tx`, `session`, `model`, `app`, `chain`, `wallet`, `account`, `logout`, `config`, `secret`.
 
 ## Chat
 
