@@ -12,7 +12,7 @@ aomi chat "hello" --new-session
 aomi session status 2>/dev/null || echo "no session"
 ```
 
-Expected: `aomi --version` prints `0.4.2` or newer.
+Expected: `aomi --version` prints `0.6.0` or newer.
 
 **A globally installed `aomi` is not upgraded by installing this skill.** If `aomi --version` reports anything below 0.4.2, parts of this doc will not match: on 0.1.x, account auth lived at `aomi wallet login` (with `aomi account` a two-command alias), and `aomi tx sign` still attempted AA locally with mode fallback. Tell the user to run `npm install -g @aomi-labs/client@latest`, or use `npx @aomi-labs/client@latest` for this run.
 
