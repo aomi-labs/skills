@@ -32,7 +32,7 @@ Read this when a command fails unexpectedly or behaves differently than the work
 ## Invocation
 
 - If `aomi: command not found`, the user does not have the global install. Substitute `npx @aomi-labs/client@latest` for `aomi` in every command and retry.
-- If `aomi --version` reports a version older than `0.4.2`, advise `npm install -g @aomi-labs/client@latest` (or use `npx @aomi-labs/client@latest …` for one-shot calls) before continuing. This matters more than it looks: **a global `aomi` is never upgraded by reinstalling the skill**, so a machine can sit on an old binary indefinitely while the skill docs move ahead. On 0.1.x, `aomi account` had only `login` and `whoami`, account auth lived at `aomi wallet login`, and `aomi tx sign` still attempted AA locally.
+- If `aomi --version` reports a version older than `0.6.0`, advise `npm install -g @aomi-labs/client@latest` (or use `npx @aomi-labs/client@latest …` for one-shot calls) before continuing. This matters more than it looks: **a global `aomi` is never upgraded by reinstalling the skill**, so a machine can sit on an old binary indefinitely while the skill docs move ahead. On 0.1.x, `aomi account` had only `login` and `whoami`, account auth lived at `aomi wallet login`, and `aomi tx sign` still attempted AA locally.
 - If a command errors with `Unknown command`, check it against [commands.md → Not in v0.4.2](commands.md#not-in-v042) before assuming the CLI is broken.
 
 ## Quirks observed in current CLI/source

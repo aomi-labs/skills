@@ -85,12 +85,16 @@ aomi chain set <id>                                    # only when user asked to
 ```bash
 aomi wallet set <evm-hex-key>                          # user-directed EVM 0x key (default)
 aomi wallet set --evm <evm-hex-key>                    # explicit EVM form
-aomi wallet set --solana <base58-key>                  # user-directed Solana keypair
-aomi wallet current                                    # configured wallet address
+aomi wallet set --solana <base58-key>                  # user-directed Solana keypair (cluster defaults to mainnet)
+aomi wallet set --solana <base58-key> --cluster devnet # ... and persist a non-default cluster
+aomi wallet current                                    # configured wallet addresses
+aomi wallet current --json                             # machine-readable: family evm|svm, chainId|cluster, hasSavedSigner
 aomi wallet whoami                                     # authenticated backend account
 ```
 
 `aomi wallet set` persists local signing material under `AOMI_STATE_DIR` (default `~/.aomi`). After running, confirm with the derived address or Solana public key — never repeat the key value back.
+
+`aomi wallet set --solana` also persists the Solana cluster (`--cluster` if given, else the previously saved cluster, else `solana:mainnet`). Later commands and wallet requests use that saved cluster, so `aomi wallet current` shows exactly what the agent sees. In `--json` output each wallet's `family` is `evm` or `svm`, the same names the backend uses; `svm` replaced the older `solana` value in client 0.6.0.
 
 ## Account
 

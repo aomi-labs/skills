@@ -10,7 +10,7 @@
 #   4. Use the functions below. Each handles a complete flow with safety checks.
 #
 # Dependencies:
-#   - @aomi-labs/client v0.4.2+ (`aomi --version` or `npx @aomi-labs/client@latest --version`)
+#   - @aomi-labs/client v0.6.0+ (`aomi --version` or `npx @aomi-labs/client@latest --version`)
 #   - jq (for tx-list parsing)
 #
 # Conventions:
@@ -49,10 +49,10 @@ aomi_check_version() {
     echo "[aomi-workflow] CLI version: $version" >&2
 
     case "$version" in
-        0.4.[2-9]*|0.4.[1-9][0-9]*|0.[5-9].*|[1-9].*)
+        0.6.*|0.[7-9].*|0.[1-9][0-9].*|[1-9].*)
             ;;
         *)
-            echo "[aomi-workflow] WARNING: version is $version, this script requires 0.4.2+" >&2
+            echo "[aomi-workflow] WARNING: version is $version, this script requires 0.6.0+" >&2
             echo "[aomi-workflow] on older builds the account commands and local AA signing differ" >&2
             echo "[aomi-workflow] upgrade with: npm install -g @aomi-labs/client@latest" >&2
             ;;

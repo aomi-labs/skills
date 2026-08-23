@@ -19,7 +19,7 @@ On top of that, linked wallets and login methods are account-scoped: `aomi accou
 ### Prerequisites
 
 ```bash
-npm install -g @aomi-labs/client@latest      # v0.4.2 or newer
+npm install -g @aomi-labs/client@latest      # v0.6.0 or newer
 ```
 
 (or use `npx @aomi-labs/client@latest ...` for one-shot invocations.)
