@@ -49,7 +49,7 @@ Aomi Transact drives the `aomi` TypeScript CLI to build natural-language crypto 
 ## Prerequisites
 
 - Node.js 18+ with npm or npx
-- `@aomi-labs/client` v0.4.2 or newer: `npm install -g @aomi-labs/client@latest`
+- `@aomi-labs/client` v0.6.9 or newer: `npm install -g @aomi-labs/client@latest`
 - For EVM signing: a 0x-prefixed private key via `aomi wallet set`, `--private-key`, or `PRIVATE_KEY`
 - For Solana sign-only flows: a base58 or JSON keypair via `aomi wallet set --solana`, `--solana-private-key`, or `SOLANA_PRIVATE_KEY`
 - Optional: `AOMI_ACCOUNT_BEARER` / `--account-bearer` for authenticated account-bound requests

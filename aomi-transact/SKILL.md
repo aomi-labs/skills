@@ -12,7 +12,7 @@ description: >
   signature. Account-abstraction aware with EIP-7702/4337 in the backend lane; local CLI
   signing is EOA. MUST NOT fabricate
   or echo credentials; values reach the CLI only when the user explicitly supplied them.
-compatibility: 'Requires @aomi-labs/client v0.6.0 or newer (wallet current --json reports family svm and wallet set --solana persists the cluster from 0.6.0). Transaction flows verified against v0.4.2. Install globally via npm install -g @aomi-labs/client@latest, or run on demand via npx @aomi-labs/client@latest. A pre-existing global aomi binary is NOT upgraded by installing this skill — check aomi --version and upgrade if it is below 0.6.0, since the account command group and local AA signing behavior changed in 0.4.x and the wallet contract changed in 0.6.0. The CLI defaults to https://chat.aomi.dev (api.aomi.dev is the legacy host). viem and Solana signing dependencies are bundled by the package. Designed for claude-code; also works with Cursor, Codex CLI, Gemini, and any agent runtime that supports the Anthropic skill spec.'
+compatibility: 'Requires @aomi-labs/client v0.6.9 or newer (wallet current --json reports family svm and wallet set --solana persists the cluster from 0.6.0). Transaction flows verified against v0.6.9. Install globally via npm install -g @aomi-labs/client@latest, or run on demand via npx @aomi-labs/client@latest. A pre-existing global aomi binary is NOT upgraded by installing this skill — check aomi --version and upgrade if it is below 0.6.0, since the account command group and local AA signing behavior changed in 0.4.x and the wallet contract changed in 0.6.0. The CLI defaults to https://chat.aomi.dev (api.aomi.dev is the legacy host). viem and Solana signing dependencies are bundled by the package. Designed for claude-code; also works with Cursor, Codex CLI, Gemini, and any agent runtime that supports the Anthropic skill spec.'
 license: MIT
 version: "0.12.0"
 author: 'aomi-labs <hello@aomi.dev>'
@@ -49,7 +49,7 @@ Aomi Transact drives the `aomi` TypeScript CLI to build natural-language crypto 
 ## Prerequisites
 
 - Node.js 18+ with npm or npx
-- `@aomi-labs/client` v0.6.0 or newer: `npm install -g @aomi-labs/client@latest`
+- `@aomi-labs/client` v0.6.9 or newer: `npm install -g @aomi-labs/client@latest`
 - For EVM signing: a 0x-prefixed private key via `aomi wallet set`, `--private-key`, or `PRIVATE_KEY`
 - For Solana sign-only flows: a base58 or JSON keypair via `aomi wallet set --solana` (which also persists the cluster; `--cluster` overrides), `--solana-private-key`, or `SOLANA_PRIVATE_KEY`
 - Optional: `AOMI_ACCOUNT_BEARER` / `--account-bearer` for authenticated account-bound requests
