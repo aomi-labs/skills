@@ -12,7 +12,7 @@ description: >
   signature. Account-abstraction aware with EIP-7702/4337 in the backend lane; local CLI
   signing is EOA. MUST NOT fabricate
   or echo credentials; values reach the CLI only when the user explicitly supplied them.
-compatibility: 'Verified against @aomi-labs/client v0.4.2. Install globally via npm install -g @aomi-labs/client@latest, or run on demand via npx @aomi-labs/client@latest. A pre-existing global aomi binary is NOT upgraded by installing this skill — check aomi --version and upgrade if it is below 0.4.2, since the account command group and local AA signing behavior changed in 0.4.x. The CLI defaults to https://chat.aomi.dev (api.aomi.dev is the legacy host). viem and Solana signing dependencies are bundled by the package. Designed for claude-code; also works with Cursor, Codex CLI, Gemini, and any agent runtime that supports the Anthropic skill spec.'
+compatibility: 'Verified against @aomi-labs/client v0.4.2. npm package is now `@aomi-labs/client@0.6.11`; this skill requires re-verification against that release before claiming parity. Install globally via npm install -g @aomi-labs/client@latest, or run on demand via npx @aomi-labs/client@latest. A pre-existing global aomi binary is NOT upgraded by installing this skill — check aomi --version and upgrade if it is below 0.4.2, since the account command group and local AA signing behavior changed in 0.4.x. The CLI defaults to https://chat.aomi.dev (api.aomi.dev is the legacy host). viem and Solana signing dependencies are bundled by the package. Designed for claude-code; also works with Cursor, Codex CLI, Gemini, and any agent runtime that supports the Anthropic skill spec.'
 license: MIT
 version: "0.11.0"
 author: 'aomi-labs <hello@aomi.dev>'
