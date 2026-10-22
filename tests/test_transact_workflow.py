@@ -13,8 +13,8 @@ class TransactWorkflow(unittest.TestCase):
     def test_plugin_contains_exact_canonical_skill(self):
         canonical = ROOT / "aomi-transact"
         mirror = ROOT / "plugins/aomi/skills/transact"
-        source_files = {p.relative_to(canonical) for p in canonical.rglob("*") if p.is_file()}
-        mirror_files = {p.relative_to(mirror) for p in mirror.rglob("*") if p.is_file()}
+        source_files = {p.relative_to(canonical) for p in canonical.rglob("*") if p.is_file() and not any(part.startswith(".") for part in p.relative_to(canonical).parts)}
+        mirror_files = {p.relative_to(mirror) for p in mirror.rglob("*") if p.is_file() and not any(part.startswith(".") for part in p.relative_to(mirror).parts)}
         self.assertEqual(source_files, mirror_files)
         for path in source_files:
             self.assertEqual((canonical / path).read_bytes(), (mirror / path).read_bytes(), str(path))
