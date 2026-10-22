@@ -2,7 +2,7 @@ schema_version: '1.1'
 skills:
   aomi-transact:
     canonical: aomi-transact/SKILL.md
-    version: 0.11.0
+    version: 0.13.0
     risk_tier: L2
   aomi-build:
     canonical: aomi-build/SKILL.md
@@ -10,7 +10,7 @@ skills:
     risk_tier: L1
   plugin-aomi:
     canonical: plugins/aomi/.claude-plugin/plugin.json
-    version: '0.11'
+    version: '0.13.0'
 platforms:
   self-hosted:
     type: self-hosted
@@ -29,22 +29,21 @@ platforms:
   npm:
     type: cli-publish
     tier: 1
-    description: '@aomi-labs/client on npm — runtime the skill drives'
-    url: https://www.npmjs.com/package/@aomi-labs/client
+    description: '@aomi-labs/cli — standalone transaction CLI (release-gated)'
+    url: https://www.npmjs.com/package/@aomi-labs/cli
     cli: npm
-    package: '@aomi-labs/client'
+    package: '@aomi-labs/cli'
     skills:
     - aomi-transact
-    - aomi-build
-    status: live
-    notes: SKILL.md tracks @aomi-labs/client@latest and was last verified against v0.4.2 (2026-08-07) by running the published
-      CLI and reading its bundle. Refresh skill docs when the CLI command surface changes. Note that `npx skills add` never
-      upgrades a user's existing global `aomi` binary, so SKILL.md must carry an explicit version check rather than assuming
-      the documented surface is present.
+    status: awaiting-publication
+    notes: '2026-10-22: public npm returned E404. Skill targets CLI 0.1.2 / client 0.10.6
+      from aomi PR 769, verified from packed artifacts only. Confirm exact public
+      availability and installed command capabilities before suggesting an upgrade.
+      Skill installation never upgrades the global executable.'
     health_check:
       method: npm-view
-      package: '@aomi-labs/client'
-    last_checked: '2026-07-11'
+      package: '@aomi-labs/cli'
+    last_checked: '2026-10-22'
   anthropic-community:
     type: artifact
     tier: 1

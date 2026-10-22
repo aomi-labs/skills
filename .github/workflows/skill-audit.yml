@@ -19,6 +19,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Verify transaction workflow and plugin mirror
+        run: python -m unittest discover -s tests -v
+
       - name: Install scanner backends
         run: |
           sudo apt-get update
