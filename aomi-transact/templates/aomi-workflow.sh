@@ -11,7 +11,7 @@ aomi_detect() {
     }
     local capability help list_help
     help=$(aomi tx --help) || return 1
-    for capability in export submit preflight status; do
+    for capability in export submit preflight; do
         case "$help" in
             *"$capability"*) ;;
             *) echo "Installed aomi lacks tx $capability." >&2; return 1 ;;
@@ -35,7 +35,7 @@ aomi_detect() {
     }
 }
 
-# Read known operational funding positions from an approved, key-free intent file.
+# Read live token and gas balances for the wallets listed in a key-free intent file.
 aomi_funding() {
     aomi tx preflight "${1:?payment intent file required}"
 }
@@ -56,11 +56,6 @@ aomi_pending() {
 # Export one exact Commit for review. Output is not proof of payment.
 aomi_review() {
     aomi tx export "${1:?full Commit ID required}" --format commit
-}
-
-# Reconcile the original Commit before considering any retry or new signature.
-aomi_status() {
-    aomi tx status "${1:?full Commit ID required}" --payment "${2:?original intent file required}"
 }
 
 aomi_resume() {

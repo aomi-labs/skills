@@ -25,7 +25,7 @@ class TransactWorkflow(unittest.TestCase):
             fake = directory / "aomi"
             fake.write_text('''#!/usr/bin/env bash
 printf '%s\\n' "$*" >> "$CALLS"
-if [ "$*" = "tx --help" ]; then echo "export submit preflight status"; fi
+if [ "$*" = "tx --help" ]; then echo "export submit preflight"; fi
 if [ "$*" = "tx $MISSING --help" ]; then exit 1; fi
 if [ "$*" = "tx list --help" ] && [ "$MISSING" != "json" ]; then echo --json; fi
 if [ "$*" = "session resume --help" ] && [ "$MISSING" = "resume" ]; then exit 1; fi
@@ -41,17 +41,17 @@ if [ "${1:-}" = "tx" ] && [ "${2:-}" = "sign" ]; then exit 99; fi
             return result, log.read_text() if log.exists() else ""
 
     def test_recovery_uses_exact_commit_without_signing_or_installing(self):
-        result, calls = self.run_helper('aomi_detect && aomi_resume 43 && aomi_review payment-123 && aomi_status payment-123 "intent with spaces.json"')
+        result, calls = self.run_helper('aomi_detect && aomi_resume 43 && aomi_review payment-123 && aomi_funding "intent with spaces.json"')
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("session resume 43\ntx list --json", calls)
         self.assertIn("tx export payment-123 --format commit", calls)
-        self.assertIn("tx status payment-123 --payment intent with spaces.json", calls)
+        self.assertIn("tx preflight intent with spaces.json", calls)
         self.assertNotIn("tx sign", calls)
 
     def test_missing_capability_stops_before_preparing(self):
-        result, calls = self.run_helper('aomi_detect && aomi_prepare "approved intent"', missing="status")
+        result, calls = self.run_helper('aomi_detect && aomi_prepare "approved intent"', missing="preflight")
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("lacks tx status", result.stderr)
+        self.assertIn("lacks tx preflight", result.stderr)
         self.assertNotIn("chat ", calls)
 
     def test_recovery_capability_gate_stops_before_session_changes(self):

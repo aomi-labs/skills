@@ -27,7 +27,6 @@ aomi tx --help
 aomi tx export --help
 aomi tx submit --help
 aomi tx preflight --help
-aomi tx status --help
 ```
 
 An existing executable can be an old embedded CLI even when a newer package is
@@ -49,10 +48,9 @@ aomi tx export <commit-id> --format commit > reviewed-commit.json
 aomi tx sign <commit-id>
 aomi tx submit <commit-id> --signed-file <signed-export-file>
 aomi tx submit <commit-id> --tx-hash <prepared-broadcast-hash>
-aomi tx status <commit-id> --payment <intent-file>
 ```
 
-Preflight/status are read-only on chain and delegate payment logic to the SDK.
+Preflight is read-only on chain and never signs.
 A full Commit ID identifies the durable payment. An external signed file uses
 `aomi.commit.v1`, the unchanged exact exported Commit, and a top-level `payloads`
 array. `--tx-hash` reports the exact prepared broadcast hash; it is not a general

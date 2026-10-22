@@ -47,7 +47,7 @@ cp -r skills/plugins/aomi ~/.claude/skills/
 
 ```bash
 # Required for aomi-transact (the on-chain CLI driver)
-npm install -g @aomi-labs/client@latest      # v0.4.2 or newer
+npm install -g @aomi-labs/cli      # confirm the published version first; see skills/transact/references/commands.md
 ```
 
 `aomi-build` has no runtime prerequisites — it generates Rust source code from specs.

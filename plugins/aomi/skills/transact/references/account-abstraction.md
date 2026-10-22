@@ -17,6 +17,5 @@ Legacy embedded CLI releases may reject AA flags. Gate the branch using
 [commands.md](commands.md#availability), rather than forcing a new execution
 mode or silently falling back to a different wallet.
 
-The direct ERC-20 `tx status` reader checks EOA transfer receipts. AA receipt
-layouts and destination effects require their own proof; a bundler hash or an
+AA receipt layouts and destination effects require their own proof; a bundler hash or an
 owner signature alone does not establish payment completion.

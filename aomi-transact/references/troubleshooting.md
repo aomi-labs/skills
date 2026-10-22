@@ -9,9 +9,9 @@
 | Insufficient destination token | Inspect other known operational chains/assets and fresh route minimum output/fees before considering treasury funding. |
 | Native gas shortfall | Show the precise chain and gas requirement; token balance does not pay ordinary EOA gas. Inspect prepared AA fees separately. |
 | Timeout after signing/submitting | Resume the same session, refresh the same Commit, reconcile known hash and wallet attempt. Keep a single payment record. |
-| Receipt success, recipient unverified | Verify exact token Transfer, canonical block and historical recipient balance delta. Missing history or same-block outgoing funds can require manual reconciliation. |
+| Commit submitted, not confirmed | Refresh `tx list --json`; the backend observes the receipt. Inspect the hash on a chain-matching RPC before concluding anything. |
 | Bridge source confirmed | Inspect destination receipt and spendable output token; continue the same route record. |
-| Unsupported direct-payment proof | Swaps, AA and batches need their own execution/destination evidence. Preserve the Commit/hash while reconciling that flow. |
+| Swap, AA, batch or bridge completion | These need their own execution/destination evidence. Preserve the Commit/hash while reconciling that flow. |
 
 Errors should identify effective origin, configuration source and failed endpoint
 without exposing URL credentials, bearer tokens or upstream bodies. If a setting

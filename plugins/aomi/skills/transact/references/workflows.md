@@ -10,37 +10,30 @@ Exclude treasury, development and third-party wallets from automatic selection.
 Role metadata records provenance; it does not grant signing authorization.
 
 When available, `aomi tx preflight <intent-file>` performs these read-only checks
-in the shared SDK. File shape:
+for every wallet listed in the file, each on its own RPC. File shape:
 
 ```json
 {
-  "payment": {
-    "asset": { "chainId": 1, "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", "decimals": 6 },
-    "recipient": "0x2222222222222222222222222222222222222222",
-    "amount": "1500"
-  },
-  "rpcUrl": "https://ethereum-rpc.publicnode.com",
-  "sources": [{
-    "address": "0x1111111111111111111111111111111111111111",
-    "role": "operational",
-    "asset": { "chainId": 1, "token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", "decimals": 6 },
-    "rpcUrl": "https://ethereum-rpc.publicnode.com"
-  }]
+  "recipient": "0x2222222222222222222222222222222222222222",
+  "amount": "1500",
+  "wallets": [
+    { "address": "0x1111111111111111111111111111111111111111", "chainId": 1, "token": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", "decimals": 6, "rpcUrl": "https://ethereum-rpc.publicnode.com" },
+    { "address": "0x1111111111111111111111111111111111111111", "chainId": 8453, "token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", "decimals": 6, "rpcUrl": "https://base-rpc.publicnode.com" }
+  ]
 }
 ```
 
-Replace example terms with the approved catalog and user request. Add a source
-for each known funded chain/asset; this command does not discover every wallet
-position. After selecting, save the approved address as `payment.sender` for
-status reconciliation. Preserve this file, original session and full Commit ID
-together. Keep private keys/bearers outside the file and secure any credentialed
-RPC URLs; reports omit URLs.
+Replace example terms with the approved catalog and user request. Add an entry
+for each known funded chain; the command checks only what is listed. Keep
+private keys and bearers outside the file and secure any credentialed RPC URLs;
+reports carry only a short reason, never the URL.
 
-The report shows source and destination assets, balances, exact token shortfall
-and an estimated native gas budget in base units (gas estimate × twice current
-gas price). This is a budget, not a guaranteed fee. `route_required` means a
-different token/chain needs a fresh route; fees remain `unquoted` and shortfall
-unknown until minimum destination output is verified. A failed RPC is unavailable
+Each wallet reports `funded`, `insufficient_token`, `insufficient_gas` or
+`unavailable` with a reason, plus its token balance, native balance and an
+estimated gas budget in native base units (gas estimate × twice current gas
+price). This is a budget, not a guaranteed fee. A wallet holding a different
+token or chain than the destination needs a fresh route with verified minimum
+destination output before it counts as funding. A failed RPC is unavailable
 evidence, not a zero balance. A token-funded wallet without native gas is not a
 funded direct-transfer source. Report the operational shortfall before proposing
 any separately authorized treasury refill.
@@ -63,34 +56,25 @@ For a wallet-broadcast prepared transaction, report its exact expected hash with
 
 ## Reconciliation
 
-Resume the original session and refresh the existing Commit before retrying.
-An outstanding wallet attempt, signed payload or known transaction hash must be
-reconciled before requesting a new signature; a timeout does not mean failure.
-For one direct ERC-20 EOA payment:
-
-```sh
-aomi tx status <commit-id> --payment <intent-file>
-```
-
-The intent requires the approved `payment.sender`. Status projects the existing
-durable Commit and live chain evidence; it does not create another payment or
-signer. Keep all stages attached to that ID:
+Resume the original session and refresh the existing Commit with
+`aomi tx list --json` before retrying. An outstanding wallet attempt, signed
+payload or known transaction hash must be reconciled before requesting a new
+signature; a timeout does not mean failure. The backend observes the receipt
+and moves the Commit to `confirmed`; `aomi tx export <commit-id> --format commit`
+shows the current state. Keep all stages attached to that ID:
 
 | Evidence | Report |
 | --- | --- |
 | Prepared review, no valid simulation | Prepared; review incomplete |
 | Passed simulation, no signature | Simulated; awaiting authorized signature |
 | Signed, not submitted | Signed; awaiting submission |
-| Hash, no mined receipt | Submitted/pending; reconcile that hash |
-| Receipt reverted | Failed on chain; preserve evidence |
-| Receipt success, destination proof missing | Recipient verification pending |
-| Canonical receipt, exact Transfer and recipient increase | Payment completed |
+| Hash, Commit not yet confirmed | Submitted/pending; reconcile that hash |
+| Commit failed or receipt reverted | Failed on chain; preserve evidence |
+| Commit confirmed | Payment completed on the source chain |
 
-RPC failures, noncanonical blocks, missing historical state or same-block outgoing
-funds can leave verification pending. Do not infer a second payment is needed.
-For swaps, AA, batches and bridges, the direct ERC-20 reader cannot prove payment;
-verify the actual execution plus destination receipt, output token and spendable
-balance separately. A source bridge receipt is only the source leg.
+Do not infer a second payment is needed from a timeout or a stale listing.
+For bridges, a source receipt is only the source leg; verify the destination
+receipt, output token and spendable balance separately.
 
 ## Secret ingestion
 

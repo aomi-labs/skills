@@ -81,14 +81,12 @@ transactions. The Rust `aomi-cli` in product-mono has a different interface.
    Inspect prepared AA payloads before choosing the signing path; see
    [account-abstraction.md](references/account-abstraction.md).
 7. **Reconcile the same payment.** Retain original session, full Commit ID,
-   approved intent and transaction hash together. Refresh that Commit before
-   retrying. A known hash or outstanding wallet attempt calls for reconciliation
-   before any new signing attempt. For direct ERC-20 EOA payments, use
-   `aomi tx status <commit-id> --payment <intent-file>` when available. Report
-   preparation, simulation, signature, submission, receipt and recipient
-   verification separately. Complete only after a canonical successful receipt,
-   matching token Transfer and recipient balance increase. Bridge completion
-   also needs the destination receipt and spendable output token.
+   approved intent and transaction hash together. Refresh that Commit with
+   `aomi tx list --json` before retrying; the backend observes the receipt and
+   moves it to `confirmed`. A known hash or outstanding wallet attempt calls for
+   reconciliation, not a new signing attempt. Report preparation, simulation,
+   signature, submission and confirmation separately. Bridge completion also
+   needs the destination receipt and spendable output token.
 
 ## Credentials and state
 

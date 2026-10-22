@@ -10,9 +10,6 @@ payment. Keep its full Commit ID, approved intent and known transaction hash in
 the payment record. `aomi tx list --json` refreshes backend Commit state; it is
 not an offline queue listing. Local filesystem state alone cannot prove settlement.
 
-After interruption, query the same Commit and reconcile its existing hash or
-wallet attempt before signing again. `tx status` is read-only on chain. Its
-direct ERC-20 proof requires chain-matching RPC access and historical recipient
-balances. Missing history leaves verification pending for manual reconciliation.
-Start a new chat session only for a genuinely new task, not to clear an ambiguous
+After interruption, refresh the same Commit with `aomi tx list --json` and
+reconcile its existing hash or wallet attempt before signing again. Start a new chat session only for a genuinely new task, not to clear an ambiguous
 payment. Refer to [workflows.md](workflows.md#reconciliation) for evidence stages.
