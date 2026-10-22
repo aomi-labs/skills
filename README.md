@@ -42,11 +42,10 @@ The `aomi` plugin (skills: `aomi-transact`, `aomi-build`) is defined by [`.codex
 
 ## Prerequisites
 
-```bash
-npm install -g @aomi-labs/client
-```
-
-The published CLI bundles its EVM and Solana signing dependencies. The skills are verified against **v0.4.2** — if you already have `aomi` installed, note that reinstalling the skills does not upgrade it; run `npm install -g @aomi-labs/client@latest` to move an existing install forward.
+The transaction skill targets the standalone `@aomi-labs/cli` Commit interface.
+Before installing or upgrading, follow its [availability and capability gate](aomi-transact/references/commands.md#availability).
+The client package's migration shim does not prove that the replacement CLI is
+published. Skill installation and CLI installation are separate operations.
 
 ## Usage
 
@@ -60,7 +59,7 @@ The agent handles the full flow: chat with the backend, review pending transacti
 
 ## Security
 
-`aomi-transact` is mapped against the [OWASP Agentic Skills Top 10](https://owasp.org/www-project-agentic-skills-top-10/) and ships with a complete OWASP-format `permissions:` manifest in its frontmatter. Per-control analysis lives in [`aomi-transact/SECURITY.md`](aomi-transact/SECURITY.md).
+`aomi-transact` declares its intended file, network and shell scope in a `permissions:` manifest; enforcement depends on the host. Transaction authorization, credential handling, recovery and evidence boundaries are documented in [`aomi-transact/SECURITY.md`](aomi-transact/SECURITY.md).
 
 The skill is scanned by four independent tools — [Cisco AI Defense skill-scanner](https://github.com/cisco-ai-defense/skill-scanner), [pors/skill-audit](https://github.com/pors/skill-audit), [NMitchem/SkillScan](https://github.com/NMitchem/SkillScan), and (when token is available) [Snyk agent-scan](https://github.com/snyk/agent-scan). Captured reports and reproducer commands live in [`.scanner-reports/`](.scanner-reports/). The CI workflow at [`.github/workflows/skill-audit.yml`](.github/workflows/skill-audit.yml) runs the offline scanners on every PR and uploads SARIF to the GitHub Security tab.
 
@@ -79,13 +78,17 @@ Agent Skills are lightweight instructions and tool references that live inside y
 Yes. `aomi-transact` has a read-only mode — `aomi chat "what's the price of ETH?"`, `aomi tx list`, `aomi tx simulate`, balance and portfolio queries all work without any signing key. A signing key is only needed when you want to broadcast a transaction on-chain.
 
 **Which chains does `aomi-transact` support?**
-Ethereum, Polygon, Arbitrum, Base, Base Sepolia, Optimism, Sepolia, Linea Mainnet, Linea Sepolia, Monad, Monad Testnet, Robinhood Chain, MegaETH, and local Anvil are present in the current chain metadata (verified against `@aomi-labs/client` v0.4.2). Solana is supported for sign-only flows via `--solana-private-key` and `--cluster`. Set the active chain with `--chain <id>` or the `AOMI_CHAIN_ID` env var. Each signing invocation needs an RPC URL that matches the target chain.
+Inspect `aomi chain list` and the current runtime's prepared operation for chain
+and execution support. Set an explicit chain ID for a payment and match its RPC;
+a cached metadata list does not establish a deployed chain capability.
 
 **How do I update to the latest version of the skills?**
 Re-run `npx skills add aomi-labs/skills`. Re-running pulls the latest skill definitions from `main` and overwrites the local copies.
 
 **Does that also update the `aomi` CLI?**
-No — they update independently. `npx skills add` only refreshes the skill markdown; a globally installed `aomi` binary stays at whatever version you installed. Upgrade it separately with `npm install -g @aomi-labs/client@latest`, or skip the global install and let the skill invoke `npx @aomi-labs/client@latest`, which resolves the newest published version on each run. The skills check `aomi --version` on first use and tell you when the installed CLI is older than the surface they document.
+No — skill installation only updates instructions. Preserve a working CLI until
+the exact standalone replacement is publicly available, then verify the commands
+on the installed executable. See the [capability gate](aomi-transact/references/commands.md#availability).
 
 ## Resources
 

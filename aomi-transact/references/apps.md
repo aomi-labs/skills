@@ -56,7 +56,7 @@ To build a new app from an API spec or SDK, use the companion skill **aomi-build
 
 ## Usage Examples
 
-Each example shows the canonical first chat turn for that category. Follow the standard workflow afterwards: `aomi tx list` → (`aomi tx simulate` for multi-step) → `aomi tx sign`.
+Each example shows the canonical first chat turn for that category. Follow the current [Commit workflow](workflows.md#execution) afterwards; inspect full Commit IDs and durable review simulation.
 
 ### Solver Networks — `khalani`
 
@@ -95,7 +95,7 @@ Route Options:
 ```bash
 aomi chat "proceed with Hyperstream using the TRANSFER method"
 aomi tx list                               # confirm the wallet request was queued
-aomi tx sign tx-1 --rpc-url <polygon-rpc>  # source-chain RPC must match
+aomi tx sign <reviewed-commit-id> --rpc-url <polygon-rpc>  # source-chain RPC must match
 ```
 
 Notes:
@@ -125,7 +125,7 @@ aomi chat "which chains does 0x support today?" --app zerox
 Notes:
 
 - `zerox` requires a provider token. If `aomi tx sign` fails because credentials are missing, ask the user to configure their 0x credentials (do not invent or paste them on the user's behalf).
-- For approve-and-swap on a single chain, simulate the batch with `aomi tx simulate tx-1 tx-2` before signing.
+- For approve-and-swap, review every leg and its simulation in the durable Commit before signing.
 
 ### Prediction Markets — `polymarket`
 
@@ -177,7 +177,7 @@ Polymarket Order Preview
 ```bash
 aomi chat "place the order"
 aomi tx list                                # confirm a wallet request was queued
-aomi tx sign tx-1                           # EOA signing on Polygon (needs native POL for gas)
+aomi tx sign <reviewed-commit-id>           # EOA signing on Polygon (needs native POL for gas)
 ```
 
 Notes:
@@ -207,7 +207,7 @@ aomi chat "1h klines for SOLUSDT for the last 24 hours from Binance" \
 Notes:
 
 - `binance` needs Exchange credentials. The skill never invents these. If `aomi chat` fails because credentials are missing, ask the user to configure them on their side.
-- This is a data app — no `tx-N` will be queued from these commands. `aomi tx list` is not part of this flow.
+- This is a data app — no payment Commit is expected from these commands. `aomi tx list` is not part of this flow.
 
 ### Social — `neynar`
 
@@ -265,13 +265,10 @@ aomi chat "quote bridging 50 USDC from Polygon to Base via Khalani" \
 aomi chat "Bridge 1 USDC from Ethereum mainnet to Base via Across. Include approve as a separate tx so we can simulate the batch." \
   --public-key 0xUserAddress --chain 1 --new-session
 aomi tx list
-aomi tx sign tx-1 tx-2
+aomi tx sign <reviewed-commit-id>
 ```
 
 Observed behavior in earlier CLI/backend captures:
 
-- Across requests carry an expiring `fillDeadline`. If the agent's first build expires by the time simulation runs, the agent automatically rebuilds with a fresh deadline and the new tx-N will pass. **Old failed attempts remain visible in `aomi tx list`** with `batch_status: "Batch [N,M] failed at step 2: 0x..."` — sign only the txs whose status reads `Batch [...] passed`.
-- The mainnet→L2 leg signs cleanly with the EOA's small ETH stash paying gas.
-- The L2→mainnet leg requires the EOA to have native gas on the L2 — local signing is EOA-only, so there is no sponsor path to fall back on. See [account-abstraction.md → Gas](account-abstraction.md#gas-the-rule-the-skill-must-follow).
-
-> **TODO — direct integration.** If a standalone `across` app gets added later, replace this stub with read + write examples in the same shape as the other entries.
+- Across routes expire. Obtain a fresh quote and review its replacement Commit when stale; retain prior Commit IDs and reconcile any known submission first.
+- Inspect source gas, prepared execution type and destination spendable output separately. See [account-abstraction.md](account-abstraction.md).
