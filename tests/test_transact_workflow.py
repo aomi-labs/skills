@@ -27,6 +27,8 @@ class TransactWorkflow(unittest.TestCase):
 printf '%s\\n' "$*" >> "$CALLS"
 if [ "$*" = "tx --help" ]; then echo "export submit preflight status"; fi
 if [ "$*" = "tx $MISSING --help" ]; then exit 1; fi
+if [ "$*" = "tx list --help" ] && [ "$MISSING" != "json" ]; then echo --json; fi
+if [ "$*" = "session resume --help" ] && [ "$MISSING" = "resume" ]; then exit 1; fi
 if [ "${1:-}" = "tx" ] && [ "${2:-}" = "sign" ]; then exit 99; fi
 ''')
             fake.chmod(0o755)
@@ -51,6 +53,13 @@ if [ "${1:-}" = "tx" ] && [ "${2:-}" = "sign" ]; then exit 99; fi
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("lacks tx status", result.stderr)
         self.assertNotIn("chat ", calls)
+
+    def test_recovery_capability_gate_stops_before_session_changes(self):
+        for capability in ("list", "json", "resume"):
+            with self.subTest(capability=capability):
+                result, calls = self.run_helper('aomi_detect && aomi_resume 43', missing=capability)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertNotIn("session resume 43", calls)
 
     def test_source_chain_is_required_instead_of_defaulting_to_mainnet(self):
         result, calls = self.run_helper('aomi_prepare "approved intent"', chain="")

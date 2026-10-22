@@ -9,7 +9,7 @@ aomi_detect() {
         echo 'aomi is missing; check public @aomi-labs/cli availability before installing.' >&2
         return 1
     }
-    local capability help
+    local capability help list_help
     help=$(aomi tx --help) || return 1
     for capability in export submit preflight status; do
         case "$help" in
@@ -21,6 +21,18 @@ aomi_detect() {
             return 1
         }
     done
+    list_help=$(aomi tx list --help) || {
+        echo 'Installed aomi lacks tx list; recovery requires transaction listing.' >&2
+        return 1
+    }
+    case "$list_help" in
+        *--json*) ;;
+        *) echo 'Installed aomi lacks tx list --json.' >&2; return 1 ;;
+    esac
+    aomi session resume --help >/dev/null 2>&1 || {
+        echo 'Installed aomi lacks session resume.' >&2
+        return 1
+    }
 }
 
 # Read known operational funding positions from an approved, key-free intent file.
