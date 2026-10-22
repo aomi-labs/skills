@@ -59,7 +59,7 @@ The agent handles the full flow: chat with the backend, review pending transacti
 
 ## Security
 
-`aomi-transact` is mapped against the [OWASP Agentic Skills Top 10](https://owasp.org/www-project-agentic-skills-top-10/) and ships with a complete OWASP-format `permissions:` manifest in its frontmatter. Per-control analysis lives in [`aomi-transact/SECURITY.md`](aomi-transact/SECURITY.md).
+`aomi-transact` declares its intended file, network and shell scope in a `permissions:` manifest; enforcement depends on the host. Transaction authorization, credential handling, recovery and evidence boundaries are documented in [`aomi-transact/SECURITY.md`](aomi-transact/SECURITY.md).
 
 The skill is scanned by four independent tools — [Cisco AI Defense skill-scanner](https://github.com/cisco-ai-defense/skill-scanner), [pors/skill-audit](https://github.com/pors/skill-audit), [NMitchem/SkillScan](https://github.com/NMitchem/SkillScan), and (when token is available) [Snyk agent-scan](https://github.com/snyk/agent-scan). Captured reports and reproducer commands live in [`.scanner-reports/`](.scanner-reports/). The CI workflow at [`.github/workflows/skill-audit.yml`](.github/workflows/skill-audit.yml) runs the offline scanners on every PR and uploads SARIF to the GitHub Security tab.
 
