@@ -44,8 +44,17 @@ The `aomi` plugin (skills: `aomi-transact`, `aomi-build`) is defined by [`.codex
 
 The transaction skill targets the standalone `@aomi-labs/cli` Commit interface.
 Before installing or upgrading, follow its [availability and capability gate](aomi-transact/references/commands.md#availability).
-The client package's migration shim does not prove that the replacement CLI is
-published. Skill installation and CLI installation are separate operations.
+Install `npm install -g @aomi-labs/cli@latest` and verify `aomi --version` reports
+standalone CLI `0.2.0` or newer. `@aomi-labs/client` is the TypeScript SDK.
+Skill installation and CLI installation are separate operations.
+
+## Hosted MCP
+
+The plugin bundle includes two OAuth servers: Agent at
+`https://chat.aomi.dev/v1/agent/mcp` and Pipeline at
+`https://chat.aomi.dev/v1/pipeline/mcp`. Authorize each exact resource separately.
+For manual setup and the temporary Codex DCR workaround, see
+[aomi-transact](aomi-transact/SKILL.md#hosted-mcp).
 
 ## Usage
 

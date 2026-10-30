@@ -4,6 +4,24 @@ Sorted by leverage (Tier 1 first). The "Shape" column signals whether the platfo
 
 > **Bundle shipped 2026-05-07; renamed `bundle/` → `plugins/` 2026-05-08** to satisfy codex-marketplace.com's *"target the repository root plugin or a direct plugins/<name> path"* requirement. Both skills now live at [`plugins/aomi/`](plugins/aomi/) following the canonical Anthropic plugin pattern (Helius reference). End-user install: `/plugin install aomi`. Legacy top-level `aomi-transact/` and `aomi-build/` directories remain in place for backwards compatibility.
 
+## CLI and MCP package split
+
+The transaction skill and plugin source are version `0.14.0`. Install the terminal
+command with `npm install -g @aomi-labs/cli@latest` (verified public CLI `0.2.0`
+on October 30, 2026). `@aomi-labs/client` is the TypeScript SDK (`0.11.2`).
+
+The plugin manifests include `aomi-agent` at
+`https://chat.aomi.dev/v1/agent/mcp` and `aomi-pipeline` at
+`https://chat.aomi.dev/v1/pipeline/mcp`. Each requires a separate exact-audience
+OAuth grant. Manual Codex setup and the temporary DCR workaround live in
+[aomi-transact](aomi-transact/SKILL.md#hosted-mcp).
+
+Canonical, plugin, and `cryptoskill/aomi` source copies carry the current Commit
+review procedure. Copied marketplace artifacts, including ClawHub, need a new
+publication after the source change lands. GitHub pointer listings update when
+their referenced source updates; a listing's presence does not prove its served
+content has refreshed. The historical status table below is not rollout evidence.
+
 ## Tier 1 — real reach
 
 | # | Platform | Description | Website | Shape | Other example | Status |

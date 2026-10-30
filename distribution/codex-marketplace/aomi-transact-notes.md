@@ -65,7 +65,7 @@ separately for narrower discovery (this lets users find it under "wallet" /
 "trading" / "DeFi" search terms specifically without the bundled aomi-build
 diluting the listing).
 
-The skill drives @aomi-labs/client (the Aomi CLI) from natural-language
+The skill drives @aomi-labs/cli (the Aomi CLI) from natural-language
 prompts. Each `aomi <subcommand>` invocation starts, runs, and exits — no
 long-running process or MCP server.
 

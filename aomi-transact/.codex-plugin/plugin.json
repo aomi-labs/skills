@@ -1,6 +1,6 @@
 {
   "name": "aomi-transact",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "description": "Prepare, review and reconcile user-authorized Aomi transactions through durable Commits, with operational funding checks and explicit receipt/recipient verification.",
   "author": {
     "name": "aomi-labs",
@@ -25,5 +25,6 @@
     "display_name": "Aomi Transact",
     "short_description": "Review and reconcile durable Aomi payment Commits",
     "default_prompt": "Use $aomi-transact. Verify CLI availability and capabilities, inspect operational funding, review the exact Commit and simulation, then use the authorized signer. Reconcile the original Commit/hash before retrying and verify recipient funds before reporting completion."
-  }
+  },
+  "mcpServers": "./.mcp.json"
 }

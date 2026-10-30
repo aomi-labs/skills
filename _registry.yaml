@@ -2,7 +2,7 @@ schema_version: '1.1'
 skills:
   aomi-transact:
     canonical: aomi-transact/SKILL.md
-    version: 0.13.0
+    version: 0.14.0
     risk_tier: L2
   aomi-build:
     canonical: aomi-build/SKILL.md
@@ -10,7 +10,7 @@ skills:
     risk_tier: L1
   plugin-aomi:
     canonical: plugins/aomi/.claude-plugin/plugin.json
-    version: '0.13.0'
+    version: '0.14.0'
 platforms:
   self-hosted:
     type: self-hosted
@@ -29,21 +29,20 @@ platforms:
   npm:
     type: cli-publish
     tier: 1
-    description: '@aomi-labs/cli — standalone transaction CLI (release-gated)'
+    description: '@aomi-labs/cli — standalone transaction CLI'
     url: https://www.npmjs.com/package/@aomi-labs/cli
     cli: npm
     package: '@aomi-labs/cli'
     skills:
     - aomi-transact
-    status: awaiting-publication
-    notes: '2026-10-22: public npm returned E404. Skill targets CLI 0.1.2 / client 0.10.6
-      from aomi PR 769, verified from packed artifacts only. Confirm exact public
-      availability and installed command capabilities before suggesting an upgrade.
+    status: live
+    notes: '2026-10-30: public npm latest is CLI 0.2.0; SDK @aomi-labs/client is 0.11.2.
+      Published CLI help confirms Commit export/submit/sign and legacy Action simulation.
       Skill installation never upgrades the global executable.'
     health_check:
       method: npm-view
       package: '@aomi-labs/cli'
-    last_checked: '2026-10-22'
+    last_checked: '2026-10-30'
   anthropic-community:
     type: artifact
     tier: 1

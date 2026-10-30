@@ -1,7 +1,7 @@
 {
   "name": "aomi-transact",
   "description": "Prepare, review and reconcile user-authorized Aomi transactions through durable Commits, with operational funding checks and explicit receipt/recipient verification.",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "author": {
     "name": "aomi-labs",
     "url": "https://aomi.dev"
@@ -20,5 +20,6 @@
     "evm",
     "defi",
     "cli"
-  ]
+  ],
+  "mcpServers": "./.mcp.json"
 }
