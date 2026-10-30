@@ -17,8 +17,11 @@ OAuth grant. Manual Codex setup and the temporary DCR workaround live in
 [aomi-transact](aomi-transact/SKILL.md#hosted-mcp).
 
 Canonical, plugin, and `cryptoskill/aomi` source copies carry the current Commit
-review procedure. Copied marketplace artifacts, including ClawHub, need a new
-publication after the source change lands. GitHub pointer listings update when
+review procedure. ClawHub `aomi-transact` 0.14.0 is published; its public latest tag and served
+SKILL.md are verified. Antigravity
+[PR 2194](https://github.com/sickn33/agentic-awesome-skills/pull/2194) updates its
+older copied entry and awaits upstream review. Other copied artifacts need
+publication by their respective maintainers. GitHub pointer listings update when
 their referenced source updates; a listing's presence does not prove its served
 content has refreshed. The historical status table below is not rollout evidence.
 

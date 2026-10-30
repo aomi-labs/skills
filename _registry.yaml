@@ -80,7 +80,9 @@ platforms:
     health_check:
       method: gh-pr
       pr: https://github.com/sickn33/antigravity-awesome-skills/pull/575
-    last_checked: '2026-07-11'
+    last_checked: '2026-10-30'
+    update_pr: https://github.com/sickn33/agentic-awesome-skills/pull/2194
+    update_notes: '2026-10-30: original entry remains merged; standalone CLI, Commit review and Agent/Pipeline MCP refresh submitted in PR 2194. Contributor preflight passes; upstream maintainer review is pending.'
   codex-official:
     type: artifact
     tier: 1
@@ -256,22 +258,22 @@ platforms:
     - aomi-transact
     - aomi-build
     status: live
-    last_checked: '2026-07-11'
+    last_checked: '2026-10-30'
     published:
-      aomi-transact: 0.10.1
+      aomi-transact: 0.14.0
       aomi-build: 0.1.1
     verify_urls:
       aomi-transact: https://wry-manatee-359.convex.site/api/v1/skills/aomi-transact
       aomi-build: https://wry-manatee-359.convex.site/api/v1/skills/aomi-build
     notes: '[2026-05-16] Both slugs live, owner ceciliaz030, moderation CLEAN. [2026-07-10] Republished aomi-transact@0.10.1
-      and aomi-build@0.1.1 from plugins/aomi/skills after thread/cron/login surface refresh; live API verified.'
+      and aomi-build@0.1.1 from plugins/aomi/skills after thread/cron/login surface refresh; live API verified. [2026-10-30] Published aomi-transact@0.14.0; public latest tag, version file, CLI package and both MCP endpoints verified.'
     health_check:
       method: http-200
       urls:
         aomi-transact: https://wry-manatee-359.convex.site/api/v1/skills/aomi-transact
         aomi-build: https://wry-manatee-359.convex.site/api/v1/skills/aomi-build
       needle: '"slug":'
-    last_published: '2026-07-10'
+    last_published: '2026-10-30'
   anthropic-official:
     type: artifact
     tier: 1
