@@ -2,26 +2,13 @@
 
 ## Availability
 
-The standalone package is `@aomi-labs/cli`; `@aomi-labs/client` now ships an
-instructional migration shim. Legacy client-embedded CLI 0.9.4 and standalone
-CLI 0.1.2 have separate version histories. Compare capabilities, not the two
-version numbers.
-
-This revision targets CLI 0.1.2 / client 0.10.6 from
-[aomi PR 769](https://github.com/aomi-labs/aomi/pull/769). On 2026-10-22 the public
-npm registry returned E404 for the standalone package. The candidate was tested
-from packed artifacts; that is not evidence of public publication. Before
-recommending installation, verify the exact version exists:
+Install `@aomi-labs/cli@latest` for the terminal command. `@aomi-labs/client`
+is the TypeScript SDK; its old CLI entry prints migration instructions.
+The separate CLI version history restarted at 0.1.x. Require CLI `0.2.0` or
+newer, verified from public npm on October 30, 2026 with SDK `0.11.2`.
 
 ```sh
-npm view @aomi-labs/cli@0.1.2 version --registry=https://registry.npmjs.org
-```
-
-After availability is confirmed, an installation is a separate user-approved
-setup action. Use the published standalone CLI, then inspect the binary actually
-on PATH:
-
-```sh
+npm install -g @aomi-labs/cli@latest
 aomi --version
 aomi tx --help
 aomi tx export --help
@@ -29,10 +16,9 @@ aomi tx submit --help
 aomi tx preflight --help
 ```
 
-An existing executable can be an old embedded CLI even when a newer package is
-installed elsewhere. If a required command is absent, stop that branch and report
-which package/capability is needed. Preserve the working executable when the
-replacement is unavailable. Skill installation updates instructions only.
+For one-shot use, substitute `npx @aomi-labs/cli@latest` for `aomi`. Check both
+the version and capabilities: an old embedded-client executable can have a
+numerically higher version. Installing a skill does not update a global binary.
 
 ## Commit and payment commands
 

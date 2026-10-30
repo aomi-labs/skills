@@ -10,9 +10,9 @@ operational funding → exact intent → durable Commit review and simulation
 
 Start with [SKILL.md](SKILL.md). Before recommending any CLI upgrade, follow the
 [availability and capability gate](references/commands.md#availability). The
-current skill targets CLI 0.1.2 / client 0.10.6 from aomi PR 769; packed-artifact
-verification does not establish public npm availability. Skill installation
-never upgrades a pre-existing global executable.
+current skill requires published CLI `0.2.0` or newer. Install with
+`npm install -g @aomi-labs/cli@latest`; `@aomi-labs/client` is the TypeScript SDK.
+Skill installation never upgrades a pre-existing global executable.
 
 Install the instructions with your host's skill installer or from the repository's
 Aomi plugin. The canonical source is this folder; the plugin's `skills/transact`

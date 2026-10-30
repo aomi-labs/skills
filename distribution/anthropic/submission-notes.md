@@ -84,7 +84,7 @@ plugin shape (Helius pattern):
       ├── transact/SKILL.md   — drive the Aomi CLI for on-chain transactions
       └── build/SKILL.md      — scaffold new Aomi apps from API specs
 
-Both skills drive the @aomi-labs/client CLI (npm) — each `aomi <subcommand>`
+Both skills drive the @aomi-labs/cli CLI (npm) — each `aomi <subcommand>`
 invocation starts, runs, and exits. No long-running process or MCP server.
 
 Risk profile:
@@ -92,7 +92,7 @@ Risk profile:
     OWASP AST03 permission manifest in skills/transact/SKILL.md frontmatter:
     permissions.{files, network, shell, tools} declared, network allowlist
     pins api.aomi.dev, shell argv prefixes pin `aomi` and
-    `npx @aomi-labs/client@0.1.30`.
+    `npx @aomi-labs/cli@latest`.
   - aomi-build: risk_tier L1 (scaffolds Rust source code; no runtime side
     effects, no network).
 

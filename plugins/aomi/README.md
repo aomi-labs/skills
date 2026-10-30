@@ -47,7 +47,7 @@ cp -r skills/plugins/aomi ~/.claude/skills/
 
 ```bash
 # Required for aomi-transact (the on-chain CLI driver)
-npm install -g @aomi-labs/cli      # confirm the published version first; see skills/transact/references/commands.md
+npm install -g @aomi-labs/cli@latest      # CLI 0.2.0 or newer
 ```
 
 `aomi-build` has no runtime prerequisites — it generates Rust source code from specs.
@@ -124,3 +124,5 @@ Aomi Labs builds native harness around blockchains functioning like Claude Code 
 - 📦 Packages:
   - [@aomi-labs/react](https://www.npmjs.com/package/@aomi-labs/react)
   - [aomi-sdk](https://crates.io/crates/aomi-sdk)
+
+The bundle includes Agent and Pipeline MCP servers. Complete OAuth separately for each exact resource; see [connection guidance](skills/transact/SKILL.md#hosted-mcp).

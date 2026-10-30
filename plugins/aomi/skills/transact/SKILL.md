@@ -12,18 +12,18 @@ description: >
   signature. Supports durable Commit review and backend-prepared EVM or AA signing. MUST NOT fabricate
   or echo credentials; values reach the CLI only when the user explicitly supplied them.
 compatibility: >
-  Node.js 18+. Uses the separate @aomi-labs/cli package, not the client's migration
-  shim. Commit and payment helpers target CLI 0.1.2 / client 0.10.6; publication is
-  a release gate, not assumed. Verify public npm availability and installed command
-  capabilities before use. Existing global aomi binaries are unchanged by skill installation.
+  Node.js 18+. Install @aomi-labs/cli@latest for the aomi terminal command;
+  @aomi-labs/client is the TypeScript SDK with a legacy CLI migration shim.
+  Verified against published CLI 0.2.0 and SDK 0.11.2. Require CLI 0.2.0 or newer
+  and check command capabilities. Installing a skill does not upgrade a global binary.
 license: MIT
-version: "0.13.0"
+version: "0.14.0"
 author: 'aomi-labs <hello@aomi.dev>'
 tags: [crypto, defi, web3, evm, ethereum, wallet, account-abstraction, trading, mcp, agent]
 allowed-tools: 'Bash(aomi:*), Bash(npx:*)'
 metadata:
   author: 'aomi-labs <hello@aomi.dev>'
-  version: "0.13.0"
+  version: "0.14.0"
   repository: aomi-labs/skills
   homepage: https://github.com/aomi-labs/skills/tree/main/aomi-transact
 permissions:
@@ -36,7 +36,7 @@ permissions:
     deny: "*"
   shell:
     - aomi
-    - npx @aomi-labs/cli@0.1.2
+    - npx @aomi-labs/cli@latest
   tools: []
 risk_tier: L2
 requires:
@@ -109,3 +109,23 @@ and recovery, read [gotchas.md](references/gotchas.md) and
   capabilities and this procedure take precedence over historical app examples.
 
 Source: https://github.com/aomi-labs/skills/tree/main/aomi-transact
+
+## Hosted MCP
+
+For hosted tools, connect Agent and Pipeline separately with OAuth:
+
+```sh
+codex mcp add aomi-agent --url https://chat.aomi.dev/v1/agent/mcp
+codex mcp add aomi-pipeline --url https://chat.aomi.dev/v1/pipeline/mcp
+```
+
+Codex derives the resource from each URL; omit `--oauth-resource` to avoid a
+second resource parameter. If the authorization page reports a CIMD metadata
+fetch error, retry that server's login with `--oauth-client-registration dcr`.
+Use a fresh client session to discover both tool sets, then perform a read-only
+session-list or catalog call. Enabled configuration alone is not a successful smoke.
+
+Each grant must have the exact connected resource URL as its audience. Agent,
+Pipeline, REST and guest credentials are not interchangeable. OAuth grants tool
+access; wallet execution still follows the approved Commit and designated signer.
+A browser GET can return 404 because these resources accept POST and OPTIONS.
