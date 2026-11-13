@@ -30,7 +30,7 @@ prove that a cached listing or separately uploaded package has refreshed.
 | Channel | Update route |
 |---|---|
 | Self-hosted Claude/Codex marketplace | Canonical manifests and skill mirrors on this repository's main branch; 0.14.1 pushed |
-| Hosted skill on aomi.dev | [Aomi PR 883](https://github.com/aomi-labs/aomi/pull/883) merged; live /agents/transact.md still needs production publication |
+| Hosted skill on aomi.dev | [Aomi PR 883](https://github.com/aomi-labs/aomi/pull/883) merged; production serves `prod`; [draft publication patch 888](https://github.com/aomi-labs/aomi/pull/888) needs the normal frontend release |
 | Anthropic community | Both standalone listings exist but pin an older source commit; update via the owning developer portal account. The GitHub marketplace is a read-only mirror |
 | Agentic Awesome Skills (Antigravity) | [PR 2332](https://github.com/sickn33/agentic-awesome-skills/pull/2332) updates the copied skill; awaiting maintainer review |
 | Tons of Skills (CCPI) | [PR 1859](https://github.com/jeremylongshore/tons-of-skills-marketplace/pull/1859) includes `.mcp.json`; [issue 1858](https://github.com/jeremylongshore/tons-of-skills-marketplace/issues/1858) requests the reviewed source-pin refresh |

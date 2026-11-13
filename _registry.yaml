@@ -396,18 +396,21 @@ platforms:
     skills:
     - aomi-transact
     status: merged
-    rollout_status: deployment-needed
+    rollout_status: release-needed
     update_pr: https://github.com/aomi-labs/aomi/pull/883
+    publication_pr: https://github.com/aomi-labs/aomi/pull/888
     last_checked: '2026-11-13'
-    notes: PR 883 merged at 93ce3d179f2702bf3e43604a4a90288de3a37bfc. Live /agents/transact.md still lacks the migration paragraph;
-      source merge is verified but production publication is not.
+    notes: PR 883 merged at 93ce3d179f2702bf3e43604a4a90288de3a37bfc. Landing production serves the prod branch;
+      the live guide still lacks the migration paragraph. Draft PR 888 contains only the canonical skill patch,
+      but Production Promotion Policy requires a release candidate already on main. Include PR 883 in the next
+      frontend release; a successful main Vercel deployment does not establish production publication.
   internal-env-audit:
     type: git-pr
     tier: 3
     skills: []
-    status: update-pending
-    rollout_status: release-hold
+    status: merged
+    rollout_status: current
     update_pr: https://github.com/aomi-labs/product-mono/pull/1756
     last_checked: '2026-11-13'
-    notes: Checks pass. Active Staging rollout observed; repository STATE requires no active rollout/migration before main
-      merges.
+    notes: PR 1756 merged at d3b5d9cb3ef3f17bb8909425f01247bbaee835d6 after the active Staging rollout ended.
+      Internal env-audit guidance now uses aomi.chat and the current GitHub Environment/Edge deployment model.
