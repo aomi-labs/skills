@@ -6,13 +6,13 @@ Sorted by leverage (Tier 1 first). The "Shape" column signals whether the platfo
 
 ## CLI and MCP package split
 
-The transaction skill and plugin source are version `0.14.0`. Install the terminal
+The transaction skill and plugin source are version `0.14.1`. Install the terminal
 command with `npm install -g @aomi-labs/cli@latest` (verified public CLI `0.2.0`
 on October 30, 2026). `@aomi-labs/client` is the TypeScript SDK (`0.11.2`).
 
 The plugin manifests include `aomi-agent` at
-`https://chat.aomi.dev/v1/agent/mcp` and `aomi-pipeline` at
-`https://chat.aomi.dev/v1/pipeline/mcp`. Each requires a separate exact-audience
+`https://aomi.chat/v1/agent/mcp` and `aomi-pipeline` at
+`https://aomi.chat/v1/pipeline/mcp`. Each requires a separate exact-audience
 OAuth grant. Manual Codex setup and the temporary DCR workaround live in
 [aomi-transact](aomi-transact/SKILL.md#hosted-mcp).
 

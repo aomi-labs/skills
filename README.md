@@ -51,8 +51,8 @@ Skill installation and CLI installation are separate operations.
 ## Hosted MCP
 
 The plugin bundle includes two OAuth servers: Agent at
-`https://chat.aomi.dev/v1/agent/mcp` and Pipeline at
-`https://chat.aomi.dev/v1/pipeline/mcp`. Authorize each exact resource separately.
+`https://aomi.chat/v1/agent/mcp` and Pipeline at
+`https://aomi.chat/v1/pipeline/mcp`. Authorize each exact resource separately.
 For manual setup and the temporary Codex DCR workaround, see
 [aomi-transact](aomi-transact/SKILL.md#hosted-mcp).
 

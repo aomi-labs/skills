@@ -2,7 +2,7 @@ schema_version: '1.1'
 skills:
   aomi-transact:
     canonical: aomi-transact/SKILL.md
-    version: 0.14.0
+    version: 0.14.1
     risk_tier: L2
   aomi-build:
     canonical: aomi-build/SKILL.md
@@ -10,7 +10,7 @@ skills:
     risk_tier: L1
   plugin-aomi:
     canonical: plugins/aomi/.claude-plugin/plugin.json
-    version: '0.14.0'
+    version: '0.14.1'
 platforms:
   self-hosted:
     type: self-hosted
