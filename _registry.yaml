@@ -124,7 +124,8 @@ platforms:
     grades:
       aomi-transact: C-78
       aomi-build: B-86
-    notes: PR 1859 adds .mcp.json to the import include list; 34 sync tests pass. Source-lock refresh to 0.14.1 remains in
+    notes: PR 1859 adds .mcp.json and anchors imports to the plugin root; anchoring check and 34 sync tests pass.
+      CI requires maintainer sign-off for the source-list change; unrelated base-branch blog YAML/lint failures also remain. Source-lock refresh to 0.14.1 remains in
       issue 1858 and requires maintainer approval. Existing build exclusion preserved.
     health_check:
       method: gh-pr
