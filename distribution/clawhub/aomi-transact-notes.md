@@ -1,74 +1,37 @@
-# clawhub.ai — `aomi-transact` (skill) submission
+# ClawHub — update existing aomi-transact listing
 
-> **What this is**: ClawHub is the OpenClaw ecosystem's primary skill registry — open community submissions, gated only by GitHub-account-age ≥ 1 week + automated security scan. ~180k users, ~52.7k tools indexed. Recognized by other registries (cryptoskill.org install instructions cite `clawhub install <slug>` as a supported path; gh-upskill supports `clawhub:<slug>` URI scheme).
->
-> **Why submit as a skill, not a plugin**: ClawHub's skill format is a folder with a SKILL.md — our `plugins/aomi/skills/transact/` directory works as-is. The plugin (package) format requires a `package.json` with an `openclaw.{extensions, runtimeExtensions, compat, build}` schema we don't have. Skill submission is zero-effort; plugin submission would require authoring a real package.json schema.
->
-> **Two paths to submit**: CLI (recommended for repeatability) or web upload (drag-and-drop folder/zip/tgz at clawhub.ai/publish-skill).
-
----
-
-## Path A — CLI (recommended)
+Run from this repository root after signing into the owning account:
 
 ```bash
-# One-time setup
-npm install -g clawhub
-clawhub login          # opens https://clawhub.ai/cli/auth, GitHub OAuth
-
-# Verify the GitHub account you're signing in with is ≥ 1 week old —
-# new accounts are blocked from publishing.
-
-# From the repo root:
-cd /Users/cecilia/Code/aomi-skill
-
+clawhub login
 clawhub skill publish ./plugins/aomi/skills/transact \
   --slug aomi-transact \
   --name "Aomi Transact" \
-  --version 0.10.0 \
-  --changelog "Initial release: drive the Aomi CLI from natural-language prompts with account-abstraction-first execution and simulate-then-sign across 40+ DeFi/perps/CEX/social apps on EVM mainnets and L2s." \
-  --tags "defi,crypto,web3,account-abstraction,evm,wallet,trading,intent,cli,natural-language,agent"
+  --version 0.14.1 \
+  --changelog "Move production MCP and backend URLs to aomi.chat; document migration and reauthorization." \
+  --tags latest \
+  --source-repo aomi-labs/skills \
+  --source-ref main \
+  --source-path plugins/aomi/skills/transact
 ```
 
-If you need to re-publish, bump `--version` (semver) and add a changelog entry.
+Use the exact source commit with `--source-commit` when publishing. Confirm the
+public latest version and served SKILL.md after the registry finishes review.
+Do not overwrite the registry's published version in _registry.yaml beforehand.
 
-## Path B — Web upload
+## Listing copy
 
-1. Open [clawhub.ai/publish-skill](https://clawhub.ai/publish-skill) → sign in with GitHub
-2. Either:
-   - **Drag the folder**: `plugins/aomi/skills/transact/` (the directory containing SKILL.md)
-   - **Or upload a zip**: `cd plugins/aomi/skills && zip -r aomi-transact.zip transact && open .` then drag the zip
-3. ClawHub auto-inspects and prefills the form from SKILL.md frontmatter
-4. Confirm the prefilled fields (override below as needed) and submit
+Use Aomi through the CLI or hosted MCP to prepare EVM transactions, review the
+returned Commit and simulation results, and hand off authorized execution to
+the user's signer.
 
-## Form field values (override prefill if needed)
+Website: https://aomi.dev
+Chat and sign-in: https://aomi.chat
+Agent MCP: https://aomi.chat/v1/agent/mcp
+Pipeline MCP: https://aomi.chat/v1/pipeline/mcp
+CLI: npm install -g @aomi-labs/cli@latest
 
-| Field | Value |
-|---|---|
-| **Slug** | `aomi-transact` |
-| **Name** | Aomi Transact |
-| **Version** | 0.10.0 |
-| **License** | MIT |
-| **Tags** | `defi`, `crypto`, `web3`, `account-abstraction`, `evm`, `wallet`, `trading`, `intent`, `cli`, `natural-language`, `agent` |
-| **Summary / one-liner** | Drive the Aomi CLI from natural-language prompts: chat → simulate → sign EVM transactions with account-abstraction-first execution. 40+ tuned protocol apps. |
-| **Description** | (paste the Tier 2 short — see `submission-desc.md` § "aomi-transact (short)" — ~700 chars) |
-| **Source / homepage** | https://github.com/aomi-labs/skills/tree/main/plugins/aomi/skills/transact |
-| **Repository** | https://github.com/aomi-labs/skills |
-
-## What ClawHub will do post-submission
-
-1. Automated security scan (the registry's own checks — separate from our captured Cisco/pors/SkillScan/Snyk reports)
-2. Listing stays private until checks complete
-3. On approval: appears in the public catalog, installable via `clawhub install aomi-transact`
-
-## About Aomi (paste verbatim if a free-text "About the author" field exists)
-
-Aomi Labs builds native harness around blockchains functioning like Claude Code on-chain. We specialize in executions against arbitrary protocol with non-custodial workflow, account abstraction, and full security with simulations. Aomi also host agentic applications deployed and owned by developers, companies, and agents. Aomi provides E2E integration with UI, Skills and SDKs.
-
-**Links:**
-- 🌐 Website: [aomi.dev](https://aomi.dev)
-- 🤖 Agents: [aomi.dev/agents](https://aomi.dev/agents)
-- 𝕏 Twitter: [x.com/aomi_labs](https://x.com/aomi_labs)
-- 💻 GitHub: [github.com/aomi-labs](https://github.com/aomi-labs)
-- 📦 Packages:
-  - [@aomi-labs/react](https://www.npmjs.com/package/@aomi-labs/react)
-  - [aomi-sdk](https://crates.io/crates/aomi-sdk)
+The two MCP resources require separate OAuth authorization. Existing connections
+to the retired origin must change URL and authorize again. Review the returned
+Commit and simulation results before an explicitly authorized signing/submission
+step. The TypeScript SDK is @aomi-labs/client; it is not the CLI package.

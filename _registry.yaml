@@ -10,7 +10,7 @@ skills:
     risk_tier: L1
   plugin-aomi:
     canonical: plugins/aomi/.claude-plugin/plugin.json
-    version: '0.14.1'
+    version: 0.14.1
 platforms:
   self-hosted:
     type: self-hosted
@@ -21,11 +21,12 @@ platforms:
     skills:
     - plugin-aomi
     status: live
-    last_checked: '2026-07-11'
+    last_checked: '2026-11-13'
     health_check:
       method: http-200
       url: https://github.com/aomi-labs/skills
       needle: aomi-labs/skills
+    notes: Plugin 0.14.1 points both MCP resources at aomi.chat; canonical source and mirrored skills updated.
   npm:
     type: cli-publish
     tier: 1
@@ -36,9 +37,8 @@ platforms:
     skills:
     - aomi-transact
     status: live
-    notes: '2026-10-30: public npm latest is CLI 0.2.0; SDK @aomi-labs/client is 0.11.2.
-      Published CLI help confirms Commit export/submit/sign and legacy Action simulation.
-      Skill installation never upgrades the global executable.'
+    notes: '2026-10-30: public npm latest is CLI 0.2.0; SDK @aomi-labs/client is 0.11.2. Published CLI help confirms Commit
+      export/submit/sign and legacy Action simulation. Skill installation never upgrades the global executable.'
     health_check:
       method: npm-view
       package: '@aomi-labs/cli'
@@ -48,23 +48,23 @@ platforms:
     tier: 1
     description: anthropics/claude-plugins-community (~1920 plugins)
     path: distribution/anthropic/
-    submit_url: https://platform.claude.com/plugins/submit
-    dashboard_url: https://console.anthropic.com/plugins
+    submit_url: https://clau.de/plugin-directory-submission
+    dashboard_url: https://claude.ai/directory/manage
     skills:
     - plugin-aomi
-    status: published-not-synced
+    status: live
     submitted: '2026-05-08'
     published_at:
       aomi-build: '2026-05-08T01:42:00Z'
       aomi-transact: '2026-05-07T21:35:00Z'
-    notes: '[2026-05-17] Both skills show Published in the Claude Console (dashboard_url above), but not yet present in anthropics/claude-plugins-community/.claude-plugin/marketplace.json.
-      Anthropic-side approval is complete; awaiting their nightly sync to the public marketplace file. Verify by re-checking
-      the marketplace.json contents needle.'
+    notes: Both standalone listings exist in the public marketplace, pinned to d1dad35099825e3ee2d7e54b787111501e3ccd89. Source
+      0.14.1 is ready; updating the old Console submissions requires publisher access/migration to the developer portal. The
+      public repository is a read-only mirror and auto-closes PRs.
     health_check:
       method: marketplace-search
       url: https://raw.githubusercontent.com/anthropics/claude-plugins-community/main/.claude-plugin/marketplace.json
       needle: aomi-labs
-    last_checked: '2026-07-11'
+    last_checked: '2026-11-13'
   antigravity:
     type: git-pr
     tier: 1
@@ -80,9 +80,10 @@ platforms:
     health_check:
       method: gh-pr
       pr: https://github.com/sickn33/antigravity-awesome-skills/pull/575
-    last_checked: '2026-10-30'
-    update_pr: https://github.com/sickn33/agentic-awesome-skills/pull/2194
-    update_notes: '2026-10-30: original entry remains merged; standalone CLI, Commit review and Agent/Pipeline MCP refresh submitted in PR 2194. Contributor preflight passes; upstream maintainer review is pending.'
+    last_checked: '2026-11-13'
+    update_pr: https://github.com/sickn33/agentic-awesome-skills/pull/2332
+    update_notes: Prior update 2194 merged. Domain migration and reauthorization guidance submitted in PR 2332; contributor
+      preflight passed; awaiting maintainer review.
   codex-official:
     type: artifact
     tier: 1
@@ -102,7 +103,7 @@ platforms:
   ccpi:
     type: git-pr
     tier: 2
-    description: claude-code-plugins-plus-skills (@intentsolutionsio/ccpi)
+    description: Tons of Skills marketplace (formerly CCPI)
     branch: platform/ccpi
     worktree: .worktrees/ccpi
     pr: https://github.com/jeremylongshore/claude-code-plugins-plus-skills/pull/679
@@ -115,12 +116,13 @@ platforms:
     grades:
       aomi-transact: C-78
       aomi-build: B-86
-    notes: '[2026-05-12] PR #679 merged; both skills materialized to plugins/crypto/aomi/. [2026-05-16] PR #727 opened to
-      lift aomi-transact to grade A via SKILL.md trim to 133 lines.'
+    notes: Existing imported copy is stale. Issue 1858 requests human-reviewed source-lock refresh to 0.14.1 and inclusion
+      of .mcp.json. Existing build-skill exclusion remains pending marketplace validation fixes.
     health_check:
       method: gh-pr
       pr: https://github.com/jeremylongshore/claude-code-plugins-plus-skills/pull/727
-    last_checked: '2026-07-11'
+    last_checked: '2026-11-13'
+    update_issue: https://github.com/jeremylongshore/tons-of-skills-marketplace/issues/1858
   cryptoskills:
     type: git-pr
     tier: 2
@@ -130,17 +132,15 @@ platforms:
     pr: https://github.com/0xinit/cryptoskills/pull/21
     skills:
     - aomi-transact
-    status: open
+    status: unavailable
     submitted: '2026-05-07'
     last_synced_sha: null
     health_check:
       method: gh-pr
       pr: https://github.com/0xinit/cryptoskills/pull/21
-    last_checked: '2026-07-11'
-    notes: '[2026-07-10] Health check now fails because GitHub cannot resolve 0xinit/cryptoskills for PR #21; needs manual
-      follow-up or registry target update. [2026-08-07] cryptoskill/aomi/ synced to @aomi-labs/client v0.4.2 alongside the
-      other two copies — it had the same nonexistent `aomi thread` / `wallet ls` / `wallet set-mode` surface. Resubmit or
-      refresh the PR once the upstream repo target is resolved.'
+    last_checked: '2026-11-13'
+    notes: Upstream repository/PR returns 404. Local cryptoskill/aomi mirror is updated to 0.14.1; publication needs a reachable
+      upstream target.
   cryptoskill-jia:
     type: git-pr
     tier: 2
@@ -156,7 +156,9 @@ platforms:
     health_check:
       method: gh-issue
       issue: https://github.com/jiayaoqijia/cryptoskill/issues/36
-    last_checked: '2026-07-11'
+    last_checked: '2026-11-13'
+    notes: Existing issue 36 updated with CLI package, 0.14.1 source, both aomi.chat MCP endpoints, and review/authorization
+      requirements; awaiting maintainer triage.
   lobehub:
     type: auto-index
     tier: 2
@@ -203,8 +205,9 @@ platforms:
     - aomi-transact
     status: live
     install_count: 1
-    last_checked: '2026-07-11'
-    notes: aomi-build not yet submitted (tracked under agensi-build)
+    last_checked: '2026-11-13'
+    notes: Live uploaded copy is stale; publisher browser session is signed out. Upload current 0.14.1 package to update existing
+      listing. aomi-build remains unsubmitted.
     health_check:
       method: http-200
       url: https://www.agensi.io/skills/aomi-transact
@@ -219,22 +222,20 @@ platforms:
     - plugin-aomi
     - aomi-transact
     - aomi-build
-    status: pending
+    status: live
     submitted: '2026-05-08'
     submissions:
     - type: PLUGIN
       path: plugins/aomi/
-      status: under_review
+      status: live
     - type: SKILL
       path: plugins/aomi/skills/transact/
       status: under_review
     - type: SKILL
       path: plugins/aomi/skills/build/
       status: under_review
-    notes: '[2026-05-17] 9 days under_review. All public slug URLs render the SPA "Plugin Not Found" page (200 status is misleading
-      — needle-checked). Apex codex-marketplace.com 307-redirects to www. If still under_review at 14 days, ping their support/Discord.
-      [2026-07-10] Health check is partial: plugin-aomi page has aomi-labs needle, but separate aomi-transact and aomi-build
-      skill slugs still render without aomi-labs.'
+    notes: The aomi plugin listing is live and points at canonical GitHub source, but displays V0.10. Canonical source is
+      now 0.14.1; cached metadata refresh needs publisher access. Separate skill listings remain unverified.
     health_check:
       method: http-200
       urls:
@@ -243,7 +244,7 @@ platforms:
         aomi-build: https://www.codex-marketplace.com/plugins/aomi-build
       needle: aomi-labs
       needle_optional: false
-    last_checked: '2026-07-11'
+    last_checked: '2026-11-13'
   clawhub:
     type: cli-publish
     tier: 2
@@ -258,15 +259,15 @@ platforms:
     - aomi-transact
     - aomi-build
     status: live
-    last_checked: '2026-10-30'
+    last_checked: '2026-11-13'
     published:
       aomi-transact: 0.14.0
       aomi-build: 0.1.1
     verify_urls:
       aomi-transact: https://wry-manatee-359.convex.site/api/v1/skills/aomi-transact
       aomi-build: https://wry-manatee-359.convex.site/api/v1/skills/aomi-build
-    notes: '[2026-05-16] Both slugs live, owner ceciliaz030, moderation CLEAN. [2026-07-10] Republished aomi-transact@0.10.1
-      and aomi-build@0.1.1 from plugins/aomi/skills after thread/cron/login surface refresh; live API verified. [2026-10-30] Published aomi-transact@0.14.0; public latest tag, version file, CLI package and both MCP endpoints verified.'
+    notes: Public API still serves aomi-transact 0.14.0; build 0.1.1 is current. Source 0.14.1 ready to publish. CLI is signed
+      out; publisher token requests timed out. Do not mark 0.14.1 published until registry confirms it.
     health_check:
       method: http-200
       urls:
@@ -306,13 +307,12 @@ platforms:
     status: open
     submitted: '2026-05-16'
     reopened_at: '2026-05-18'
-    notes: '[2026-05-17] Initially closed: Composio''s validate workflow hard-blocks /\b(crypto|cryptocurrency|web3|blockchain|nft|defi|token|wallet|solana|ethereum|bitcoin)\b/i.
-      [2026-05-18] Reopened with rephrased aomi-transact description avoiding every banned term. validate + Socket Security
-      all SUCCESS. Waiting on human review.'
+    notes: Existing PR remains open. Its GitHub source pointers contain no retired MCP origin; canonical source is updated.
+      Awaiting maintainer review.
     health_check:
       method: gh-pr
       pr: https://github.com/ComposioHQ/awesome-claude-skills/pull/856
-    last_checked: '2026-07-11'
+    last_checked: '2026-11-13'
   awesome-behisecc:
     type: git-pr
     tier: 2
@@ -321,12 +321,13 @@ platforms:
     skills:
     - aomi-transact
     - aomi-build
-    status: open
+    status: closed
     submitted: '2026-05-16'
     health_check:
       method: gh-pr
       pr: https://github.com/BehiSecc/awesome-claude-skills/pull/309
-    last_checked: '2026-07-11'
+    last_checked: '2026-11-13'
+    notes: PR 309 closed unmerged because source does not meet the minimum star threshold; no resubmission made.
   awesome-onchain-agents:
     type: git-pr
     tier: 2
@@ -340,7 +341,9 @@ platforms:
     health_check:
       method: gh-pr
       pr: https://github.com/sodofi/awesome-onchain-agents/pull/40
-    last_checked: '2026-07-11'
+    last_checked: '2026-11-13'
+    notes: Existing PR remains open. Its GitHub source pointers contain no retired MCP origin; canonical source is updated.
+      Awaiting maintainer review.
   agensi-build:
     type: artifact
     tier: 2
@@ -354,3 +357,13 @@ platforms:
       method: manual
       reason: zip ready at /tmp/aomi-build-agensi.zip; upload via agensi.io web UI
     last_checked: '2026-07-11'
+  skills-sh:
+    type: auto-index
+    tier: 2
+    url: https://skills.sh/aomi-labs/skills/aomi-transact
+    skills:
+    - aomi-transact
+    - aomi-build
+    status: live
+    last_checked: '2026-11-13'
+    notes: Cached listing is stale; canonical GitHub source is updated to 0.14.1. Refresh not confirmed.

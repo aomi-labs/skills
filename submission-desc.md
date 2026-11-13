@@ -2,9 +2,37 @@
 
 This file is the canonical copy for every place that quotes Aomi: SKILL.md frontmatter, plugin.json, marketplace.json catalog cards, PR bodies, submission forms, READMEs, social posts. **When you change the pitch, update this file first**, then run a fan-out to the rest.
 
-**Last updated:** 2026-05-07.
+**Last updated:** 2026-11-13.
 
 ---
+
+## Connection and package fields
+
+Use these fields for every listing update, regardless of description length:
+
+- Website/docs: `https://aomi.dev`
+- Chat and sign-in: `https://aomi.chat`
+- Agent MCP: `https://aomi.chat/v1/agent/mcp`
+- Pipeline MCP: `https://aomi.chat/v1/pipeline/mcp`
+- CLI installation: `npm install -g @aomi-labs/cli@latest`
+- Transaction skill/plugin version: `0.14.1`; build skill: `0.1.1`
+
+The plugin includes remote MCP servers through `.mcp.json`. Do not describe it
+as CLI-only or say it has no MCP server. Each resource needs its own OAuth grant;
+existing connections to the retired origin need a new URL and authorization.
+The CLI's current transaction flow reviews a Commit artifact and simulation
+results before explicit authorization to sign or submit. Do not imply that
+installing a skill grants permission to trade.
+
+Current concise listing copy:
+
+> Use Aomi through the CLI or hosted MCP to prepare EVM transactions, review
+> returned Commit artifacts and simulations, and hand off authorized execution
+> to the user's signer. The bundle also includes aomi-build for scaffolding Rust
+> integrations from API specifications.
+
+The longer descriptions below provide product background; use the connection
+fields and current transaction flow above when refreshing older submissions.
 
 ## Tone
 
@@ -111,7 +139,7 @@ Aomi Labs builds native harness around blockchains functioning like Claude Code 
 | Self-hosted `.claude-plugin/marketplace.json` `plugins[].description` | **Short** (bundle) | One entry, points at `./plugins/aomi` |
 | Anthropic `claude-plugins-official` form `description` | **Short** (bundle) | Catalog tooltip; brief is better. Realistic landing tier: `claude-plugins-community` (~1,920 plugins). Form: platform.claude.com/plugins/submit |
 | Anthropic form "Notes for reviewer" | **Long** (bundle) + scanner summary | Full SEO + risk story |
-| codex-marketplace.com form (third-party Codex directory) | **Short** (bundle or per-skill) | Form auto-validates `.codex-plugin/plugin.json`. Submission packets pre-filled at `.staging/codex-marketplace-*.md` |
+| codex-marketplace.com form (third-party Codex directory) | **Short** (bundle or per-skill) | Form auto-validates `.codex-plugin/plugin.json`. Submission packets pre-filled at `distribution/codex-marketplace/` |
 | OpenAI official Codex Plugin Directory | **Short** (bundle) | Self-serve submissions "coming soon" per OpenAI docs — wait, then mirror Anthropic submission |
 | ccpi `sources.yaml` and `marketplace.extended.json` | **Short** (bundle) | Card on tonsofskills.com |
 | antigravity PR #575 SKILL.md `description:` | **Long** (transact) | Their `description` field is the agent trigger |
@@ -137,10 +165,9 @@ When the pitch shifts (e.g. count goes from 40+ to 60+, new chain added, new fla
    - Edit `aomi-transact/.claude-plugin/plugin.json` and `aomi-build/.claude-plugin/plugin.json` descriptions (legacy)
    - Edit `.claude-plugin/marketplace.json` plugin entry
    - Edit `plugins/aomi/README.md`, `aomi-transact/README.md`, `aomi-build/README.md`, top-level `README.md` (sync About)
-   - Edit `.staging/anthropic-form-submission.md` (form values)
-3. Push updates to open external PRs:
-   - antigravity PR #575 — update `skills/aomi-transact/SKILL.md` description
-   - cryptoskills.dev PR #21 — update `skills/aomi/SKILL.md` description
-   - ccpi PR #679 — update `sources.yaml` + `.claude-plugin/marketplace.extended.json`
+   - Edit `distribution/anthropic/submission-notes.md` (form values)
+3. Follow the current venue routes in `distribution.md` and `_registry.yaml`.
+   Do not push to historical merged or closed submissions; use the current
+   update PR or publisher workflow.
 4. Re-run scanners on bundle: Cisco, pors/skill-audit, NMitchem/SkillScan. Snyk if `SNYK_TOKEN` is set.
 5. Commit on `aomi-labs/skills` main with a message that links back to this file.

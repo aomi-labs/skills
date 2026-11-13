@@ -1,3 +1,5 @@
+> Build 0.1.1 is already published and has no retired MCP host. Do not republish the same version.
+
 # clawhub.ai — `aomi-build` (skill) submission
 
 > See [`clawhub-aomi-transact.md`](clawhub-aomi-transact.md) for the registry's submission flow context — same flow, different folder + slug.
@@ -13,7 +15,7 @@ cd /Users/cecilia/Code/aomi-skill
 clawhub skill publish ./plugins/aomi/skills/build \
   --slug aomi-build \
   --name "Aomi Build" \
-  --version 0.10.0 \
+  --version 0.1.1 \
   --changelog "Initial release: scaffold new Aomi apps and plugins from API docs, OpenAPI/Swagger specs, SDK docs, runtime interfaces, or product requirements. Generates Rust SDK crates with lib.rs, client.rs, tool.rs and full host-interop flows." \
   --tags "aomi,sdk,scaffold,openapi,swagger,rust,code-generation,agent-tools,developer-tools"
 ```
@@ -30,7 +32,7 @@ clawhub skill publish ./plugins/aomi/skills/build \
 |---|---|
 | **Slug** | `aomi-build` |
 | **Name** | Aomi Build |
-| **Version** | 0.10.0 |
+| **Version** | 0.1.1 |
 | **License** | MIT |
 | **Tags** | `aomi`, `sdk`, `scaffold`, `openapi`, `swagger`, `rust`, `code-generation`, `agent-tools`, `developer-tools` |
 | **Summary / one-liner** | Scaffold new Aomi apps from API docs, OpenAPI/Swagger specs, and product requirements. Generates production-ready Rust SDK crates with `lib.rs`, `client.rs`, `tool.rs`. |
