@@ -48,6 +48,13 @@ Install `npm install -g @aomi-labs/cli@latest` and verify `aomi --version` repor
 standalone CLI `0.2.0` or newer. `@aomi-labs/client` is the TypeScript SDK.
 Skill installation and CLI installation are separate operations.
 
+Published CLI `0.2.0` still defaults to the retired host. Set production explicitly
+after installing (and update any `AOMI_BACKEND_URL` or `--backend-url` override):
+
+```bash
+aomi config set-backend https://aomi.chat
+```
+
 ## Hosted MCP
 
 The plugin bundle includes two OAuth servers: Agent at

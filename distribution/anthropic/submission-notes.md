@@ -35,6 +35,7 @@ Chat and sign-in: https://aomi.chat
 Agent MCP: https://aomi.chat/v1/agent/mcp
 Pipeline MCP: https://aomi.chat/v1/pipeline/mcp
 CLI: npm install -g @aomi-labs/cli@latest
+CLI production configuration: aomi config set-backend https://aomi.chat
 
 The two MCP resources require separate OAuth authorization. Existing connections
 to the retired origin must change URL and authorize again. Review the returned
