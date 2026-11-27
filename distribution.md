@@ -10,7 +10,7 @@ The canonical plugin is `plugins/aomi`, with transaction skill/plugin version
 |---|---|
 | Website and documentation | https://aomi.dev |
 | Chat and account sign-in | https://aomi.chat |
-| Agent MCP | https://mcp.aomi.dev |
+| Agent MCP | https://mcp.aomi.dev/ |
 | Pipeline MCP | https://mcp.aomi.dev/pipeline |
 
 Each MCP resource needs its own OAuth grant. Users migrating an existing

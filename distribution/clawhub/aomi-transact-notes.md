@@ -27,7 +27,7 @@ the user's signer.
 
 Website: https://aomi.dev
 Chat and sign-in: https://aomi.chat
-Agent MCP: https://mcp.aomi.dev
+Agent MCP: https://mcp.aomi.dev/
 Pipeline MCP: https://mcp.aomi.dev/pipeline
 CLI: npm install -g @aomi-labs/cli@latest
 CLI production configuration: aomi config set-backend https://aomi.chat

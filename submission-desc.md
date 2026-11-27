@@ -12,7 +12,7 @@ Use these fields for every listing update, regardless of description length:
 
 - Website/docs: `https://aomi.dev`
 - Chat and sign-in: `https://aomi.chat`
-- Agent MCP: `https://mcp.aomi.dev`
+- Agent MCP: `https://mcp.aomi.dev/`
 - Pipeline MCP: `https://mcp.aomi.dev/pipeline`
 - CLI installation: `npm install -g @aomi-labs/cli@latest`
 - Transaction skill/plugin version: `0.14.2`; build skill: `0.1.1`

@@ -2,7 +2,7 @@
   "mcpServers": {
     "aomi-agent": {
       "type": "http",
-      "url": "https://mcp.aomi.dev"
+      "url": "https://mcp.aomi.dev/"
     },
     "aomi-pipeline": {
       "type": "http",
