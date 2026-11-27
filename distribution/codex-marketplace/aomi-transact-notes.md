@@ -3,7 +3,7 @@
 Edit the existing listing through the owning publisher account.
 
 - Source: https://github.com/aomi-labs/skills/tree/main/aomi-transact
-- Version: 0.14.1
+- Version: 0.14.2
 - Author: Aomi Labs
 - Homepage: https://aomi.dev
 - License: MIT
@@ -19,8 +19,8 @@ scaffolding Rust integrations from API specifications.
 
 Website: https://aomi.dev
 Chat and sign-in: https://aomi.chat
-Agent MCP: https://aomi.chat/v1/agent/mcp
-Pipeline MCP: https://aomi.chat/v1/pipeline/mcp
+Agent MCP: https://mcp.aomi.dev/
+Pipeline MCP: https://mcp.aomi.dev/pipeline
 CLI: npm install -g @aomi-labs/cli@latest
 CLI production configuration: aomi config set-backend https://aomi.chat
 

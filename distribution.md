@@ -1,7 +1,7 @@
 # Aomi distribution
 
 The canonical plugin is `plugins/aomi`, with transaction skill/plugin version
-`0.14.1` and build skill `0.1.1`. Install the CLI separately with
+`0.14.2` and build skill `0.1.1`. Install the CLI separately with
 `npm install -g @aomi-labs/cli@latest`. `@aomi-labs/client` is the TypeScript SDK.
 
 ## Public URLs
@@ -10,8 +10,8 @@ The canonical plugin is `plugins/aomi`, with transaction skill/plugin version
 |---|---|
 | Website and documentation | https://aomi.dev |
 | Chat and account sign-in | https://aomi.chat |
-| Agent MCP | https://aomi.chat/v1/agent/mcp |
-| Pipeline MCP | https://aomi.chat/v1/pipeline/mcp |
+| Agent MCP | https://mcp.aomi.dev/ |
+| Pipeline MCP | https://mcp.aomi.dev/pipeline |
 
 Each MCP resource needs its own OAuth grant. Users migrating an existing
 connection must update the URL and authorize again. CLI users with a saved
@@ -36,7 +36,7 @@ prove that a cached listing or separately uploaded package has refreshed.
 | Tons of Skills (CCPI) | [PR 1859](https://github.com/jeremylongshore/tons-of-skills-marketplace/pull/1859) includes `.mcp.json`; [issue 1858](https://github.com/jeremylongshore/tons-of-skills-marketplace/issues/1858) requests the reviewed source-pin refresh |
 | CryptoSkill.org | [Existing submission 36](https://github.com/jiayaoqijia/cryptoskill/issues/36) updated; awaiting triage |
 | cryptoskills.dev | Upstream repository unavailable; local enriched mirror updated |
-| ClawHub | Transaction 0.14.0 remains live; publish 0.14.1 with publisher credentials. Build 0.1.1 needs no domain update |
+| ClawHub | Transaction 0.14.0 remains live; publish 0.14.2 with publisher credentials. Build 0.1.1 needs no domain update |
 | Agensi | Existing uploaded transaction listing is stale; upload current package through publisher dashboard |
 | codex-marketplace.com | Existing plugin source points here; cached V0.10 metadata needs publisher refresh |
 | skills.sh | [Reindex request 2752](https://github.com/vercel-labs/skills/issues/2752) for stale CLI/skill snapshot |

@@ -58,8 +58,8 @@ aomi config set-backend https://aomi.chat
 ## Hosted MCP
 
 The plugin bundle includes two OAuth servers: Agent at
-`https://aomi.chat/v1/agent/mcp` and Pipeline at
-`https://aomi.chat/v1/pipeline/mcp`. Authorize each exact resource separately.
+`https://mcp.aomi.dev/` and Pipeline at
+`https://mcp.aomi.dev/pipeline`. Authorize each exact resource separately.
 For manual setup and the temporary Codex DCR workaround, see
 [aomi-transact](aomi-transact/SKILL.md#hosted-mcp).
 

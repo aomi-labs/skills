@@ -2,11 +2,11 @@
   "mcpServers": {
     "aomi-agent": {
       "type": "http",
-      "url": "https://aomi.chat/v1/agent/mcp"
+      "url": "https://mcp.aomi.dev/"
     },
     "aomi-pipeline": {
       "type": "http",
-      "url": "https://aomi.chat/v1/pipeline/mcp"
+      "url": "https://mcp.aomi.dev/pipeline"
     }
   }
 }

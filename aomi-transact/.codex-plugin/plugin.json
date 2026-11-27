@@ -1,6 +1,6 @@
 {
   "name": "aomi-transact",
-  "version": "0.14.1",
+  "version": "0.14.2",
   "description": "Prepare, review and reconcile user-authorized Aomi transactions through durable Commits, with operational funding checks and explicit receipt/recipient verification.",
   "author": {
     "name": "aomi-labs",
