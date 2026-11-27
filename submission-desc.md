@@ -12,10 +12,10 @@ Use these fields for every listing update, regardless of description length:
 
 - Website/docs: `https://aomi.dev`
 - Chat and sign-in: `https://aomi.chat`
-- Agent MCP: `https://aomi.chat/v1/agent/mcp`
-- Pipeline MCP: `https://aomi.chat/v1/pipeline/mcp`
+- Agent MCP: `https://mcp.aomi.dev`
+- Pipeline MCP: `https://mcp.aomi.dev/pipeline`
 - CLI installation: `npm install -g @aomi-labs/cli@latest`
-- Transaction skill/plugin version: `0.14.1`; build skill: `0.1.1`
+- Transaction skill/plugin version: `0.14.2`; build skill: `0.1.1`
 
 The plugin includes remote MCP servers through `.mcp.json`. Do not describe it
 as CLI-only or say it has no MCP server. Each resource needs its own OAuth grant;

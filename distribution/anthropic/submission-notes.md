@@ -13,7 +13,7 @@ Reference: https://claude.com/docs/directory/publish
 ## Source fields
 
 - Repository: https://github.com/aomi-labs/skills
-- Existing transaction plugin path: aomi-transact (version 0.14.1)
+- Existing transaction plugin path: aomi-transact (version 0.14.2)
 - Existing build plugin path: aomi-build (version 0.1.1)
 - Combined bundle path, if migrating to a combined listing: plugins/aomi
 - Author: Aomi Labs
@@ -32,8 +32,8 @@ to the user's signer. The build skill scaffolds Rust integrations from API specs
 
 Website: https://aomi.dev
 Chat and sign-in: https://aomi.chat
-Agent MCP: https://aomi.chat/v1/agent/mcp
-Pipeline MCP: https://aomi.chat/v1/pipeline/mcp
+Agent MCP: https://mcp.aomi.dev
+Pipeline MCP: https://mcp.aomi.dev/pipeline
 CLI: npm install -g @aomi-labs/cli@latest
 CLI production configuration: aomi config set-backend https://aomi.chat
 

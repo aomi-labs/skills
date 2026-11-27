@@ -7,8 +7,8 @@ clawhub login
 clawhub skill publish ./plugins/aomi/skills/transact \
   --slug aomi-transact \
   --name "Aomi Transact" \
-  --version 0.14.1 \
-  --changelog "Move production MCP and backend URLs to aomi.chat; document migration and reauthorization." \
+  --version 0.14.2 \
+  --changelog "Use the dedicated Agent and Pipeline MCP URLs." \
   --tags latest \
   --source-repo aomi-labs/skills \
   --source-ref main \
@@ -27,8 +27,8 @@ the user's signer.
 
 Website: https://aomi.dev
 Chat and sign-in: https://aomi.chat
-Agent MCP: https://aomi.chat/v1/agent/mcp
-Pipeline MCP: https://aomi.chat/v1/pipeline/mcp
+Agent MCP: https://mcp.aomi.dev
+Pipeline MCP: https://mcp.aomi.dev/pipeline
 CLI: npm install -g @aomi-labs/cli@latest
 CLI production configuration: aomi config set-backend https://aomi.chat
 
