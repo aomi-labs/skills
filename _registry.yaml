@@ -21,12 +21,14 @@ platforms:
     skills:
     - plugin-aomi
     status: live
-    last_checked: '2026-11-13'
+    last_checked: '2026-11-27'
     health_check:
       method: http-200
       url: https://github.com/aomi-labs/skills
       needle: aomi-labs/skills
-    notes: Plugin 0.14.1 points both MCP resources at aomi.chat; canonical source and mirrored skills updated.
+    notes: Plugin 0.14.2 points Agent MCP at https://mcp.aomi.dev/ and Pipeline MCP at https://mcp.aomi.dev/pipeline.
+      The production host answers only after the next production Promote ships the edge route; until then plugin installs
+      cannot connect. Staging mcp-staging.aomi.dev passed OAuth, initialize, tools/list and refresh on 2026-11-27.
   npm:
     type: cli-publish
     tier: 1
@@ -43,7 +45,7 @@ platforms:
     health_check:
       method: npm-view
       package: '@aomi-labs/cli'
-    last_checked: '2026-11-13'
+    last_checked: '2026-11-27'
     rollout_status: release-needed
     published_version: 0.2.0
     update_issue: https://github.com/aomi-labs/aomi/issues/887
@@ -62,13 +64,13 @@ platforms:
       aomi-build: '2026-05-08T01:42:00Z'
       aomi-transact: '2026-05-07T21:35:00Z'
     notes: Both standalone listings exist in the public marketplace, pinned to d1dad35099825e3ee2d7e54b787111501e3ccd89. Source
-      0.14.1 is ready; updating the old Console submissions requires publisher access/migration to the developer portal. The
+      0.14.2 is ready; updating the old Console submissions requires publisher access/migration to the developer portal. The
       public repository is a read-only mirror and auto-closes PRs. Current browser check remains at security verification.
     health_check:
       method: marketplace-search
       url: https://raw.githubusercontent.com/anthropics/claude-plugins-community/main/.claude-plugin/marketplace.json
       needle: aomi-labs
-    last_checked: '2026-11-13'
+    last_checked: '2026-11-27'
     rollout_status: publisher-access-needed
   antigravity:
     type: git-pr
@@ -125,7 +127,7 @@ platforms:
       aomi-transact: C-78
       aomi-build: B-86
     notes: PR 1859 adds .mcp.json and anchors imports to the plugin root; anchoring check and 34 sync tests pass.
-      CI requires maintainer sign-off for the source-list change; unrelated base-branch blog YAML/lint failures also remain. Source-lock refresh to 0.14.1 remains in
+      CI requires maintainer sign-off for the source-list change; unrelated base-branch blog YAML/lint failures also remain. Source-lock refresh to 0.14.2 remains in
       issue 1858 and requires maintainer approval. Existing build exclusion preserved.
     health_check:
       method: gh-pr
@@ -150,7 +152,7 @@ platforms:
       method: gh-pr
       pr: https://github.com/0xinit/cryptoskills/pull/21
     last_checked: '2026-11-13'
-    notes: Upstream repository/PR returns 404. Local cryptoskill/aomi mirror is updated to 0.14.1; publication needs a reachable
+    notes: Upstream repository/PR returns 404. Local cryptoskill/aomi mirror is updated to 0.14.2; publication needs a reachable
       upstream target.
   cryptoskill-jia:
     type: git-pr
@@ -169,7 +171,8 @@ platforms:
       issue: https://github.com/jiayaoqijia/cryptoskill/issues/36
     last_checked: '2026-11-13'
     notes: Existing issue 36 updated with CLI package, 0.14.1 source, both aomi.chat MCP endpoints, and review/authorization
-      requirements; awaiting maintainer triage.
+      requirements; awaiting maintainer triage. The issue still names the aomi.chat MCP paths (still served); post the
+      mcp.aomi.dev URLs once production serves them.
   lobehub:
     type: auto-index
     tier: 2
@@ -222,8 +225,8 @@ platforms:
     - aomi-transact
     status: live
     install_count: 1
-    last_checked: '2026-11-13'
-    notes: Live uploaded copy is stale; publisher browser session is signed out. Upload current 0.14.1 package to update existing
+    last_checked: '2026-11-27'
+    notes: Live uploaded copy is stale; publisher browser session is signed out. Upload current 0.14.2 package to update existing
       listing. aomi-build remains unsubmitted.
     health_check:
       method: http-200
@@ -253,7 +256,7 @@ platforms:
       path: plugins/aomi/skills/build/
       status: under_review
     notes: The aomi plugin listing is live and points at canonical GitHub source, but displays V0.10. Canonical source is
-      now 0.14.1; cached metadata refresh needs publisher access. Separate skill listings remain unverified.
+      now 0.14.2; cached metadata refresh needs publisher access. Separate skill listings remain unverified.
     health_check:
       method: http-200
       urls:
@@ -262,7 +265,7 @@ platforms:
         aomi-build: https://www.codex-marketplace.com/plugins/aomi-build
       needle: aomi-labs
       needle_optional: false
-    last_checked: '2026-11-13'
+    last_checked: '2026-11-27'
     rollout_status: publisher-access-needed
   clawhub:
     type: cli-publish
@@ -278,14 +281,14 @@ platforms:
     - aomi-transact
     - aomi-build
     status: live
-    last_checked: '2026-11-13'
+    last_checked: '2026-11-27'
     published:
       aomi-transact: 0.14.0
       aomi-build: 0.1.1
     verify_urls:
       aomi-transact: https://wry-manatee-359.convex.site/api/v1/skills/aomi-transact
       aomi-build: https://wry-manatee-359.convex.site/api/v1/skills/aomi-build
-    notes: CLI and browser are signed out. Public transaction version remains 0.14.0; 0.14.1 source ready. Secure publisher-token
+    notes: CLI and browser are signed out. Public transaction version remains 0.14.0; 0.14.2 source ready. Secure publisher-token
       request timed out again during this pass. Build 0.1.1 does not need a domain update.
     health_check:
       method: http-200
@@ -385,7 +388,7 @@ platforms:
     - aomi-transact
     - aomi-build
     status: live
-    last_checked: '2026-11-13'
+    last_checked: '2026-11-27'
     notes: Live page still displays @aomi-labs/client v0.6.0. Reindex requested in issue 2752; documented API has no owner
       refresh operation.
     rollout_status: reindex-requested
@@ -400,9 +403,10 @@ platforms:
     rollout_status: release-needed
     update_pr: https://github.com/aomi-labs/aomi/pull/883
     publication_pr: https://github.com/aomi-labs/aomi/pull/888
-    last_checked: '2026-11-13'
+    last_checked: '2026-11-27'
     notes: PR 883 merged at 93ce3d179f2702bf3e43604a4a90288de3a37bfc. Landing production serves the prod branch;
-      the live guide still lacks the migration paragraph. Draft PR 888 contains only the canonical skill patch,
+      the live guide still lacks the migration paragraph. On 2026-11-27 aomi.dev/agents/transact.md still serves the
+      old @aomi-labs/client 0.6.0 guide with no MCP URLs. Draft PR 888 contains only the canonical skill patch,
       but Production Promotion Policy requires a release candidate already on main. Include PR 883 in the next
       frontend release; a successful main Vercel deployment does not establish production publication.
   internal-env-audit:
