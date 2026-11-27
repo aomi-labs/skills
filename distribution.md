@@ -18,6 +18,12 @@ connection must update the URL and authorize again. CLI users with a saved
 backend override should run `aomi config set-backend https://aomi.chat` and
 check `AOMI_BACKEND_URL` and `--backend-url` overrides.
 
+`mcp.aomi.dev` answers once the next production release ships its edge route;
+staging (`mcp-staging.aomi.dev`) already serves both resources. The Chat URLs
+(`https://aomi.chat/v1/agent/mcp`, `/v1/pipeline/mcp`) stay supported, so copied
+listings that still carry them keep working. Refresh those listings to the
+`mcp.aomi.dev` URLs only after production serves them.
+
 Published CLI `0.2.0` still defaults to the retired host; set the backend even on
 a fresh install. [Release follow-up](https://github.com/aomi-labs/aomi/issues/887).
 
@@ -29,7 +35,7 @@ prove that a cached listing or separately uploaded package has refreshed.
 
 | Channel | Update route |
 |---|---|
-| Self-hosted Claude/Codex marketplace | Canonical manifests and skill mirrors on this repository's main branch; 0.14.1 pushed |
+| Self-hosted Claude/Codex marketplace | Canonical manifests and skill mirrors on this repository's main branch; 0.14.2 pushed with the `mcp.aomi.dev` URLs |
 | Hosted skill on aomi.dev | [Aomi PR 883](https://github.com/aomi-labs/aomi/pull/883) merged; production serves `prod`; [draft publication patch 888](https://github.com/aomi-labs/aomi/pull/888) needs the normal frontend release |
 | Anthropic community | Both standalone listings exist but pin an older source commit; update via the owning developer portal account. The GitHub marketplace is a read-only mirror |
 | Agentic Awesome Skills (Antigravity) | [PR 2332](https://github.com/sickn33/agentic-awesome-skills/pull/2332) updates the copied skill; awaiting maintainer review |
